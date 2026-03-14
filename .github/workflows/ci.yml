@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint, Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+        env:
+          DATABASE_URL: "prisma+postgres://accelerate.prisma-data.net/?api_key=placeholder"
+          AUTH_SECRET: "ci-test-secret-not-real"
+          GOOGLE_CLIENT_ID: "placeholder"
+          GOOGLE_CLIENT_SECRET: "placeholder"
+          RESEND_API_KEY: "placeholder"
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+      - name: Unit & Integration Tests
+        run: pnpm test
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E Tests
+        run: pnpm test:e2e
+        env:
+          DATABASE_URL: "prisma+postgres://accelerate.prisma-data.net/?api_key=placeholder"
+          AUTH_SECRET: "ci-test-secret-not-real"
+          GOOGLE_CLIENT_ID: "placeholder"
+          GOOGLE_CLIENT_SECRET: "placeholder"
+          RESEND_API_KEY: "placeholder"
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
