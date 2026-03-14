@@ -104,7 +104,6 @@ export function packMultiBox(
         const fittedNames = new Set(
           bin.items.map((i: { name: string }) => i.name)
         );
-        const fittedProducts = remaining.filter((p) => fittedNames.has(p.name));
         remaining = remaining.filter((p) => !fittedNames.has(p.name));
 
         const packedItems: PackedItem[] = bin.items.map(

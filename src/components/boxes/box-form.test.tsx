@@ -1,11 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BoxForm } from "./box-form";
+import { createBox } from "@/actions/box-actions";
 
-// Mock the server action
 jest.mock("@/actions/box-actions", () => ({
   createBox: jest.fn().mockResolvedValue({ success: true }),
 }));
+
+const mockedCreateBox = createBox as jest.Mock;
 
 describe("BoxForm", () => {
   it("renders all form fields", () => {
@@ -27,7 +29,6 @@ describe("BoxForm", () => {
 
   it("submits the form with valid data", async () => {
     const user = userEvent.setup();
-    const { createBox } = require("@/actions/box-actions");
 
     render(<BoxForm unit="cm" />);
 
@@ -37,13 +38,12 @@ describe("BoxForm", () => {
     await user.type(screen.getByLabelText("Depth (cm)"), "15");
     await user.click(screen.getByRole("button", { name: "Add Box" }));
 
-    expect(createBox).toHaveBeenCalled();
+    expect(mockedCreateBox).toHaveBeenCalled();
   });
 
   it("shows error when server returns error", async () => {
     const user = userEvent.setup();
-    const { createBox } = require("@/actions/box-actions");
-    createBox.mockResolvedValueOnce({ error: "Something went wrong" });
+    mockedCreateBox.mockResolvedValueOnce({ error: "Something went wrong" });
 
     render(<BoxForm unit="cm" />);
 
