@@ -3,7 +3,11 @@ export interface IProduct {
   width: number;
   height: number;
   depth: number;
-  weight?: number;
+  weight?: number | null;
+}
+
+export interface IShipmentItem extends IProduct {
+  id: string;
 }
 
 export interface IBox {
@@ -14,6 +18,37 @@ export interface IBox {
   depth: number;
   spacing?: number;
   maxWeight?: number | null;
+}
+
+export interface IShipment {
+  id: string;
+  name: string;
+  spacingOverride: number | null;
+  box: IBox | null;
+  dimensionalWeight: number | null;
+  items: IShipmentItem[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IShipmentListItem {
+  id: string;
+  name: string;
+  spacingOverride: number | null;
+  dimensionalWeight: number | null;
+  box: IBox | null;
+  items: IShipmentItem[];
+  itemCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IProfile {
+  name: string | null;
+  email: string;
+  image: string | null;
+  isGoogleUser: boolean;
+  hasPassword: boolean;
 }
 
 export interface PackedItem {

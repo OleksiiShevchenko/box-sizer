@@ -8,6 +8,7 @@ import { cmToInches } from "@/types";
 interface BoxVisualization3DProps {
   result: PackingResult;
   unit: UnitSystem;
+  size?: "default" | "large";
 }
 
 const COLORS = [
@@ -73,7 +74,11 @@ function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
   );
 }
 
-export function BoxVisualization3D({ result, unit }: BoxVisualization3DProps) {
+export function BoxVisualization3D({
+  result,
+  unit,
+  size = "default",
+}: BoxVisualization3DProps) {
   const { box, items } = result;
   const largestDimension = Math.max(box.width, box.height, box.depth);
   const cameraDistance = Math.max(largestDimension * 2.2, 28);
@@ -82,15 +87,20 @@ export function BoxVisualization3D({ result, unit }: BoxVisualization3DProps) {
     cameraDistance * 0.8,
     cameraDistance,
   ];
+  const containerClassName =
+    size === "large" ? "w-full lg:w-full shrink-0" : "w-full lg:w-[360px] shrink-0";
+  const canvasHeightClassName = size === "large" ? "h-[360px]" : "h-[280px]";
 
   return (
-    <div className="w-full lg:w-[360px] shrink-0">
+    <div className={containerClassName}>
       <div className="mb-2 flex items-center justify-between gap-3">
         <p className="text-xs text-gray-500">3D view (width x height x depth)</p>
         <p className="text-xs text-gray-400">Drag to rotate, scroll to zoom</p>
       </div>
 
-      <div className="h-[280px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+      <div
+        className={`${canvasHeightClassName} overflow-hidden rounded-lg border border-gray-200 bg-gray-50`}
+      >
         <Canvas
           camera={{ fov: 42, position: cameraPosition, near: 0.1, far: cameraDistance * 10 }}
           dpr={[1, 1.5]}

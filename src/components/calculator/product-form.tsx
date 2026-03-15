@@ -4,14 +4,29 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { IProduct, UnitSystem } from "@/types";
-import { inchesToCm } from "@/types";
+import { cmToInches, inchesToCm } from "@/types";
 
 interface ProductFormProps {
   unit: UnitSystem;
   onAdd: (product: IProduct) => void;
+  initialProduct?: IProduct;
+  submitLabel?: string;
 }
 
-export function ProductForm({ unit, onAdd }: ProductFormProps) {
+function getDisplayDimension(value: number, unit: UnitSystem): string {
+  if (unit === "in") {
+    return cmToInches(value).toFixed(1);
+  }
+
+  return value.toFixed(1);
+}
+
+export function ProductForm({
+  unit,
+  onAdd,
+  initialProduct,
+  submitLabel = "Add Product",
+}: ProductFormProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -87,6 +102,7 @@ export function ProductForm({ unit, onAdd }: ProductFormProps) {
         name="name"
         label="Product Name"
         placeholder="e.g., T-Shirt"
+        defaultValue={initialProduct?.name ?? ""}
       />
 
       <div className="grid grid-cols-3 gap-3">
@@ -96,6 +112,9 @@ export function ProductForm({ unit, onAdd }: ProductFormProps) {
           type="number"
           step="0.1"
           label={`Width (${unit})`}
+          defaultValue={
+            initialProduct ? getDisplayDimension(initialProduct.width, unit) : ""
+          }
           error={fieldErrors.width}
         />
         <Input
@@ -104,6 +123,9 @@ export function ProductForm({ unit, onAdd }: ProductFormProps) {
           type="number"
           step="0.1"
           label={`Height (${unit})`}
+          defaultValue={
+            initialProduct ? getDisplayDimension(initialProduct.height, unit) : ""
+          }
           error={fieldErrors.height}
         />
         <Input
@@ -112,6 +134,9 @@ export function ProductForm({ unit, onAdd }: ProductFormProps) {
           type="number"
           step="0.1"
           label={`Depth (${unit})`}
+          defaultValue={
+            initialProduct ? getDisplayDimension(initialProduct.depth, unit) : ""
+          }
           error={fieldErrors.depth}
         />
       </div>
@@ -123,11 +148,12 @@ export function ProductForm({ unit, onAdd }: ProductFormProps) {
         step="0.1"
         label="Weight (g, optional)"
         placeholder="Optional"
+        defaultValue={initialProduct?.weight?.toString() ?? ""}
         error={fieldErrors.weight}
       />
 
       <Button type="submit" variant="secondary">
-        Add Product
+        {submitLabel}
       </Button>
     </form>
   );

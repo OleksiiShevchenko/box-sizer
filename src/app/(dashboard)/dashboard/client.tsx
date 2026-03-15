@@ -2,52 +2,34 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { UnitToggle } from "@/components/ui/unit-toggle";
-import { ProductForm } from "@/components/calculator/product-form";
-import { ProductList } from "@/components/calculator/product-list";
-import { ResultDisplay } from "@/components/calculator/result-display";
-import { calculatePackingAction } from "@/actions/calculator-actions";
-import type { IProduct, PackingResult, UnitSystem } from "@/types";
 import Link from "next/link";
+import { Pagination } from "@/components/ui/pagination";
+import { ShipmentEmptyState } from "@/components/shipments/shipment-empty-state";
+import { ShipmentTable } from "@/components/shipments/shipment-table";
+import type { IShipmentListItem } from "@/types";
 
-export function DashboardClient({ hasBoxes }: { hasBoxes: boolean }) {
-  const [unit, setUnit] = useState<UnitSystem>("cm");
-  const [products, setProducts] = useState<IProduct[]>([]);
-  const [results, setResults] = useState<PackingResult[] | null>(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+interface DashboardClientProps {
+  hasBoxes: boolean;
+  initialShipments: IShipmentListItem[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
 
-  function addProduct(product: IProduct) {
-    setProducts((prev) => [...prev, product]);
-    setResults(null);
-  }
-
-  function removeProduct(index: number) {
-    setProducts((prev) => prev.filter((_, i) => i !== index));
-    setResults(null);
-  }
-
-  async function handleCalculate() {
-    if (products.length === 0) return;
-    setError("");
-    setLoading(true);
-    setResults(null);
-
-    const result = await calculatePackingAction(products);
-    setLoading(false);
-
-    if (result.error) {
-      setError(result.error);
-    } else if (result.results) {
-      setResults(result.results);
-    }
-  }
+export function DashboardClient({
+  hasBoxes,
+  initialShipments,
+  totalCount,
+  page,
+  pageSize,
+}: DashboardClientProps) {
+  const [shipments, setShipments] = useState(initialShipments);
+  const [currentTotalCount, setCurrentTotalCount] = useState(totalCount);
 
   if (!hasBoxes) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Shipments</h1>
         <Card className="text-center py-12">
           <p className="text-lg text-gray-500 mb-4">
             You should add packaging options first.
@@ -66,46 +48,40 @@ export function DashboardClient({ hasBoxes }: { hasBoxes: boolean }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <UnitToggle unit={unit} onChange={setUnit} />
-      </div>
-
-      <Card>
-        <h2 className="text-lg font-semibold mb-4">Add Products to Pack</h2>
-        <ProductForm unit={unit} onAdd={addProduct} />
-      </Card>
-
-      <div>
-        <h2 className="text-lg font-semibold mb-3 text-gray-900">
-          Products ({products.length})
-        </h2>
-        <ProductList products={products} unit={unit} onRemove={removeProduct} />
-      </div>
-
-      {products.length > 0 && (
-        <div className="flex gap-3">
-          <Button onClick={handleCalculate} disabled={loading} size="lg">
-            {loading ? "Calculating..." : "Calculate Best Box"}
-          </Button>
-          <Button
-            variant="secondary"
-            size="lg"
-            onClick={() => {
-              setProducts([]);
-              setResults(null);
-              setError("");
-            }}
-          >
-            Clear All
-          </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Shipments</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Save shipments, manage products, and calculate the best packaging.
+          </p>
         </div>
-      )}
+        <Link
+          href="/dashboard/shipments/new"
+          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+        >
+          New Shipment
+        </Link>
+      </div>
 
-      {error && (
-        <div className="rounded-lg bg-red-50 p-4 text-red-600">{error}</div>
+      {shipments.length === 0 ? (
+        <ShipmentEmptyState />
+      ) : (
+        <>
+          <ShipmentTable
+            shipments={shipments}
+            onDeleted={(shipmentId) => {
+              setShipments((currentShipments) =>
+                currentShipments.filter((shipment) => shipment.id !== shipmentId)
+              );
+              setCurrentTotalCount((currentCount) => Math.max(currentCount - 1, 0));
+            }}
+          />
+          <Pagination
+            currentPage={page}
+            pageSize={pageSize}
+            totalCount={currentTotalCount}
+          />
+        </>
       )}
-
-      {results && <ResultDisplay results={results} unit={unit} />}
     </div>
   );
 }

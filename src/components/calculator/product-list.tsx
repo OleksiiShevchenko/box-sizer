@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import type { IProduct, UnitSystem } from "@/types";
 import { cmToInches } from "@/types";
@@ -8,6 +9,8 @@ interface ProductListProps {
   products: IProduct[];
   unit: UnitSystem;
   onRemove: (index: number) => void;
+  onEdit?: (index: number) => void;
+  emptyMessage?: string;
 }
 
 function displayDim(value: number, unit: UnitSystem): string {
@@ -15,12 +18,28 @@ function displayDim(value: number, unit: UnitSystem): string {
   return value.toFixed(1);
 }
 
-export function ProductList({ products, unit, onRemove }: ProductListProps) {
+function ActionIcon({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <span aria-hidden="true" className="h-4 w-4">
+      {children}
+    </span>
+  );
+}
+
+export function ProductList({
+  products,
+  unit,
+  onRemove,
+  onEdit,
+  emptyMessage = "No products added yet. Use the form above to add products.",
+}: ProductListProps) {
   if (products.length === 0) {
     return (
-      <p className="text-sm text-gray-500 py-4">
-        No products added yet. Use the form above to add products.
-      </p>
+      <p className="py-4 text-sm text-gray-500">{emptyMessage}</p>
     );
   }
 
@@ -41,9 +60,39 @@ export function ProductList({ products, unit, onRemove }: ProductListProps) {
               {product.weight != null && ` | ${product.weight}g`}
             </span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => onRemove(index)}>
-            Remove
-          </Button>
+          <div className="flex items-center gap-2">
+            {onEdit ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Edit"
+                onClick={() => onEdit(index)}
+              >
+                <ActionIcon>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 20h9" />
+                    <path d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z" />
+                  </svg>
+                </ActionIcon>
+              </Button>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Delete"
+              onClick={() => onRemove(index)}
+            >
+              <ActionIcon>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M19 6 18 20H6L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </ActionIcon>
+            </Button>
+          </div>
         </div>
       ))}
     </div>
