@@ -12,6 +12,7 @@ export interface IBox {
   width: number;
   height: number;
   depth: number;
+  spacing?: number;
   maxWeight?: number | null;
 }
 

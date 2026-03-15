@@ -8,8 +8,8 @@ jest.mock("@/actions/box-actions", () => ({
 }));
 
 const mockBoxes = [
-  { id: "1", name: "Small", width: 20, height: 15, depth: 10, maxWeight: null },
-  { id: "2", name: "Medium", width: 30, height: 25, depth: 20, maxWeight: 5000 },
+  { id: "1", name: "Small", width: 20, height: 15, depth: 10, spacing: 0, maxWeight: null },
+  { id: "2", name: "Medium", width: 30, height: 25, depth: 20, spacing: 2.5, maxWeight: 5000 },
 ];
 
 describe("BoxList", () => {

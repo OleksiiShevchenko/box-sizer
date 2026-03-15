@@ -15,6 +15,7 @@ const boxes = [
     width: 25,
     height: 18,
     depth: 12,
+    spacing: 1.5,
     maxWeight: null,
   },
 ];
