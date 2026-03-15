@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: box-sizer-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: box_sizer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d box_sizer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - box_sizer_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  box_sizer_postgres_data:

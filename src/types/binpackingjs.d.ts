@@ -33,6 +33,7 @@ declare module "binpackingjs" {
       depth: number;
       weight: number;
       position: number[];
+      getDimension(): [number, number, number];
       constructor(
         name: string,
         width: number,
