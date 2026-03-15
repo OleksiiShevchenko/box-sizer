@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import { UserMenu } from "@/components/layout/user-menu";
 
 const links = [
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Shipments" },
   { href: "/settings/packaging", label: "Packaging" },
 ];
 
@@ -22,28 +21,29 @@ export function Nav() {
               Box Sizer
             </Link>
             <div className="flex gap-1">
-              {links.map((link) => (
+              {links.map((link) => {
+                const isActive =
+                  link.href === "/dashboard"
+                    ? pathname.startsWith("/dashboard")
+                    : pathname.startsWith(link.href);
+
+                return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    pathname === link.href
+                    isActive
                       ? "bg-gray-100 text-gray-900"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
                   {link.label}
                 </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-          >
-            Log out
-          </Button>
+          <UserMenu />
         </div>
       </div>
     </nav>
