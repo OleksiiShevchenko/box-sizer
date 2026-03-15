@@ -4,14 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { deleteBox } from "@/actions/box-actions";
 import { useState } from "react";
+import { BoxForm } from "@/components/boxes/box-form";
+import { Dialog } from "@/components/ui/dialog";
+import type { BoxFormValues } from "./types";
 
-interface BoxCardProps {
-  id: string;
-  name: string;
-  width: number;
-  height: number;
-  depth: number;
-  maxWeight: number | null;
+interface BoxCardProps extends BoxFormValues {
   unit: "cm" | "in";
 }
 
@@ -22,6 +19,7 @@ function convert(value: number, unit: "cm" | "in"): string {
 
 export function BoxCard({ id, name, width, height, depth, maxWeight, unit }: BoxCardProps) {
   const [deleting, setDeleting] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   async function handleDelete() {
     setDeleting(true);
@@ -37,14 +35,32 @@ export function BoxCard({ id, name, width, height, depth, maxWeight, unit }: Box
           {maxWeight != null && ` | Max: ${maxWeight}g`}
         </p>
       </div>
-      <Button
-        variant="danger"
-        size="sm"
-        onClick={handleDelete}
-        disabled={deleting}
+      <div className="flex items-center gap-2">
+        <Button type="button" variant="secondary" size="sm" onClick={() => setIsEditDialogOpen(true)}>
+          Edit
+        </Button>
+        <Button
+          type="button"
+          variant="danger"
+          size="sm"
+          onClick={handleDelete}
+          disabled={deleting}
+        >
+          {deleting ? "..." : "Delete"}
+        </Button>
+      </div>
+
+      <Dialog
+        open={isEditDialogOpen}
+        title={`Edit ${name}`}
+        onClose={() => setIsEditDialogOpen(false)}
       >
-        {deleting ? "..." : "Delete"}
-      </Button>
+        <BoxForm
+          unit={unit}
+          box={{ id, name, width, height, depth, maxWeight }}
+          onSuccess={() => setIsEditDialogOpen(false)}
+        />
+      </Dialog>
     </Card>
   );
 }

@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { BoxList } from "./box-list";
 
 jest.mock("@/actions/box-actions", () => ({
+  createBox: jest.fn().mockResolvedValue({ success: true }),
+  updateBox: jest.fn().mockResolvedValue({ success: true }),
   deleteBox: jest.fn().mockResolvedValue({ success: true }),
 }));
 
@@ -20,11 +22,16 @@ describe("BoxList", () => {
   it("shows empty state when no boxes", () => {
     render(<BoxList boxes={[]} unit="cm" />);
     expect(screen.getByText("No boxes added yet")).toBeInTheDocument();
+    expect(
+      screen.getByText("Add your first box using the button above.")
+    ).toBeInTheDocument();
   });
 
-  it("shows delete buttons for each box", () => {
+  it("shows action buttons for each box", () => {
     render(<BoxList boxes={mockBoxes} unit="cm" />);
+    const editButtons = screen.getAllByRole("button", { name: "Edit" });
     const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
+    expect(editButtons.length).toBe(2);
     expect(deleteButtons.length).toBe(2);
   });
 

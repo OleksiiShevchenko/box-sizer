@@ -6,12 +6,52 @@ import { z } from "zod/v4";
 import { revalidatePath } from "next/cache";
 
 const createBoxSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  width: z.number().positive("Width must be positive"),
-  height: z.number().positive("Height must be positive"),
-  depth: z.number().positive("Depth must be positive"),
-  maxWeight: z.number().positive("Max weight must be positive").optional(),
+  name: z.string().trim().min(1, "Name is required"),
+  width: z.number({ error: "Width is required" }).positive("Width must be positive"),
+  height: z.number({ error: "Height is required" }).positive("Height must be positive"),
+  depth: z.number({ error: "Depth is required" }).positive("Depth must be positive"),
+  maxWeight: z
+    .number({ error: "Max weight must be positive" })
+    .positive("Max weight must be positive")
+    .optional(),
 });
+
+type BoxFieldErrors = Record<string, string>;
+
+function parseOptionalNumber(value: FormDataEntryValue | null): number | undefined {
+  if (value == null) return undefined;
+
+  const parsedValue = value.toString().trim();
+  if (parsedValue === "") {
+    return undefined;
+  }
+
+  const numericValue = Number(parsedValue);
+  return Number.isNaN(numericValue) ? NaN : numericValue;
+}
+
+function mapZodIssuesToFieldErrors(error: z.ZodError): BoxFieldErrors {
+  return error.issues.reduce<BoxFieldErrors>((fieldErrors, issue) => {
+    const fieldName =
+      typeof issue.path[0] === "string" ? issue.path[0] : "form";
+
+    if (!fieldErrors[fieldName]) {
+      fieldErrors[fieldName] = issue.message;
+    }
+
+    return fieldErrors;
+  }, {});
+}
+
+function parseBoxFormData(formData: FormData) {
+  return createBoxSchema.safeParse({
+    name: formData.get("name")?.toString() ?? "",
+    width: parseOptionalNumber(formData.get("width")),
+    height: parseOptionalNumber(formData.get("height")),
+    depth: parseOptionalNumber(formData.get("depth")),
+    maxWeight: parseOptionalNumber(formData.get("maxWeight")),
+  });
+}
 
 async function getAuthUserId(): Promise<string> {
   const session = await auth();
@@ -31,20 +71,9 @@ export async function getBoxes() {
 
 export async function createBox(formData: FormData) {
   const userId = await getAuthUserId();
-
-  const raw = {
-    name: formData.get("name") as string,
-    width: parseFloat(formData.get("width") as string),
-    height: parseFloat(formData.get("height") as string),
-    depth: parseFloat(formData.get("depth") as string),
-    maxWeight: formData.get("maxWeight")
-      ? parseFloat(formData.get("maxWeight") as string)
-      : undefined,
-  };
-
-  const parsed = createBoxSchema.safeParse(raw);
+  const parsed = parseBoxFormData(formData);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0].message };
+    return { fieldErrors: mapZodIssuesToFieldErrors(parsed.error) };
   }
 
   await prisma.box.create({
@@ -52,6 +81,29 @@ export async function createBox(formData: FormData) {
       ...parsed.data,
       userId,
     },
+  });
+
+  revalidatePath("/settings/packaging");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function updateBox(id: string, formData: FormData) {
+  const userId = await getAuthUserId();
+
+  const box = await prisma.box.findUnique({ where: { id } });
+  if (!box || box.userId !== userId) {
+    return { fieldErrors: { form: "Box not found" } };
+  }
+
+  const parsed = parseBoxFormData(formData);
+  if (!parsed.success) {
+    return { fieldErrors: mapZodIssuesToFieldErrors(parsed.error) };
+  }
+
+  await prisma.box.update({
+    where: { id },
+    data: parsed.data,
   });
 
   revalidatePath("/settings/packaging");

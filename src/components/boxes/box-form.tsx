@@ -3,102 +3,181 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { createBox } from "@/actions/box-actions";
-import { inchesToCm } from "@/types";
+import { createBox, updateBox } from "@/actions/box-actions";
+import { cmToInches, inchesToCm } from "@/types";
+import type { BoxFormValues } from "./types";
 
 interface BoxFormProps {
   unit: "cm" | "in";
+  box?: BoxFormValues;
+  onSuccess?: () => void;
 }
 
-export function BoxForm({ unit }: BoxFormProps) {
-  const [error, setError] = useState("");
+type FieldErrors = Record<string, string>;
+
+function validateBoxValues(formData: FormData): FieldErrors {
+  const name = formData.get("name")?.toString().trim() ?? "";
+  const width = formData.get("width")?.toString().trim() ?? "";
+  const height = formData.get("height")?.toString().trim() ?? "";
+  const depth = formData.get("depth")?.toString().trim() ?? "";
+  const maxWeight = formData.get("maxWeight")?.toString().trim() ?? "";
+
+  const fieldErrors: FieldErrors = {};
+
+  if (!name) fieldErrors.name = "Name is required";
+
+  const numericFields = [
+    { key: "width", label: "Width", value: width },
+    { key: "height", label: "Height", value: height },
+    { key: "depth", label: "Depth", value: depth },
+  ] as const;
+
+  for (const field of numericFields) {
+    if (!field.value) {
+      fieldErrors[field.key] = `${field.label} is required`;
+      continue;
+    }
+
+    const numericValue = Number(field.value);
+    if (Number.isNaN(numericValue) || numericValue <= 0) {
+      fieldErrors[field.key] = `${field.label} must be positive`;
+    }
+  }
+
+  if (maxWeight) {
+    const numericValue = Number(maxWeight);
+    if (Number.isNaN(numericValue) || numericValue <= 0) {
+      fieldErrors.maxWeight = "Max weight must be positive";
+    }
+  }
+
+  return fieldErrors;
+}
+
+function getDisplayDimension(value: number, unit: "cm" | "in"): string {
+  if (unit === "in") {
+    return cmToInches(value).toFixed(1);
+  }
+
+  return value.toFixed(1);
+}
+
+export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
+  const isEditMode = Boolean(box);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const clientFieldErrors = validateBoxValues(formData);
+
+    if (Object.keys(clientFieldErrors).length > 0) {
+      setFieldErrors(clientFieldErrors);
+      return;
+    }
+
+    setFieldErrors({});
+    setLoading(true);
 
     // Convert inches to cm for storage if needed
     if (unit === "in") {
-      const width = parseFloat(formData.get("width") as string);
-      const height = parseFloat(formData.get("height") as string);
-      const depth = parseFloat(formData.get("depth") as string);
+      const width = Number(formData.get("width"));
+      const height = Number(formData.get("height"));
+      const depth = Number(formData.get("depth"));
       formData.set("width", inchesToCm(width).toString());
       formData.set("height", inchesToCm(height).toString());
       formData.set("depth", inchesToCm(depth).toString());
     }
 
-    const result = await createBox(formData);
+    const result = isEditMode && box
+      ? await updateBox(box.id, formData)
+      : await createBox(formData);
+
     setLoading(false);
 
-    if (result.error) {
-      setError(result.error);
-    } else {
+    if (result.fieldErrors) {
+      setFieldErrors(result.fieldErrors);
+      return;
+    }
+
+    setFieldErrors({});
+    if (!isEditMode) {
       form.reset();
     }
+    onSuccess?.();
   }
 
   return (
-    <Card>
-      <h2 className="text-lg font-semibold mb-4">Add New Box</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-            {error}
-          </div>
-        )}
-
-        <Input id="name" name="name" label="Box Name" placeholder="e.g., Small Box" required />
-
-        <div className="grid grid-cols-3 gap-3">
-          <Input
-            id="width"
-            name="width"
-            type="number"
-            step="0.1"
-            min="0.1"
-            label={`Width (${unit})`}
-            required
-          />
-          <Input
-            id="height"
-            name="height"
-            type="number"
-            step="0.1"
-            min="0.1"
-            label={`Height (${unit})`}
-            required
-          />
-          <Input
-            id="depth"
-            name="depth"
-            type="number"
-            step="0.1"
-            min="0.1"
-            label={`Depth (${unit})`}
-            required
-          />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {fieldErrors.form && (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          {fieldErrors.form}
         </div>
+      )}
 
+      <Input
+        id="name"
+        name="name"
+        label="Box Name"
+        placeholder="e.g., Small Box"
+        defaultValue={box?.name ?? ""}
+        error={fieldErrors.name}
+      />
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Input
-          id="maxWeight"
-          name="maxWeight"
+          id="width"
+          name="width"
           type="number"
           step="0.1"
-          min="0.1"
-          label="Max Weight (g, optional)"
-          placeholder="Optional"
+          label={`Width (${unit})`}
+          defaultValue={box ? getDisplayDimension(box.width, unit) : ""}
+          error={fieldErrors.width}
         />
+        <Input
+          id="height"
+          name="height"
+          type="number"
+          step="0.1"
+          label={`Height (${unit})`}
+          defaultValue={box ? getDisplayDimension(box.height, unit) : ""}
+          error={fieldErrors.height}
+        />
+        <Input
+          id="depth"
+          name="depth"
+          type="number"
+          step="0.1"
+          label={`Depth (${unit})`}
+          defaultValue={box ? getDisplayDimension(box.depth, unit) : ""}
+          error={fieldErrors.depth}
+        />
+      </div>
 
+      <Input
+        id="maxWeight"
+        name="maxWeight"
+        type="number"
+        step="0.1"
+        label="Max Weight (g, optional)"
+        placeholder="Optional"
+        defaultValue={box?.maxWeight?.toString() ?? ""}
+        error={fieldErrors.maxWeight}
+      />
+
+      <div className="flex justify-end">
         <Button type="submit" disabled={loading}>
-          {loading ? "Adding..." : "Add Box"}
+          {loading
+            ? isEditMode
+              ? "Saving..."
+              : "Adding..."
+            : isEditMode
+              ? "Save Changes"
+              : "Add Box"}
         </Button>
-      </form>
-    </Card>
+      </div>
+    </form>
   );
 }
