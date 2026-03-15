@@ -40,6 +40,36 @@ describe("ProductForm", () => {
     );
   });
 
+  it("shows field-level validation errors for empty dimensions", async () => {
+    const user = userEvent.setup();
+    const onAdd = jest.fn();
+
+    render(<ProductForm unit="cm" onAdd={onAdd} />);
+
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(await screen.findByText("Width is required")).toBeInTheDocument();
+    expect(screen.getByText("Height is required")).toBeInTheDocument();
+    expect(screen.getByText("Depth is required")).toBeInTheDocument();
+    expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  it("shows an error for negative weight", async () => {
+    const user = userEvent.setup();
+    const onAdd = jest.fn();
+
+    render(<ProductForm unit="cm" onAdd={onAdd} />);
+
+    await user.type(screen.getByLabelText("Width (cm)"), "30");
+    await user.type(screen.getByLabelText("Height (cm)"), "20");
+    await user.type(screen.getByLabelText("Depth (cm)"), "5");
+    await user.type(screen.getByLabelText("Weight (g, optional)"), "-1");
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(await screen.findByText("Weight must be non-negative")).toBeInTheDocument();
+    expect(onAdd).not.toHaveBeenCalled();
+  });
+
   it("converts inches to cm before calling onAdd", async () => {
     const user = userEvent.setup();
     const onAdd = jest.fn();

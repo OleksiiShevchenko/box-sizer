@@ -1,18 +1,10 @@
 "use client";
 
 import { BoxCard } from "./box-card";
-
-interface Box {
-  id: string;
-  name: string;
-  width: number;
-  height: number;
-  depth: number;
-  maxWeight: number | null;
-}
+import type { BoxFormValues } from "./types";
 
 interface BoxListProps {
-  boxes: Box[];
+  boxes: BoxFormValues[];
   unit: "cm" | "in";
 }
 
@@ -21,7 +13,7 @@ export function BoxList({ boxes, unit }: BoxListProps) {
     return (
       <div className="text-center py-12 text-gray-500">
         <p className="text-lg">No boxes added yet</p>
-        <p className="text-sm">Add your first box using the form above.</p>
+        <p className="text-sm">Add your first box using the button above.</p>
       </div>
     );
   }
