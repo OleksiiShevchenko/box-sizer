@@ -2,6 +2,30 @@ import { BP3D } from "binpackingjs";
 import type { IBox, IProduct, PackingResult, PackedItem } from "@/types";
 
 const { Packer, Bin, Item } = BP3D;
+const BINPACKING_SCALE_FACTOR = 10 ** 5;
+
+type BinPackingItem = {
+  name: string;
+  width: number;
+  height: number;
+  depth: number;
+  position: number[];
+  getDimension(): [number, number, number];
+};
+
+function normalizePackedItem(item: BinPackingItem): PackedItem {
+  const [width, height, depth] = item.getDimension();
+
+  return {
+    name: item.name,
+    width: width / BINPACKING_SCALE_FACTOR,
+    height: height / BINPACKING_SCALE_FACTOR,
+    depth: depth / BINPACKING_SCALE_FACTOR,
+    x: (item.position?.[0] ?? 0) / BINPACKING_SCALE_FACTOR,
+    y: (item.position?.[1] ?? 0) / BINPACKING_SCALE_FACTOR,
+    z: (item.position?.[2] ?? 0) / BINPACKING_SCALE_FACTOR,
+  };
+}
 
 export function checkFit(
   box: IBox,
@@ -25,17 +49,7 @@ export function checkFit(
 
   packer.pack();
 
-  const packedItems: PackedItem[] = bin.items.map(
-    (item: { name: string; width: number; height: number; depth: number; position: number[] }) => ({
-      name: item.name,
-      width: item.width,
-      height: item.height,
-      depth: item.depth,
-      x: item.position?.[0] ?? 0,
-      y: item.position?.[1] ?? 0,
-      z: item.position?.[2] ?? 0,
-    })
-  );
+  const packedItems: PackedItem[] = bin.items.map(normalizePackedItem);
 
   return {
     fits: bin.items.length === products.length,
@@ -106,17 +120,7 @@ export function packMultiBox(
         );
         remaining = remaining.filter((p) => !fittedNames.has(p.name));
 
-        const packedItems: PackedItem[] = bin.items.map(
-          (item: { name: string; width: number; height: number; depth: number; position: number[] }) => ({
-            name: item.name,
-            width: item.width,
-            height: item.height,
-            depth: item.depth,
-            x: item.position?.[0] ?? 0,
-            y: item.position?.[1] ?? 0,
-            z: item.position?.[2] ?? 0,
-          })
-        );
+        const packedItems: PackedItem[] = bin.items.map(normalizePackedItem);
 
         const dimWeight = Math.ceil(
           (box.width * box.height * box.depth) / 5000

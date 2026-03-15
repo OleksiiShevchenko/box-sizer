@@ -54,6 +54,25 @@ describe("checkFit", () => {
     expect(result.fits).toBe(true);
     expect(result.packedItems.length).toBe(2);
   });
+
+  it("returns packed items in real-world dimensions and positions", () => {
+    const products: IProduct[] = [
+      { name: "Item1", width: 10, height: 10, depth: 5 },
+    ];
+    const result = checkFit(smallBox, products);
+    const dimensions = [
+      result.packedItems[0].width,
+      result.packedItems[0].height,
+      result.packedItems[0].depth,
+    ].sort((a, b) => a - b);
+
+    expect(result.packedItems[0]).toMatchObject({
+      x: 0,
+      y: 0,
+      z: 0,
+    });
+    expect(dimensions).toEqual([5, 10, 10]);
+  });
 });
 
 describe("getSmallestSuitableBox", () => {

@@ -9,11 +9,17 @@
     "lint": "eslint",
     "test": "jest",
     "test:e2e": "playwright test",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:push": "set -a && . ./.env.local && set +a && prisma db push",
+    "db:studio": "set -a && . ./.env.local && set +a && prisma studio",
     "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^5.22.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "bcryptjs": "^3.0.3",
     "binpackingjs": "^3.0.2",
     "next": "16.1.6",
@@ -21,6 +27,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.9.3",
+    "three": "^0.183.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -34,6 +41,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.183.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "jest": "^30.3.0",

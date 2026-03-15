@@ -2,16 +2,36 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+## Local Development
+
+This app uses Prisma with PostgreSQL. For local development, run PostgreSQL in
+Docker and point `DATABASE_URL` at that container instead of Prisma Accelerate.
+
+Start the database:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+docker compose up -d postgres
+```
+
+Use a direct Postgres URL in `.env.local`:
+
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/box_sizer?schema=public"
+```
+
+Bootstrap the schema:
+
+```bash
+pnpm db:push
+```
+
+The `db:*` scripts load `DATABASE_URL` from `.env.local`, so you do not need a
+separate `.env` file for Prisma locally.
+
+Then run the development server:
+
+```bash
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
