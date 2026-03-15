@@ -17,4 +17,8 @@ if (!shouldRunMigrations) {
 console.log("Running prisma migrate deploy before build...");
 execSync("pnpm exec prisma migrate deploy", {
   stdio: "inherit",
+  env: {
+    ...process.env,
+    DATABASE_URL: directDatabaseUrl || databaseUrl,
+  },
 });
