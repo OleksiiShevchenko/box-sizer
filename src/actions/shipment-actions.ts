@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { z } from "zod/v4";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -30,78 +31,108 @@ async function getAuthUserId(): Promise<string> {
   return session.user.id;
 }
 
+function isMissingShipmentSchemaError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2021" &&
+    typeof error.meta?.table === "string" &&
+    (error.meta.table.includes("Shipment") || error.meta.table.includes("ShipmentItem"))
+  );
+}
+
 export async function getShipments(
   page = 1,
   pageSize = 10
-): Promise<{ shipments: IShipmentListItem[]; totalCount: number }> {
+): Promise<{ shipments: IShipmentListItem[]; totalCount: number; schemaReady: boolean }> {
   const userId = await getAuthUserId();
   const normalizedPage = Math.max(1, Math.floor(page));
   const normalizedPageSize = Math.max(1, Math.floor(pageSize));
   const skip = (normalizedPage - 1) * normalizedPageSize;
 
-  const [shipments, totalCount] = await Promise.all([
-    prisma.shipment.findMany({
-      where: { userId },
+  try {
+    const [shipments, totalCount] = await Promise.all([
+      prisma.shipment.findMany({
+        where: { userId },
+        include: {
+          box: true,
+          items: {
+            orderBy: { id: "asc" },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+        skip,
+        take: normalizedPageSize,
+      }),
+      prisma.shipment.count({
+        where: { userId },
+      }),
+    ]);
+
+    return {
+      shipments: shipments.map((shipment) => ({
+        id: shipment.id,
+        name: shipment.name,
+        spacingOverride: shipment.spacingOverride,
+        dimensionalWeight: shipment.dimensionalWeight,
+        box: shipment.box,
+        items: shipment.items,
+        itemCount: shipment.items.length,
+        createdAt: shipment.createdAt,
+        updatedAt: shipment.updatedAt,
+      })),
+      totalCount,
+      schemaReady: true,
+    };
+  } catch (error) {
+    if (isMissingShipmentSchemaError(error)) {
+      return {
+        shipments: [],
+        totalCount: 0,
+        schemaReady: false,
+      };
+    }
+
+    throw error;
+  }
+}
+
+export async function getShipment(id: string): Promise<IShipment | null> {
+  const userId = await getAuthUserId();
+  try {
+    const shipment = await prisma.shipment.findFirst({
+      where: {
+        id,
+        userId,
+      },
       include: {
         box: true,
         items: {
           orderBy: { id: "asc" },
         },
       },
-      orderBy: { updatedAt: "desc" },
-      skip,
-      take: normalizedPageSize,
-    }),
-    prisma.shipment.count({
-      where: { userId },
-    }),
-  ]);
+    });
 
-  return {
-    shipments: shipments.map((shipment) => ({
+    if (!shipment) {
+      return null;
+    }
+
+    return {
       id: shipment.id,
       name: shipment.name,
       spacingOverride: shipment.spacingOverride,
-      dimensionalWeight: shipment.dimensionalWeight,
       box: shipment.box,
+      dimensionalWeight: shipment.dimensionalWeight,
       items: shipment.items,
-      itemCount: shipment.items.length,
       createdAt: shipment.createdAt,
       updatedAt: shipment.updatedAt,
-    })),
-    totalCount,
-  };
-}
+    };
+  } catch (error) {
+    if (isMissingShipmentSchemaError(error)) {
+      return null;
+    }
 
-export async function getShipment(id: string): Promise<IShipment | null> {
-  const userId = await getAuthUserId();
-  const shipment = await prisma.shipment.findFirst({
-    where: {
-      id,
-      userId,
-    },
-    include: {
-      box: true,
-      items: {
-        orderBy: { id: "asc" },
-      },
-    },
-  });
-
-  if (!shipment) {
-    return null;
+    throw error;
   }
-
-  return {
-    id: shipment.id,
-    name: shipment.name,
-    spacingOverride: shipment.spacingOverride,
-    box: shipment.box,
-    dimensionalWeight: shipment.dimensionalWeight,
-    items: shipment.items,
-    createdAt: shipment.createdAt,
-    updatedAt: shipment.updatedAt,
-  };
 }
 
 export async function createShipment(name = "Untitled Shipment"): Promise<{ id: string }> {
