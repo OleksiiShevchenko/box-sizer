@@ -13,17 +13,85 @@ type BinPackingItem = {
   getDimension(): [number, number, number];
 };
 
-function normalizePackedItem(item: BinPackingItem): PackedItem {
-  const [width, height, depth] = item.getDimension();
+type PackedBinResult = {
+  bin: InstanceType<typeof Bin> | null;
+  packedItems: PackedItem[];
+};
+
+function getDisplayItemName(name: string): string {
+  return name.replace(/_\d+$/, "");
+}
+
+function formatUnpackedItemNames(products: IProduct[]): string {
+  const counts = new Map<string, number>();
+
+  for (const product of products) {
+    const displayName = getDisplayItemName(product.name);
+    counts.set(displayName, (counts.get(displayName) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .map(([name, count]) => (count > 1 ? `${name} x${count}` : name))
+    .join(", ");
+}
+
+function getBoxSpacing(box: IBox): number {
+  return Math.max(box.spacing ?? 0, 0);
+}
+
+function normalizePackedItem(item: BinPackingItem, spacing: number): PackedItem {
+  const [inflatedWidth, inflatedHeight, inflatedDepth] = item.getDimension();
 
   return {
     name: item.name,
-    width: width / BINPACKING_SCALE_FACTOR,
-    height: height / BINPACKING_SCALE_FACTOR,
-    depth: depth / BINPACKING_SCALE_FACTOR,
-    x: (item.position?.[0] ?? 0) / BINPACKING_SCALE_FACTOR,
-    y: (item.position?.[1] ?? 0) / BINPACKING_SCALE_FACTOR,
-    z: (item.position?.[2] ?? 0) / BINPACKING_SCALE_FACTOR,
+    width: Math.max(inflatedWidth / BINPACKING_SCALE_FACTOR - spacing, 0),
+    height: Math.max(inflatedHeight / BINPACKING_SCALE_FACTOR - spacing, 0),
+    depth: Math.max(inflatedDepth / BINPACKING_SCALE_FACTOR - spacing, 0),
+    x: (item.position?.[0] ?? 0) / BINPACKING_SCALE_FACTOR + spacing,
+    y: (item.position?.[1] ?? 0) / BINPACKING_SCALE_FACTOR + spacing,
+    z: (item.position?.[2] ?? 0) / BINPACKING_SCALE_FACTOR + spacing,
+  };
+}
+
+function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
+  const spacing = getBoxSpacing(box);
+  const effectiveWidth = box.width - spacing;
+  const effectiveHeight = box.height - spacing;
+  const effectiveDepth = box.depth - spacing;
+
+  if (effectiveWidth <= 0 || effectiveHeight <= 0 || effectiveDepth <= 0) {
+    return { bin: null, packedItems: [] };
+  }
+
+  const packer = new Packer();
+  const bin = new Bin(
+    box.name,
+    effectiveWidth,
+    effectiveHeight,
+    effectiveDepth,
+    box.maxWeight ?? 9999999
+  );
+  packer.addBin(bin);
+
+  for (const product of products) {
+    packer.addItem(
+      new Item(
+        product.name,
+        product.width + spacing,
+        product.height + spacing,
+        product.depth + spacing,
+        product.weight ?? 0
+      )
+    );
+  }
+
+  packer.pack();
+
+  return {
+    bin,
+    packedItems: bin.items.map((item: BinPackingItem) =>
+      normalizePackedItem(item, spacing)
+    ),
   };
 }
 
@@ -31,28 +99,10 @@ export function checkFit(
   box: IBox,
   products: IProduct[]
 ): { fits: boolean; packedItems: PackedItem[] } {
-  const packer = new Packer();
-  const bin = new Bin(
-    box.name,
-    box.width,
-    box.height,
-    box.depth,
-    box.maxWeight ?? 9999999
-  );
-  packer.addBin(bin);
-
-  for (const p of products) {
-    packer.addItem(
-      new Item(p.name, p.width, p.height, p.depth, p.weight ?? 0)
-    );
-  }
-
-  packer.pack();
-
-  const packedItems: PackedItem[] = bin.items.map(normalizePackedItem);
+  const { bin, packedItems } = packItemsIntoBox(box, products);
 
   return {
-    fits: bin.items.length === products.length,
+    fits: bin?.items.length === products.length,
     packedItems,
   };
 }
@@ -96,31 +146,13 @@ export function packMultiBox(
     let packed = false;
 
     for (const box of sortedBoxes) {
-      const packer = new Packer();
-      const bin = new Bin(
-        box.name,
-        box.width,
-        box.height,
-        box.depth,
-        box.maxWeight ?? 9999999
-      );
-      packer.addBin(bin);
+      const { bin, packedItems } = packItemsIntoBox(box, remaining);
 
-      for (const p of remaining) {
-        packer.addItem(
-          new Item(p.name, p.width, p.height, p.depth, p.weight ?? 0)
-        );
-      }
-
-      packer.pack();
-
-      if (bin.items.length > 0) {
+      if (bin && bin.items.length > 0) {
         const fittedNames = new Set(
           bin.items.map((i: { name: string }) => i.name)
         );
         remaining = remaining.filter((p) => !fittedNames.has(p.name));
-
-        const packedItems: PackedItem[] = bin.items.map(normalizePackedItem);
 
         const dimWeight = Math.ceil(
           (box.width * box.height * box.depth) / 5000
@@ -133,7 +165,7 @@ export function packMultiBox(
 
     if (!packed) {
       throw new Error(
-        `Cannot fit item(s): ${remaining.map((r) => r.name).join(", ")}`
+        `Cannot fit item(s) with the current box spacing: ${formatUnpackedItemNames(remaining)}`
       );
     }
   }

@@ -4,5 +4,6 @@ export interface BoxFormValues {
   width: number;
   height: number;
   depth: number;
+  spacing: number | null;
   maxWeight: number | null;
 }

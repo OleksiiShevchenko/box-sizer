@@ -73,6 +73,79 @@ describe("checkFit", () => {
     });
     expect(dimensions).toEqual([5, 10, 10]);
   });
+
+  it("keeps adjacent-item gaps equal to the configured spacing", () => {
+    const spacedBox: IBox = {
+      id: "4",
+      name: "Spaced Box",
+      width: 24,
+      height: 15,
+      depth: 10,
+      spacing: 2,
+    };
+    const products: IProduct[] = [
+      { name: "Left", width: 9, height: 11, depth: 6 },
+      { name: "Right", width: 9, height: 11, depth: 6 },
+    ];
+
+    const result = checkFit(spacedBox, products);
+
+    expect(result.fits).toBe(true);
+    expect(result.packedItems).toHaveLength(2);
+
+    const [first, second] = [...result.packedItems].sort((a, b) => a.x - b.x);
+    expect(second.x - (first.x + first.width)).toBeCloseTo(2, 5);
+  });
+
+  it("keeps items at least one spacing unit away from every box wall", () => {
+    const spacedBox: IBox = {
+      id: "5",
+      name: "Wall Gap Box",
+      width: 20,
+      height: 15,
+      depth: 10,
+      spacing: 2,
+    };
+    const products: IProduct[] = [
+      { name: "Solo", width: 10, height: 8, depth: 5 },
+    ];
+
+    const result = checkFit(spacedBox, products);
+    const [item] = result.packedItems;
+
+    expect(result.fits).toBe(true);
+    expect(item.x).toBeGreaterThanOrEqual(2);
+    expect(item.y).toBeGreaterThanOrEqual(2);
+    expect(item.z).toBeGreaterThanOrEqual(2);
+    expect(spacedBox.width - (item.x + item.width)).toBeGreaterThanOrEqual(2);
+    expect(spacedBox.height - (item.y + item.height)).toBeGreaterThanOrEqual(2);
+    expect(spacedBox.depth - (item.z + item.depth)).toBeGreaterThanOrEqual(2);
+  });
+
+  it("keeps spacing at zero backward compatible", () => {
+    const zeroSpacingBox: IBox = {
+      ...smallBox,
+      spacing: 0,
+    };
+    const products: IProduct[] = [
+      { name: "Item1", width: 10, height: 10, depth: 5 },
+    ];
+
+    const result = checkFit(zeroSpacingBox, products);
+    const dimensions = [
+      result.packedItems[0].width,
+      result.packedItems[0].height,
+      result.packedItems[0].depth,
+    ].sort((a, b) => a - b);
+
+    expect(result.fits).toBe(true);
+    expect(result.packedItems[0]).toMatchObject({
+      x: 0,
+      y: 0,
+      z: 0,
+    });
+    expect(dimensions).toEqual([5, 10, 10]);
+  });
 });
 
 describe("getSmallestSuitableBox", () => {
@@ -149,6 +222,25 @@ describe("calculatePacking", () => {
       { name: "Impossible", width: 200, height: 200, depth: 200 },
     ];
     expect(() => calculatePacking(boxes, products)).toThrow();
+  });
+
+  it("throws user-facing item names when spacing prevents a fit", () => {
+    const spacedBox: IBox = {
+      id: "6",
+      name: "Spacing QA Box",
+      width: 24,
+      height: 15,
+      depth: 10,
+      spacing: 2,
+    };
+    const products: IProduct[] = [
+      { name: "Speaker", width: 20, height: 10, depth: 8 },
+      { name: "Speaker", width: 20, height: 10, depth: 8 },
+    ];
+
+    expect(() => calculatePacking([spacedBox], products)).toThrow(
+      "Cannot fit item(s) with the current box spacing: Speaker x2"
+    );
   });
 
   it("includes dimensional weight in results", () => {

@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BoxForm } from "./box-form";
 import { createBox, updateBox } from "@/actions/box-actions";
+import { inchesToCm } from "@/types";
 
 jest.mock("@/actions/box-actions", () => ({
   createBox: jest.fn().mockResolvedValue({ success: true }),
@@ -17,6 +18,7 @@ const existingBox = {
   width: 30,
   height: 20,
   depth: 10,
+  spacing: 2.5,
   maxWeight: 4000,
 };
 
@@ -32,6 +34,7 @@ describe("BoxForm", () => {
     expect(screen.getByLabelText("Width (cm)")).toBeInTheDocument();
     expect(screen.getByLabelText("Height (cm)")).toBeInTheDocument();
     expect(screen.getByLabelText("Depth (cm)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Item Spacing (cm)")).toBeInTheDocument();
     expect(screen.getByLabelText("Max Weight (g, optional)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add Box" })).toBeInTheDocument();
   });
@@ -41,6 +44,7 @@ describe("BoxForm", () => {
     expect(screen.getByLabelText("Width (in)")).toBeInTheDocument();
     expect(screen.getByLabelText("Height (in)")).toBeInTheDocument();
     expect(screen.getByLabelText("Depth (in)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Item Spacing (in)")).toBeInTheDocument();
   });
 
   it("submits the form with valid data", async () => {
@@ -52,9 +56,31 @@ describe("BoxForm", () => {
     await user.type(screen.getByLabelText("Width (cm)"), "30");
     await user.type(screen.getByLabelText("Height (cm)"), "20");
     await user.type(screen.getByLabelText("Depth (cm)"), "15");
+    await user.clear(screen.getByLabelText("Item Spacing (cm)"));
+    await user.type(screen.getByLabelText("Item Spacing (cm)"), "2");
     await user.click(screen.getByRole("button", { name: "Add Box" }));
 
     expect(mockedCreateBox).toHaveBeenCalled();
+  });
+
+  it("converts spacing from inches to cm before submitting", async () => {
+    const user = userEvent.setup();
+
+    render(<BoxForm unit="in" />);
+
+    await user.type(screen.getByLabelText("Box Name"), "Imperial Box");
+    await user.clear(screen.getByLabelText("Width (in)"));
+    await user.type(screen.getByLabelText("Width (in)"), "10");
+    await user.clear(screen.getByLabelText("Height (in)"));
+    await user.type(screen.getByLabelText("Height (in)"), "8");
+    await user.clear(screen.getByLabelText("Depth (in)"));
+    await user.type(screen.getByLabelText("Depth (in)"), "6");
+    await user.clear(screen.getByLabelText("Item Spacing (in)"));
+    await user.type(screen.getByLabelText("Item Spacing (in)"), "1");
+    await user.click(screen.getByRole("button", { name: "Add Box" }));
+
+    const formData = mockedCreateBox.mock.calls[0][0] as FormData;
+    expect(formData.get("spacing")).toBe(inchesToCm(1).toString());
   });
 
   it("shows client-side field validation errors", async () => {
@@ -96,6 +122,7 @@ describe("BoxForm", () => {
 
     expect(screen.getByDisplayValue("Existing Box")).toBeInTheDocument();
     expect(screen.getByDisplayValue("30.0")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("2.5")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save Changes" })).toBeInTheDocument();
 
     await user.clear(screen.getByLabelText("Box Name"));

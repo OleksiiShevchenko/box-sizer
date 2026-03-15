@@ -10,6 +10,10 @@ const createBoxSchema = z.object({
   width: z.number({ error: "Width is required" }).positive("Width must be positive"),
   height: z.number({ error: "Height is required" }).positive("Height must be positive"),
   depth: z.number({ error: "Depth is required" }).positive("Depth must be positive"),
+  spacing: z
+    .number({ error: "Spacing must be non-negative" })
+    .nonnegative("Spacing must be non-negative")
+    .default(0),
   maxWeight: z
     .number({ error: "Max weight must be positive" })
     .positive("Max weight must be positive")
@@ -49,6 +53,7 @@ function parseBoxFormData(formData: FormData) {
     width: parseOptionalNumber(formData.get("width")),
     height: parseOptionalNumber(formData.get("height")),
     depth: parseOptionalNumber(formData.get("depth")),
+    spacing: parseOptionalNumber(formData.get("spacing")),
     maxWeight: parseOptionalNumber(formData.get("maxWeight")),
   });
 }

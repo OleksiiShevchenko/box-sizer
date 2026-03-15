@@ -17,7 +17,7 @@ function convert(value: number, unit: "cm" | "in"): string {
   return value.toFixed(1);
 }
 
-export function BoxCard({ id, name, width, height, depth, maxWeight, unit }: BoxCardProps) {
+export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, unit }: BoxCardProps) {
   const [deleting, setDeleting] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -32,6 +32,7 @@ export function BoxCard({ id, name, width, height, depth, maxWeight, unit }: Box
         <h3 className="font-semibold text-gray-900">{name}</h3>
         <p className="text-sm text-gray-500">
           {convert(width, unit)} x {convert(height, unit)} x {convert(depth, unit)} {unit}
+          {" | "}Spacing: {convert(spacing ?? 0, unit)} {unit}
           {maxWeight != null && ` | Max: ${maxWeight}g`}
         </p>
       </div>
@@ -57,7 +58,7 @@ export function BoxCard({ id, name, width, height, depth, maxWeight, unit }: Box
       >
         <BoxForm
           unit={unit}
-          box={{ id, name, width, height, depth, maxWeight }}
+          box={{ id, name, width, height, depth, spacing, maxWeight }}
           onSuccess={() => setIsEditDialogOpen(false)}
         />
       </Dialog>

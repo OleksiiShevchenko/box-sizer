@@ -20,6 +20,7 @@ function validateBoxValues(formData: FormData): FieldErrors {
   const width = formData.get("width")?.toString().trim() ?? "";
   const height = formData.get("height")?.toString().trim() ?? "";
   const depth = formData.get("depth")?.toString().trim() ?? "";
+  const spacing = formData.get("spacing")?.toString().trim() ?? "";
   const maxWeight = formData.get("maxWeight")?.toString().trim() ?? "";
 
   const fieldErrors: FieldErrors = {};
@@ -41,6 +42,13 @@ function validateBoxValues(formData: FormData): FieldErrors {
     const numericValue = Number(field.value);
     if (Number.isNaN(numericValue) || numericValue <= 0) {
       fieldErrors[field.key] = `${field.label} must be positive`;
+    }
+  }
+
+  if (spacing) {
+    const numericValue = Number(spacing);
+    if (Number.isNaN(numericValue) || numericValue < 0) {
+      fieldErrors.spacing = "Spacing must be non-negative";
     }
   }
 
@@ -86,9 +94,11 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
       const width = Number(formData.get("width"));
       const height = Number(formData.get("height"));
       const depth = Number(formData.get("depth"));
+      const spacing = Number(formData.get("spacing"));
       formData.set("width", inchesToCm(width).toString());
       formData.set("height", inchesToCm(height).toString());
       formData.set("depth", inchesToCm(depth).toString());
+      formData.set("spacing", inchesToCm(spacing).toString());
     }
 
     const result = isEditMode && box
@@ -155,6 +165,16 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
           error={fieldErrors.depth}
         />
       </div>
+
+      <Input
+        id="spacing"
+        name="spacing"
+        type="number"
+        step="0.1"
+        label={`Item Spacing (${unit})`}
+        defaultValue={getDisplayDimension(box?.spacing ?? 0, unit)}
+        error={fieldErrors.spacing}
+      />
 
       <Input
         id="maxWeight"
