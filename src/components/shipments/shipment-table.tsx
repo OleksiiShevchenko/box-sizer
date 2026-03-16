@@ -49,6 +49,7 @@ export function ShipmentTable({ shipments, onDeleted }: ShipmentTableProps) {
     <>
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="overflow-x-clip overflow-y-visible rounded-xl">
+
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr className="text-left text-sm font-medium text-gray-600">
