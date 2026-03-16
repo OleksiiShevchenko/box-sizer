@@ -1,4 +1,9 @@
-import { calculatePacking, checkFit, getSmallestSuitableBox } from "./box-packer";
+import {
+  calculatePacking,
+  checkFit,
+  findIdealBox,
+  getSmallestSuitableBox,
+} from "./box-packer";
 import type { IBox, IProduct } from "@/types";
 
 const smallBox: IBox = {
@@ -259,5 +264,61 @@ describe("calculatePacking", () => {
     ];
     const results = calculatePacking(boxes, products);
     expect(results.length).toBe(1);
+  });
+});
+
+describe("findIdealBox", () => {
+  it("returns null for empty products", () => {
+    expect(findIdealBox([])).toBeNull();
+  });
+
+  it("returns an ideal box matching a single item when spacing is zero", () => {
+    const result = findIdealBox([{ name: "Single", width: 12, height: 8, depth: 6 }]);
+
+    expect(result).not.toBeNull();
+    expect(result?.box.id).toBe("ideal");
+    expect(result?.box.name).toBe("Ideal Box");
+    expect(result?.box.width).toBeCloseTo(12, 1);
+    expect(result?.box.height).toBeCloseTo(8, 1);
+    expect(result?.box.depth).toBeCloseTo(6, 1);
+    expect(result?.box.spacing).toBe(0);
+    expect(result?.items).toHaveLength(1);
+  });
+
+  it("returns a box that fits multiple items with less volume than packing them separately", () => {
+    const products: IProduct[] = [
+      { name: "A", width: 12, height: 10, depth: 8 },
+      { name: "B", width: 12, height: 10, depth: 8 },
+    ];
+    const separatePackingVolume = products
+      .map((product) => getSmallestSuitableBox(boxes, [product])!.box)
+      .reduce((sum, box) => sum + box.width * box.height * box.depth, 0);
+    const result = findIdealBox(products);
+
+    expect(result).not.toBeNull();
+    expect(checkFit(result!.box, products).fits).toBe(true);
+    expect(result!.items).toHaveLength(2);
+    expect(result!.box.width * result!.box.height * result!.box.depth).toBeLessThan(
+      separatePackingVolume
+    );
+  });
+
+  it("respects spacing when calculating the ideal box", () => {
+    const result = findIdealBox(
+      [{ name: "Single", width: 12, height: 8, depth: 6 }],
+      2
+    );
+
+    expect(result).not.toBeNull();
+    expect(result?.box.spacing).toBe(2);
+    expect(result?.box.width).toBeCloseTo(16, 1);
+    expect(result?.box.height).toBeCloseTo(12, 1);
+    expect(result?.box.depth).toBeCloseTo(10, 1);
+  });
+
+  it("returns a synthetic ideal box id", () => {
+    const result = findIdealBox([{ name: "Single", width: 12, height: 8, depth: 6 }]);
+
+    expect(result?.box.id).toBe("ideal");
   });
 });

@@ -29,25 +29,6 @@ export function DashboardClient({
   const [shipments, setShipments] = useState(initialShipments);
   const [currentTotalCount, setCurrentTotalCount] = useState(totalCount);
 
-  if (!hasBoxes) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Shipments</h1>
-        <Card className="text-center py-12">
-          <p className="text-lg text-gray-500 mb-4">
-            You should add packaging options first.
-          </p>
-          <Link
-            href="/settings/packaging"
-            className="inline-block rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          >
-            Add Boxes
-          </Link>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -59,6 +40,25 @@ export function DashboardClient({
         </div>
         {shipments.length > 0 && <NewShipmentButton />}
       </div>
+
+      {!hasBoxes ? (
+        <Card className="flex items-center justify-between gap-4 bg-blue-50 p-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-blue-900">
+              Packaging options are recommended for best-box matching.
+            </p>
+            <p className="text-sm text-blue-700">
+              You can still create shipments and calculate an ideal custom box.
+            </p>
+          </div>
+          <Link
+            href="/settings/packaging"
+            className="inline-block rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            Add Boxes
+          </Link>
+        </Card>
+      ) : null}
 
       {shipments.length === 0 ? (
         <ShipmentEmptyState />

@@ -22,6 +22,13 @@ function getDisplayItemName(name: string): string {
   return name.replace(/_\d+$/, "");
 }
 
+function makeProductsUnique(products: IProduct[]): IProduct[] {
+  return products.map((product, index) => ({
+    ...product,
+    name: `${product.name}_${index}`,
+  }));
+}
+
 function formatUnpackedItemNames(products: IProduct[]): string {
   const counts = new Map<string, number>();
 
@@ -37,6 +44,10 @@ function formatUnpackedItemNames(products: IProduct[]): string {
 
 function getBoxSpacing(box: IBox): number {
   return Math.max(box.spacing ?? 0, 0);
+}
+
+function getDimensionalWeight(box: IBox): number {
+  return Math.ceil((box.width * box.height * box.depth) / 5000);
 }
 
 function normalizePackedItem(item: BinPackingItem, spacing: number): PackedItem {
@@ -154,10 +165,11 @@ export function packMultiBox(
         );
         remaining = remaining.filter((p) => !fittedNames.has(p.name));
 
-        const dimWeight = Math.ceil(
-          (box.width * box.height * box.depth) / 5000
-        );
-        results.push({ box, items: packedItems, dimensionalWeight: dimWeight });
+        results.push({
+          box,
+          items: packedItems,
+          dimensionalWeight: getDimensionalWeight(box),
+        });
         packed = true;
         break;
       }
@@ -173,6 +185,77 @@ export function packMultiBox(
   return results;
 }
 
+export function findIdealBox(
+  products: IProduct[],
+  spacing = 0
+): PackingResult | null {
+  if (products.length === 0) {
+    return null;
+  }
+
+  const uniqueProducts = makeProductsUnique(products);
+  const normalizedSpacing = Math.max(spacing, 0);
+  const lowerBounds = {
+    width: Math.max(...uniqueProducts.map((product) => product.width)),
+    height: Math.max(...uniqueProducts.map((product) => product.height)),
+    depth: Math.max(...uniqueProducts.map((product) => product.depth)),
+  };
+  const spacingPadding = normalizedSpacing * (uniqueProducts.length + 1);
+  const current = {
+    width:
+      uniqueProducts.reduce((sum, product) => sum + product.width, 0) +
+      spacingPadding,
+    height:
+      uniqueProducts.reduce((sum, product) => sum + product.height, 0) +
+      spacingPadding,
+    depth:
+      uniqueProducts.reduce((sum, product) => sum + product.depth, 0) +
+      spacingPadding,
+  };
+  const createIdealBox = (dimensions: typeof current): IBox => ({
+    id: "ideal",
+    name: "Ideal Box",
+    ...dimensions,
+    spacing: normalizedSpacing,
+  });
+
+  for (let round = 0; round < 4; round += 1) {
+    for (const dimension of ["width", "height", "depth"] as const) {
+      let low = lowerBounds[dimension];
+      let high = current[dimension];
+
+      while (high - low > 0.1) {
+        const mid = low + (high - low) / 2;
+        const candidate = createIdealBox({
+          ...current,
+          [dimension]: mid,
+        });
+
+        if (checkFit(candidate, uniqueProducts).fits) {
+          high = mid;
+        } else {
+          low = mid;
+        }
+      }
+
+      current[dimension] = high;
+    }
+  }
+
+  const idealBox = createIdealBox(current);
+  const finalResult = checkFit(idealBox, uniqueProducts);
+
+  if (!finalResult.fits) {
+    return null;
+  }
+
+  return {
+    box: idealBox,
+    items: finalResult.packedItems,
+    dimensionalWeight: getDimensionalWeight(idealBox),
+  };
+}
+
 export function calculatePacking(
   boxes: IBox[],
   products: IProduct[]
@@ -180,26 +263,16 @@ export function calculatePacking(
   if (products.length === 0) return [];
   if (boxes.length === 0) throw new Error("No boxes available");
 
-  // Make product names unique to avoid collision in Set lookups
-  const uniqueProducts = products.map((p, i) => ({
-    ...p,
-    name: `${p.name}_${i}`,
-  }));
+  const uniqueProducts = makeProductsUnique(products);
 
   // Try single box first
   const singleResult = getSmallestSuitableBox(boxes, uniqueProducts);
   if (singleResult) {
-    const dimWeight = Math.ceil(
-      (singleResult.box.width *
-        singleResult.box.height *
-        singleResult.box.depth) /
-        5000
-    );
     return [
       {
         box: singleResult.box,
         items: singleResult.packedItems,
-        dimensionalWeight: dimWeight,
+        dimensionalWeight: getDimensionalWeight(singleResult.box),
       },
     ];
   }

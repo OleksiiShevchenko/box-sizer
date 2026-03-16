@@ -1,4 +1,4 @@
-import { calculatePacking } from "@/services/box-packer";
+import { calculatePacking, findIdealBox } from "@/services/box-packer";
 import type { IBox, IProduct, PackingResult } from "@/types";
 
 export function applySpacingOverride(
@@ -21,4 +21,11 @@ export function calculateShipmentPacking(
   spacingOverride: number | null | undefined
 ): PackingResult[] {
   return calculatePacking(applySpacingOverride(boxes, spacingOverride), products);
+}
+
+export function calculateIdealBoxPacking(
+  products: IProduct[],
+  spacingOverride: number | null | undefined
+): PackingResult | null {
+  return findIdealBox(products, spacingOverride ?? 0);
 }
