@@ -63,7 +63,7 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
                 <th className="px-4 py-3">Products</th>
                 <th className="px-4 py-3">Box Size</th>
                 <th className="px-4 py-3">Dimensional Weight</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 text-right" colSpan={2}>Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
