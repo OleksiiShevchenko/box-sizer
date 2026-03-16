@@ -53,8 +53,9 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-x-clip overflow-y-visible rounded-xl">
+
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr className="text-left text-sm font-medium text-gray-600">
@@ -68,6 +69,14 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
             <tbody className="divide-y divide-gray-200">
               {shipments.map((shipment) => (
                 <tr key={shipment.id} className="text-sm text-gray-700">
+                  <td className="px-4 py-4">
+                    <Link
+                      href={`/dashboard/shipments/${shipment.id}`}
+                      className="font-medium text-gray-900 underline decoration-transparent transition-colors hover:text-blue-600 hover:decoration-blue-600"
+                    >
+                      {shipment.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-4">
                     <Tooltip
                       content={
@@ -84,12 +93,9 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
                         </div>
                       }
                     >
-                      <Link
-                        href={`/dashboard/shipments/${shipment.id}`}
-                        className="font-medium text-gray-900 underline decoration-transparent transition-colors hover:text-blue-600 hover:decoration-blue-600"
-                      >
-                        {shipment.name}
-                      </Link>
+                      <span className="cursor-default underline decoration-dashed decoration-gray-300 underline-offset-2">
+                        {shipment.itemCount}
+                      </span>
                     </Tooltip>
                   </td>
                   <td className="px-4 py-4">{shipment.itemCount}</td>
