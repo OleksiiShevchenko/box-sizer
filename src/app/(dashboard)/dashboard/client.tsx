@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { Pagination } from "@/components/ui/pagination";
+import { NewShipmentButton } from "@/components/shipments/new-shipment-button";
 import { ShipmentEmptyState } from "@/components/shipments/shipment-empty-state";
 import { ShipmentTable } from "@/components/shipments/shipment-table";
-import type { IShipmentListItem } from "@/types";
+import type { IShipmentListItem, UnitSystem } from "@/types";
 
 interface DashboardClientProps {
   hasBoxes: boolean;
@@ -14,6 +15,7 @@ interface DashboardClientProps {
   totalCount: number;
   page: number;
   pageSize: number;
+  unitSystem: UnitSystem;
 }
 
 export function DashboardClient({
@@ -22,6 +24,7 @@ export function DashboardClient({
   totalCount,
   page,
   pageSize,
+  unitSystem,
 }: DashboardClientProps) {
   const [shipments, setShipments] = useState(initialShipments);
   const [currentTotalCount, setCurrentTotalCount] = useState(totalCount);
@@ -54,12 +57,7 @@ export function DashboardClient({
             Save shipments, manage products, and calculate the best packaging.
           </p>
         </div>
-        <Link
-          href="/dashboard/shipments/new"
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-        >
-          New Shipment
-        </Link>
+        {shipments.length > 0 && <NewShipmentButton />}
       </div>
 
       {shipments.length === 0 ? (
@@ -68,6 +66,7 @@ export function DashboardClient({
         <>
           <ShipmentTable
             shipments={shipments}
+            unitSystem={unitSystem}
             onDeleted={(shipmentId) => {
               setShipments((currentShipments) =>
                 currentShipments.filter((shipment) => shipment.id !== shipmentId)

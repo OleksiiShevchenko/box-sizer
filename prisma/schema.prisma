@@ -14,6 +14,7 @@ model User {
   emailVerified DateTime?
   password      String?
   image         String?
+  unitSystem    String    @default("cm")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

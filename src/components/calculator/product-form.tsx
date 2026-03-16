@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { IProduct, UnitSystem } from "@/types";
-import { cmToInches, inchesToCm } from "@/types";
+import { cmToInches, inchesToCm, ozToGrams, gramsToOz } from "@/types";
 
 interface ProductFormProps {
   unit: UnitSystem;
@@ -88,7 +88,8 @@ export function ProductForm({
     };
 
     if (weightStr) {
-      product.weight = Number(weightStr);
+      const rawWeight = Number(weightStr);
+      product.weight = unit === "in" ? ozToGrams(rawWeight) : rawWeight;
     }
 
     onAdd(product);
@@ -146,9 +147,13 @@ export function ProductForm({
         name="weight"
         type="number"
         step="0.1"
-        label="Weight (g, optional)"
+        label={`Weight (${unit === "in" ? "oz" : "g"}, optional)`}
         placeholder="Optional"
-        defaultValue={initialProduct?.weight?.toString() ?? ""}
+        defaultValue={
+          initialProduct?.weight != null
+            ? (unit === "in" ? gramsToOz(initialProduct.weight) : initialProduct.weight).toFixed(1)
+            : ""
+        }
         error={fieldErrors.weight}
       />
 

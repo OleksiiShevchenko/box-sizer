@@ -25,6 +25,7 @@ describe("ProfileForm", () => {
           image: null,
           isGoogleUser: false,
           hasPassword: true,
+          unitSystem: "cm",
         }}
       />
     );
@@ -42,6 +43,7 @@ describe("ProfileForm", () => {
           image: null,
           isGoogleUser: true,
           hasPassword: false,
+          unitSystem: "cm",
         }}
       />
     );
@@ -63,6 +65,7 @@ describe("ProfileForm", () => {
           image: null,
           isGoogleUser: false,
           hasPassword: true,
+          unitSystem: "cm",
         }}
       />
     );
@@ -88,6 +91,7 @@ describe("ProfileForm", () => {
           image: null,
           isGoogleUser: false,
           hasPassword: true,
+          unitSystem: "cm",
         }}
       />
     );

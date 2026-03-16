@@ -12,12 +12,17 @@ const signUpSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+const IMPERIAL_COUNTRIES = new Set([
+  "US", "LR", "MM",
+]);
+
 export async function signUp(formData: FormData) {
   const raw = {
     name: formData.get("name") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
   };
+  const locale = (formData.get("locale") as string) ?? "";
 
   const parsed = signUpSchema.safeParse(raw);
   if (!parsed.success) {
@@ -33,11 +38,16 @@ export async function signUp(formData: FormData) {
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
+  // Detect unit system from browser locale (e.g. "en-US" → "US")
+  const countryCode = locale.split("-").pop()?.toUpperCase() ?? "";
+  const unitSystem = IMPERIAL_COUNTRIES.has(countryCode) ? "in" : "cm";
+
   await prisma.user.create({
     data: {
       name,
       email,
       password: hashedPassword,
+      unitSystem,
     },
   });
 

@@ -89,7 +89,7 @@ export function BoxVisualization3D({
   ];
   const containerClassName =
     size === "large" ? "w-full lg:w-full shrink-0" : "w-full lg:w-[360px] shrink-0";
-  const canvasHeightClassName = size === "large" ? "h-[360px]" : "h-[280px]";
+  const canvasHeightClassName = size === "large" ? "h-[480px]" : "h-[280px]";
 
   return (
     <div className={containerClassName}>

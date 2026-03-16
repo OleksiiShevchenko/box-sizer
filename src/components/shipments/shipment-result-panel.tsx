@@ -1,12 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { BoxVisualization3D } from "@/components/calculator/box-visualization-3d";
-import type { PackingResult } from "@/types";
+import type { PackingResult, UnitSystem } from "@/types";
+import { cmToInches, kgToLbs } from "@/types";
 
 interface ShipmentResultPanelProps {
   results: PackingResult[] | null;
+  unitSystem: UnitSystem;
 }
 
-export function ShipmentResultPanel({ results }: ShipmentResultPanelProps) {
+export function ShipmentResultPanel({ results, unitSystem }: ShipmentResultPanelProps) {
   if (!results || results.length === 0) {
     return (
       <Card className="flex min-h-[420px] items-center justify-center text-center">
@@ -37,17 +39,20 @@ export function ShipmentResultPanel({ results }: ShipmentResultPanelProps) {
             <dl className="grid grid-cols-2 gap-2 text-sm">
               <dt className="text-gray-500">Dimensions</dt>
               <dd className="text-gray-900">
-                {result.box.width.toFixed(1)} x {result.box.height.toFixed(1)} x{" "}
-                {result.box.depth.toFixed(1)} cm
+                {(unitSystem === "in" ? cmToInches(result.box.width) : result.box.width).toFixed(1)} x{" "}
+                {(unitSystem === "in" ? cmToInches(result.box.height) : result.box.height).toFixed(1)} x{" "}
+                {(unitSystem === "in" ? cmToInches(result.box.depth) : result.box.depth).toFixed(1)} {unitSystem}
               </dd>
               <dt className="text-gray-500">Dimensional weight</dt>
-              <dd className="text-gray-900">{result.dimensionalWeight} kg</dd>
+              <dd className="text-gray-900">
+                {(unitSystem === "in" ? kgToLbs(result.dimensionalWeight) : result.dimensionalWeight).toFixed(1)} {unitSystem === "in" ? "lbs" : "kg"}
+              </dd>
               <dt className="text-gray-500">Items packed</dt>
               <dd className="text-gray-900">{result.items.length}</dd>
             </dl>
           </div>
 
-          <BoxVisualization3D result={result} unit="cm" size="large" />
+          <BoxVisualization3D result={result} unit={unitSystem} size="large" />
         </Card>
       ))}
     </div>

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod/v4";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { IProfile } from "@/types";
+import type { IProfile, UnitSystem } from "@/types";
 
 const emailSchema = z.string().trim().email("Enter a valid email address");
 const passwordSchema = z.string().min(8, "Password must be at least 8 characters");
@@ -39,6 +39,7 @@ export async function getProfile(): Promise<IProfile> {
     image: user.image,
     isGoogleUser: Boolean(googleAccount),
     hasPassword: Boolean(user.password),
+    unitSystem: (user.unitSystem === "in" ? "in" : "cm") as UnitSystem,
   };
 }
 
@@ -127,5 +128,33 @@ export async function updatePassword(
   });
 
   revalidatePath("/settings/profile");
+  return { success: true };
+}
+
+export async function getUnitSystem(): Promise<UnitSystem> {
+  const userId = await getAuthUserId();
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { unitSystem: true },
+  });
+  return user.unitSystem === "in" ? "in" : "cm";
+}
+
+export async function updateUnitSystem(
+  unitSystem: string
+): Promise<{ success?: true; error?: string }> {
+  if (unitSystem !== "cm" && unitSystem !== "in") {
+    return { error: "Invalid unit system" };
+  }
+
+  const userId = await getAuthUserId();
+  await prisma.user.update({
+    where: { id: userId },
+    data: { unitSystem },
+  });
+
+  revalidatePath("/settings/profile");
+  revalidatePath("/settings/packaging");
+  revalidatePath("/dashboard");
   return { success: true };
 }

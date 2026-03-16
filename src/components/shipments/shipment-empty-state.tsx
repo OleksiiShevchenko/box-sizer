@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { NewShipmentButton } from "@/components/shipments/new-shipment-button";
 
 export function ShipmentEmptyState() {
   return (
@@ -9,12 +9,7 @@ export function ShipmentEmptyState() {
         Create your first shipment to save items and calculate the best packaging.
       </p>
       <div className="mt-6">
-        <Link
-          href="/dashboard/shipments/new"
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-        >
-          New Shipment
-        </Link>
+        <NewShipmentButton />
       </div>
     </Card>
   );
