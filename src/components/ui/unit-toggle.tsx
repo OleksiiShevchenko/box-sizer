@@ -19,7 +19,7 @@ export function UnitToggle({ unit, onChange }: UnitToggleProps) {
             : "text-gray-600 hover:text-gray-900"
         }`}
       >
-        cm
+        metric
       </button>
       <button
         type="button"
@@ -30,7 +30,7 @@ export function UnitToggle({ unit, onChange }: UnitToggleProps) {
             : "text-gray-600 hover:text-gray-900"
         }`}
       >
-        in
+        imperial
       </button>
     </div>
   );
