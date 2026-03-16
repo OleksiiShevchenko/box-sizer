@@ -9,6 +9,7 @@ import type { IShipment, PackingResult, UnitSystem } from "@/types";
 interface ShipmentDetailClientProps {
   shipment: IShipment;
   initialResults: PackingResult[] | null;
+  initialIdealResult: PackingResult | null;
   hasBoxes: boolean;
   unitSystem: UnitSystem;
 }
@@ -16,11 +17,13 @@ interface ShipmentDetailClientProps {
 export function ShipmentDetailClient({
   shipment,
   initialResults,
+  initialIdealResult,
   hasBoxes,
   unitSystem,
 }: ShipmentDetailClientProps) {
   const [shipmentName, setShipmentName] = useState(shipment.name);
   const [results, setResults] = useState<PackingResult[] | null>(initialResults);
+  const [idealResult, setIdealResult] = useState<PackingResult | null>(initialIdealResult);
 
   return (
     <div className="space-y-6">
@@ -37,12 +40,17 @@ export function ShipmentDetailClient({
           hasBoxes={hasBoxes}
           unitSystem={unitSystem}
           onNameChange={setShipmentName}
-          onCalculated={(nextName, nextResults) => {
+          onCalculated={(nextName, nextResults, nextIdealResult) => {
             setShipmentName(nextName);
             setResults(nextResults);
+            setIdealResult(nextIdealResult);
           }}
         />
-        <ShipmentResultPanel results={results} unitSystem={unitSystem} />
+        <ShipmentResultPanel
+          results={results}
+          idealResult={idealResult}
+          unitSystem={unitSystem}
+        />
       </div>
     </div>
   );

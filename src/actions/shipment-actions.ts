@@ -5,7 +5,10 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod/v4";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { calculateShipmentPacking } from "@/services/shipment-packing";
+import {
+  calculateIdealBoxPacking,
+  calculateShipmentPacking,
+} from "@/services/shipment-packing";
 import type { IProduct, IShipment, IShipmentListItem, PackingResult } from "@/types";
 
 const shipmentItemSchema = z.object({
@@ -155,7 +158,11 @@ export async function calculateAndSaveShipment(
     items: IProduct[];
     spacingOverride?: number | null;
   }
-): Promise<{ results?: PackingResult[]; error?: string }> {
+): Promise<{
+  results?: PackingResult[];
+  idealResult?: PackingResult | null;
+  error?: string;
+}> {
   const userId = await getAuthUserId();
   const shipment = await prisma.shipment.findFirst({
     where: {
@@ -184,7 +191,51 @@ export async function calculateAndSaveShipment(
   });
 
   if (boxes.length === 0) {
-    return { error: "No boxes configured. Add packaging options first." };
+    let idealResult: PackingResult | null = null;
+
+    try {
+      idealResult = calculateIdealBoxPacking(
+        parsed.data.items,
+        parsed.data.spacingOverride
+      );
+    } catch {
+      idealResult = null;
+    }
+
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.shipmentItem.deleteMany({
+          where: { shipmentId: id },
+        });
+
+        await tx.shipment.update({
+          where: { id },
+          data: {
+            name: parsed.data.name,
+            spacingOverride: parsed.data.spacingOverride,
+            boxId: null,
+            dimensionalWeight: null,
+            items: {
+              create: parsed.data.items.map((item) => ({
+                name: item.name,
+                width: item.width,
+                height: item.height,
+                depth: item.depth,
+                weight: item.weight,
+              })),
+            },
+          },
+        });
+      });
+
+      revalidatePath("/dashboard");
+      revalidatePath(`/dashboard/shipments/${id}`);
+      return { idealResult };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : "Failed to calculate shipment",
+      };
+    }
   }
 
   try {
@@ -193,6 +244,16 @@ export async function calculateAndSaveShipment(
       parsed.data.items,
       parsed.data.spacingOverride
     );
+    let idealResult: PackingResult | null = null;
+
+    try {
+      idealResult = calculateIdealBoxPacking(
+        parsed.data.items,
+        parsed.data.spacingOverride
+      );
+    } catch {
+      idealResult = null;
+    }
 
     await prisma.$transaction(async (tx) => {
       await tx.shipmentItem.deleteMany({
@@ -224,7 +285,7 @@ export async function calculateAndSaveShipment(
 
     revalidatePath("/dashboard");
     revalidatePath(`/dashboard/shipments/${id}`);
-    return { results };
+    return { results, idealResult };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Failed to calculate shipment",

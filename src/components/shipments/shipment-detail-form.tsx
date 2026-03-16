@@ -15,7 +15,11 @@ interface ShipmentDetailFormProps {
   shipment: IShipment;
   hasBoxes: boolean;
   unitSystem: UnitSystem;
-  onCalculated: (name: string, results: PackingResult[]) => void;
+  onCalculated: (
+    name: string,
+    results: PackingResult[],
+    idealResult: PackingResult | null
+  ) => void;
   onNameChange: (name: string) => void;
 }
 
@@ -100,7 +104,7 @@ export function ShipmentDetailForm({
       return;
     }
 
-    onCalculated(trimmedName, result.results ?? []);
+    onCalculated(trimmedName, result.results ?? [], result.idealResult ?? null);
   }
 
   const editingItem = editingIndex != null ? items[editingIndex] : undefined;
@@ -167,20 +171,18 @@ export function ShipmentDetailForm({
       {error ? <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div> : null}
 
       <div className="flex justify-end">
-        <span
-          {...(!hasBoxes
-            ? { title: "You need to add at least one packaging option in the Packaging section." }
-            : {})}
+        <Button
+          type="button"
+          size="lg"
+          disabled={items.length === 0 || loading}
+          onClick={handleCalculate}
         >
-          <Button
-            type="button"
-            size="lg"
-            disabled={items.length === 0 || loading || !hasBoxes}
-            onClick={handleCalculate}
-          >
-            {loading ? "Calculating..." : "Calculate Best Box"}
-          </Button>
-        </span>
+          {loading
+            ? "Calculating..."
+            : hasBoxes
+              ? "Calculate Best Box"
+              : "Calculate Ideal Box"}
+        </Button>
       </div>
 
       <Dialog

@@ -49,6 +49,20 @@ describe("ShipmentDetailForm", () => {
     expect(screen.getByText("Shirt")).toBeInTheDocument();
   });
 
+  it("shows the ideal-box action when no packaging options exist", () => {
+    render(
+      <ShipmentDetailForm
+        shipment={shipment}
+        hasBoxes={false}
+        unitSystem="cm"
+        onCalculated={jest.fn()}
+        onNameChange={jest.fn()}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Calculate Ideal Box" })).toBeEnabled();
+  });
+
   it("adds, edits, and deletes local items", async () => {
     const user = userEvent.setup();
 
@@ -105,6 +119,7 @@ describe("ShipmentDetailForm", () => {
           dimensionalWeight: 3,
         },
       ],
+      idealResult: null,
     });
 
     render(
@@ -140,7 +155,8 @@ describe("ShipmentDetailForm", () => {
       });
       expect(onCalculated).toHaveBeenCalledWith(
         "Renamed Shipment",
-        expect.any(Array)
+        expect.any(Array),
+        null
       );
     });
   });
