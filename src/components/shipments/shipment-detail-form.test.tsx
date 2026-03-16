@@ -37,6 +37,8 @@ describe("ShipmentDetailForm", () => {
     render(
       <ShipmentDetailForm
         shipment={shipment}
+        hasBoxes={true}
+        unitSystem="cm"
         onCalculated={jest.fn()}
         onNameChange={jest.fn()}
       />
@@ -53,6 +55,8 @@ describe("ShipmentDetailForm", () => {
     render(
       <ShipmentDetailForm
         shipment={{ ...shipment, items: [] }}
+        hasBoxes={true}
+        unitSystem="cm"
         onCalculated={jest.fn()}
         onNameChange={jest.fn()}
       />
@@ -60,7 +64,7 @@ describe("ShipmentDetailForm", () => {
 
     expect(screen.getByRole("button", { name: "Calculate Best Box" })).toBeDisabled();
 
-    await user.click(screen.getByRole("button", { name: "Add Item" }));
+    await user.click(screen.getByRole("button", { name: "+ Add Item" }));
     await user.type(screen.getByLabelText("Product Name"), "Poster");
     await user.type(screen.getByLabelText("Width (cm)"), "40");
     await user.type(screen.getByLabelText("Height (cm)"), "20");
@@ -106,6 +110,8 @@ describe("ShipmentDetailForm", () => {
     render(
       <ShipmentDetailForm
         shipment={shipment}
+        hasBoxes={true}
+        unitSystem="cm"
         onCalculated={onCalculated}
         onNameChange={jest.fn()}
       />

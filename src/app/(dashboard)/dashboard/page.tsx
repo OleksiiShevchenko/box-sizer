@@ -1,4 +1,5 @@
 import { getBoxes } from "@/actions/box-actions";
+import { getUnitSystem } from "@/actions/profile-actions";
 import { getShipments } from "@/actions/shipment-actions";
 import { Card } from "@/components/ui/card";
 import { DashboardClient } from "./client";
@@ -11,8 +12,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const params = searchParams instanceof Promise ? await searchParams : searchParams;
   const page = Math.max(1, Number(params?.page ?? "1") || 1);
   const pageSize = 10;
-  const boxes = await getBoxes();
-  const { shipments, totalCount, schemaReady } = await getShipments(page, pageSize);
+  const [boxes, { shipments, totalCount, schemaReady }, unitSystem] = await Promise.all([
+    getBoxes(),
+    getShipments(page, pageSize),
+    getUnitSystem(),
+  ]);
   const dashboardStateKey = `${page}:${totalCount}:${shipments.map((shipment) => shipment.id).join(",")}`;
 
   if (!schemaReady) {
@@ -38,6 +42,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       totalCount={totalCount}
       page={page}
       pageSize={pageSize}
+      unitSystem={unitSystem}
     />
   );
 }

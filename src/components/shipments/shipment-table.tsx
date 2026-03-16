@@ -6,22 +6,28 @@ import { deleteShipment } from "@/actions/shipment-actions";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
 import { Tooltip } from "@/components/ui/tooltip";
-import type { IShipmentListItem } from "@/types";
+import type { IShipmentListItem, UnitSystem } from "@/types";
+import { cmToInches, kgToLbs } from "@/types";
 
 interface ShipmentTableProps {
   shipments: IShipmentListItem[];
+  unitSystem: UnitSystem;
   onDeleted?: (shipmentId: string) => void;
 }
 
-function formatDimensions(shipment: IShipmentListItem): string {
+function dim(value: number, unit: UnitSystem): string {
+  return (unit === "in" ? cmToInches(value) : value).toFixed(1);
+}
+
+function formatDimensions(shipment: IShipmentListItem, unit: UnitSystem): string {
   if (!shipment.box) {
     return "Not calculated yet";
   }
 
-  return `${shipment.box.width.toFixed(1)} x ${shipment.box.height.toFixed(1)} x ${shipment.box.depth.toFixed(1)} cm`;
+  return `${dim(shipment.box.width, unit)} x ${dim(shipment.box.height, unit)} x ${dim(shipment.box.depth, unit)} ${unit}`;
 }
 
-export function ShipmentTable({ shipments, onDeleted }: ShipmentTableProps) {
+export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTableProps) {
   const [targetShipment, setTargetShipment] = useState<IShipmentListItem | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
@@ -70,8 +76,8 @@ export function ShipmentTable({ shipments, onDeleted }: ShipmentTableProps) {
                             <div key={item.id}>
                               <p className="font-medium">{item.name}</p>
                               <p className="text-gray-300">
-                                {item.width.toFixed(1)} x {item.height.toFixed(1)} x{" "}
-                                {item.depth.toFixed(1)} cm
+                                {dim(item.width, unitSystem)} x {dim(item.height, unitSystem)} x{" "}
+                                {dim(item.depth, unitSystem)} {unitSystem}
                               </p>
                             </div>
                           ))}
@@ -87,10 +93,10 @@ export function ShipmentTable({ shipments, onDeleted }: ShipmentTableProps) {
                     </Tooltip>
                   </td>
                   <td className="px-4 py-4">{shipment.itemCount}</td>
-                  <td className="px-4 py-4">{formatDimensions(shipment)}</td>
+                  <td className="px-4 py-4">{formatDimensions(shipment, unitSystem)}</td>
                   <td className="px-4 py-4">
                     {shipment.dimensionalWeight != null
-                      ? `${shipment.dimensionalWeight} kg`
+                      ? `${(unitSystem === "in" ? kgToLbs(shipment.dimensionalWeight) : shipment.dimensionalWeight).toFixed(1)} ${unitSystem === "in" ? "lbs" : "kg"}`
                       : "Not calculated yet"}
                   </td>
                   <td className="px-4 py-4">

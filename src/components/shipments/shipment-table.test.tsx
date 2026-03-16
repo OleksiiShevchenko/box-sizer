@@ -45,7 +45,7 @@ describe("ShipmentTable", () => {
   });
 
   it("renders the shipment columns and tooltip content", () => {
-    render(<ShipmentTable shipments={shipments} />);
+    render(<ShipmentTable shipments={shipments} unitSystem="cm" />);
 
     expect(screen.getByRole("columnheader", { name: "Shipment" })).toBeInTheDocument();
     expect(screen.getByText("Order 1001")).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe("ShipmentTable", () => {
     const onDeleted = jest.fn();
     deleteShipment.mockResolvedValue({ success: true });
 
-    render(<ShipmentTable shipments={shipments} onDeleted={onDeleted} />);
+    render(<ShipmentTable shipments={shipments} unitSystem="cm" onDeleted={onDeleted} />);
 
     await user.click(screen.getByRole("button", { name: "Delete" }));
     expect(screen.getByRole("heading", { name: "Delete shipment" })).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe("ShipmentTable", () => {
     const user = userEvent.setup();
     deleteShipment.mockResolvedValue({ error: "Delete failed" });
 
-    render(<ShipmentTable shipments={shipments} />);
+    render(<ShipmentTable shipments={shipments} unitSystem="cm" />);
 
     await user.click(screen.getByRole("button", { name: "Delete" }));
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: /^Delete$/ }));

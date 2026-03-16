@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createBox, updateBox } from "@/actions/box-actions";
-import { cmToInches, inchesToCm } from "@/types";
+import { cmToInches, inchesToCm, ozToGrams, gramsToOz } from "@/types";
 import type { BoxFormValues } from "./types";
 
 interface BoxFormProps {
@@ -99,6 +99,10 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
       formData.set("height", inchesToCm(height).toString());
       formData.set("depth", inchesToCm(depth).toString());
       formData.set("spacing", inchesToCm(spacing).toString());
+      const maxWeightStr = formData.get("maxWeight")?.toString().trim() ?? "";
+      if (maxWeightStr) {
+        formData.set("maxWeight", ozToGrams(Number(maxWeightStr)).toString());
+      }
     }
 
     const result = isEditMode && box
@@ -181,9 +185,13 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
         name="maxWeight"
         type="number"
         step="0.1"
-        label="Max Weight (g, optional)"
+        label={`Max Weight (${unit === "in" ? "oz" : "g"}, optional)`}
         placeholder="Optional"
-        defaultValue={box?.maxWeight?.toString() ?? ""}
+        defaultValue={
+          box?.maxWeight != null
+            ? (unit === "in" ? gramsToOz(box.maxWeight) : box.maxWeight).toFixed(1)
+            : ""
+        }
         error={fieldErrors.maxWeight}
       />
 

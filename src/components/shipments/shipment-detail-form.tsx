@@ -8,22 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { IProduct, IShipment, PackingResult } from "@/types";
+import type { IProduct, IShipment, PackingResult, UnitSystem } from "@/types";
+import { cmToInches, inchesToCm } from "@/types";
 
 interface ShipmentDetailFormProps {
   shipment: IShipment;
+  hasBoxes: boolean;
+  unitSystem: UnitSystem;
   onCalculated: (name: string, results: PackingResult[]) => void;
   onNameChange: (name: string) => void;
 }
 
 export function ShipmentDetailForm({
   shipment,
+  hasBoxes,
+  unitSystem,
   onCalculated,
   onNameChange,
 }: ShipmentDetailFormProps) {
   const [name, setName] = useState(shipment.name);
   const [spacingOverride, setSpacingOverride] = useState(
-    shipment.spacingOverride?.toString() ?? ""
+    shipment.spacingOverride != null
+      ? (unitSystem === "in" ? cmToInches(shipment.spacingOverride) : shipment.spacingOverride).toFixed(1)
+      : ""
   );
   const [items, setItems] = useState<IProduct[]>(shipment.items);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -74,6 +81,9 @@ export function ShipmentDetailForm({
         setError("Spacing override must be a non-negative number");
         return;
       }
+      if (unitSystem === "in") {
+        parsedSpacing = inchesToCm(parsedSpacing);
+      }
     }
 
     setLoading(true);
@@ -99,7 +109,9 @@ export function ShipmentDetailForm({
     <Card className="space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-gray-900">Shipment Details</h1>
-        <p className="text-sm text-gray-500">Measurements are stored and calculated in cm.</p>
+        <p className="text-sm text-gray-500">
+          Measurements are displayed in {unitSystem === "in" ? "inches" : "centimeters"}. All values are stored in cm.
+        </p>
       </div>
 
       <Input
@@ -111,7 +123,8 @@ export function ShipmentDetailForm({
 
       <Input
         id="shipment-spacing"
-        label="Spacing Override (cm, optional)"
+        label={`Spacing Override (${unitSystem}, optional)`}
+        tooltip="Each packaging can have a custom item spacing configured, but you can override it on the shipment level."
         type="number"
         step="0.1"
         value={spacingOverride}
@@ -119,34 +132,55 @@ export function ShipmentDetailForm({
       />
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Products</h2>
-            <p className="text-sm text-gray-500">{items.length} item{items.length === 1 ? "" : "s"}</p>
-          </div>
-          <Button type="button" onClick={() => setIsDialogOpen(true)}>
-            Add Item
-          </Button>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Products</h2>
+          <p className="text-sm text-gray-500">{items.length} item{items.length === 1 ? "" : "s"}</p>
         </div>
 
-        <ProductList
-          products={items}
-          unit="cm"
-          onEdit={(index) => {
-            setEditingIndex(index);
-            setIsDialogOpen(true);
-          }}
-          onRemove={handleRemoveItem}
-          emptyMessage="No items added yet. Add an item to calculate the shipment."
-        />
+        {items.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-gray-300 py-8 text-center">
+            <p className="text-sm text-gray-500">No items added yet.</p>
+            <div className="mt-4">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(true)}>
+                + Add Item
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <ProductList
+              products={items}
+              unit={unitSystem}
+              onEdit={(index) => {
+                setEditingIndex(index);
+                setIsDialogOpen(true);
+              }}
+              onRemove={handleRemoveItem}
+            />
+            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(true)}>
+              + Add Item
+            </Button>
+          </>
+        )}
       </div>
 
       {error ? <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div> : null}
 
       <div className="flex justify-end">
-        <Button type="button" size="lg" disabled={items.length === 0 || loading} onClick={handleCalculate}>
-          {loading ? "Calculating..." : "Calculate Best Box"}
-        </Button>
+        <span
+          {...(!hasBoxes
+            ? { title: "You need to add at least one packaging option in the Packaging section." }
+            : {})}
+        >
+          <Button
+            type="button"
+            size="lg"
+            disabled={items.length === 0 || loading || !hasBoxes}
+            onClick={handleCalculate}
+          >
+            {loading ? "Calculating..." : "Calculate Best Box"}
+          </Button>
+        </span>
       </div>
 
       <Dialog
@@ -159,7 +193,7 @@ export function ShipmentDetailForm({
       >
         <ProductForm
           key={editingIndex == null ? "new-item" : `edit-item-${editingIndex}`}
-          unit="cm"
+          unit={unitSystem}
           initialProduct={editingItem}
           submitLabel={editingIndex == null ? "Add Product" : "Save Product"}
           onAdd={handleUpsertItem}

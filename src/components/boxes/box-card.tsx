@@ -33,7 +33,7 @@ export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, un
         <p className="text-sm text-gray-500">
           {convert(width, unit)} x {convert(height, unit)} x {convert(depth, unit)} {unit}
           {" | "}Spacing: {convert(spacing ?? 0, unit)} {unit}
-          {maxWeight != null && ` | Max: ${maxWeight}g`}
+          {maxWeight != null && ` | Max: ${(unit === "in" ? maxWeight / 28.3495 : maxWeight).toFixed(1)}${unit === "in" ? "oz" : "g"}`}
         </p>
       </div>
       <div className="flex items-center gap-2">

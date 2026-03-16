@@ -20,6 +20,7 @@ export function SignupForm() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+    formData.set("locale", navigator.language ?? "");
     const result = await signUp(formData);
 
     setLoading(false);

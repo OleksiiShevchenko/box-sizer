@@ -1,20 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { updateEmail, updatePassword } from "@/actions/profile-actions";
+import { updateEmail, updatePassword, updateUnitSystem } from "@/actions/profile-actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { IProfile } from "@/types";
+import { UnitToggle } from "@/components/ui/unit-toggle";
+import type { IProfile, UnitSystem } from "@/types";
 
 export function ProfileForm({ profile }: { profile: IProfile }) {
   const [email, setEmail] = useState(profile.email);
+  const [unitSystem, setUnitSystem] = useState<UnitSystem>(profile.unitSystem);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [emailMessage, setEmailMessage] = useState("");
+  const [unitMessage, setUnitMessage] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
+  const [savingUnit, setSavingUnit] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
   async function handleEmailSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -24,6 +28,15 @@ export function ProfileForm({ profile }: { profile: IProfile }) {
     const result = await updateEmail(email);
     setSavingEmail(false);
     setEmailMessage(result.success ? "Email updated." : result.error ?? "Unable to update email");
+  }
+
+  async function handleUnitChange(unit: UnitSystem) {
+    setUnitSystem(unit);
+    setSavingUnit(true);
+    setUnitMessage("");
+    const result = await updateUnitSystem(unit);
+    setSavingUnit(false);
+    setUnitMessage(result.success ? "Unit system updated." : result.error ?? "Unable to update");
   }
 
   async function handlePasswordSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -86,6 +99,24 @@ export function ProfileForm({ profile }: { profile: IProfile }) {
             </div>
           ) : null}
         </form>
+      </Card>
+
+      <Card className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Measurement Units</h2>
+          <p className="text-sm text-gray-500">
+            Choose between metric (cm, g) and imperial (in, oz) units for all dimensions and weights.
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <UnitToggle unit={unitSystem} onChange={handleUnitChange} />
+          {savingUnit ? (
+            <span className="text-sm text-gray-500">Saving...</span>
+          ) : null}
+          {unitMessage ? (
+            <span className="text-sm text-gray-600">{unitMessage}</span>
+          ) : null}
+        </div>
       </Card>
 
       {profile.isGoogleUser || !profile.hasPassword ? null : (

@@ -4,16 +4,20 @@ import { useState } from "react";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { ShipmentDetailForm } from "@/components/shipments/shipment-detail-form";
 import { ShipmentResultPanel } from "@/components/shipments/shipment-result-panel";
-import type { IShipment, PackingResult } from "@/types";
+import type { IShipment, PackingResult, UnitSystem } from "@/types";
 
 interface ShipmentDetailClientProps {
   shipment: IShipment;
   initialResults: PackingResult[] | null;
+  hasBoxes: boolean;
+  unitSystem: UnitSystem;
 }
 
 export function ShipmentDetailClient({
   shipment,
   initialResults,
+  hasBoxes,
+  unitSystem,
 }: ShipmentDetailClientProps) {
   const [shipmentName, setShipmentName] = useState(shipment.name);
   const [results, setResults] = useState<PackingResult[] | null>(initialResults);
@@ -27,16 +31,18 @@ export function ShipmentDetailClient({
         ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,520px)]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <ShipmentDetailForm
           shipment={shipment}
+          hasBoxes={hasBoxes}
+          unitSystem={unitSystem}
           onNameChange={setShipmentName}
           onCalculated={(nextName, nextResults) => {
             setShipmentName(nextName);
             setResults(nextResults);
           }}
         />
-        <ShipmentResultPanel results={results} />
+        <ShipmentResultPanel results={results} unitSystem={unitSystem} />
       </div>
     </div>
   );

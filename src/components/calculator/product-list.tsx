@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import type { IProduct, UnitSystem } from "@/types";
-import { cmToInches } from "@/types";
+import { cmToInches, gramsToOz } from "@/types";
 
 interface ProductListProps {
   products: IProduct[];
@@ -57,7 +57,7 @@ export function ProductList({
             <span className="ml-2 text-sm text-gray-500">
               {displayDim(product.width, unit)} x {displayDim(product.height, unit)} x{" "}
               {displayDim(product.depth, unit)} {unit}
-              {product.weight != null && ` | ${product.weight}g`}
+              {product.weight != null && ` | ${(unit === "in" ? gramsToOz(product.weight) : product.weight).toFixed(1)}${unit === "in" ? "oz" : "g"}`}
             </span>
           </div>
           <div className="flex items-center gap-2">

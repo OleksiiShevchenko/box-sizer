@@ -24,7 +24,7 @@ describe("PackagingSettingsClient", () => {
   it("opens and closes the add dialog", async () => {
     const user = userEvent.setup();
 
-    render(<PackagingSettingsClient boxes={boxes} />);
+    render(<PackagingSettingsClient boxes={boxes} unitSystem="cm" />);
 
     await user.click(screen.getByRole("button", { name: "Add New Box" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();

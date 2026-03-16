@@ -49,6 +49,7 @@ export interface IProfile {
   image: string | null;
   isGoogleUser: boolean;
   hasPassword: boolean;
+  unitSystem: UnitSystem;
 }
 
 export interface PackedItem {
@@ -75,6 +76,18 @@ export function cmToInches(cm: number): number {
 
 export function inchesToCm(inches: number): number {
   return inches * 2.54;
+}
+
+export function gramsToOz(grams: number): number {
+  return grams / 28.3495;
+}
+
+export function ozToGrams(oz: number): number {
+  return oz * 28.3495;
+}
+
+export function kgToLbs(kg: number): number {
+  return kg * 2.20462;
 }
 
 export function calculateDimensionalWeight(
