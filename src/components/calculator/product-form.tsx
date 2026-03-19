@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { IProduct, UnitSystem } from "@/types";
+import { YesNoToggle } from "@/components/ui/yes-no-toggle";
+import type { IProduct, Orientation, UnitSystem } from "@/types";
 import { cmToInches, inchesToCm, ozToGrams, gramsToOz } from "@/types";
 
 interface ProductFormProps {
@@ -28,6 +29,9 @@ export function ProductForm({
   submitLabel = "Add Product",
 }: ProductFormProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [canStackOnTop, setCanStackOnTop] = useState(initialProduct?.canStackOnTop ?? true);
+  const [canBePlacedOnTop, setCanBePlacedOnTop] = useState(initialProduct?.canBePlacedOnTop ?? true);
+  const [orientation, setOrientation] = useState<Orientation>(initialProduct?.orientation ?? "any");
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -85,6 +89,9 @@ export function ProductForm({
       width,
       height,
       depth,
+      canStackOnTop,
+      canBePlacedOnTop,
+      orientation,
     };
 
     if (weightStr) {
@@ -94,6 +101,9 @@ export function ProductForm({
 
     onAdd(product);
     form.reset();
+    setCanStackOnTop(true);
+    setCanBePlacedOnTop(true);
+    setOrientation("any");
   }
 
   return (
@@ -156,6 +166,38 @@ export function ProductForm({
         }
         error={fieldErrors.weight}
       />
+
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center justify-between">
+          <label htmlFor="canStackOnTop-yes" className="text-sm text-gray-700">
+            Can other items be stacked on top of this item?
+          </label>
+          <YesNoToggle id="canStackOnTop" value={canStackOnTop} onChange={setCanStackOnTop} />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <label htmlFor="canBePlacedOnTop-yes" className="text-sm text-gray-700">
+            Can this item be placed on top of other items?
+          </label>
+          <YesNoToggle id="canBePlacedOnTop" value={canBePlacedOnTop} onChange={setCanBePlacedOnTop} />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <label htmlFor="orientation" className="text-sm text-gray-700">
+            How can this item be oriented when packed?
+          </label>
+          <select
+            id="orientation"
+            value={orientation}
+            onChange={(e) => setOrientation(e.target.value as Orientation)}
+            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700"
+          >
+            <option value="any">Any orientation</option>
+            <option value="horizontal">Horizontal only</option>
+            <option value="vertical">Vertical only</option>
+          </select>
+        </div>
+      </div>
 
       <Button type="submit" variant="secondary">
         {submitLabel}

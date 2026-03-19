@@ -17,6 +17,9 @@ const shipmentItemSchema = z.object({
   height: z.number().positive("Height must be positive"),
   depth: z.number().positive("Depth must be positive"),
   weight: z.number().nonnegative("Weight must be non-negative").nullable().optional(),
+  canStackOnTop: z.boolean().optional().default(true),
+  canBePlacedOnTop: z.boolean().optional().default(true),
+  orientation: z.enum(["any", "horizontal", "vertical"]).optional().default("any"),
 });
 
 const calculateShipmentSchema = z.object({
@@ -222,6 +225,9 @@ export async function calculateAndSaveShipment(
                 height: item.height,
                 depth: item.depth,
                 weight: item.weight,
+                canStackOnTop: item.canStackOnTop,
+                canBePlacedOnTop: item.canBePlacedOnTop,
+                orientation: item.orientation,
               })),
             },
           },

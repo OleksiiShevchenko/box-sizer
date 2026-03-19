@@ -1,9 +1,14 @@
+export type Orientation = "any" | "horizontal" | "vertical";
+
 export interface IProduct {
   name: string;
   width: number;
   height: number;
   depth: number;
   weight?: number | null;
+  canStackOnTop?: boolean;
+  canBePlacedOnTop?: boolean;
+  orientation?: Orientation;
 }
 
 export interface IShipmentItem extends IProduct {

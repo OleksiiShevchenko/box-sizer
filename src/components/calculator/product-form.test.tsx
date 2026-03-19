@@ -90,4 +90,127 @@ describe("ProductForm", () => {
       })
     );
   });
+
+  it("renders stacking toggles and orientation dropdown", () => {
+    render(<ProductForm unit="cm" onAdd={jest.fn()} />);
+    expect(screen.getByText("Can other items be stacked on top of this item?")).toBeInTheDocument();
+    expect(screen.getByText("Can this item be placed on top of other items?")).toBeInTheDocument();
+    expect(screen.getByText("How can this item be oriented when packed?")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Any orientation")).toBeInTheDocument();
+  });
+
+  it("defaults stacking to Yes and orientation to Any", async () => {
+    const user = userEvent.setup();
+    const onAdd = jest.fn();
+
+    render(<ProductForm unit="cm" onAdd={onAdd} />);
+
+    await user.type(screen.getByLabelText("Width (cm)"), "10");
+    await user.type(screen.getByLabelText("Height (cm)"), "10");
+    await user.type(screen.getByLabelText("Depth (cm)"), "5");
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        canStackOnTop: true,
+        canBePlacedOnTop: true,
+        orientation: "any",
+      })
+    );
+  });
+
+  it("resets constraint state after submission", async () => {
+    const user = userEvent.setup();
+    const onAdd = jest.fn();
+
+    render(<ProductForm unit="cm" onAdd={onAdd} />);
+
+    // First submission: change constraints
+    await user.type(screen.getByLabelText("Width (cm)"), "10");
+    await user.type(screen.getByLabelText("Height (cm)"), "10");
+    await user.type(screen.getByLabelText("Depth (cm)"), "5");
+    const noButtons = screen.getAllByRole("button", { name: "No" });
+    await user.click(noButtons[0]); // canStackOnTop = false
+    await user.selectOptions(screen.getByDisplayValue("Any orientation"), "vertical");
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ canStackOnTop: false, orientation: "vertical" })
+    );
+
+    // Second submission: don't touch constraints — they should be back to defaults
+    await user.type(screen.getByLabelText("Width (cm)"), "8");
+    await user.type(screen.getByLabelText("Height (cm)"), "8");
+    await user.type(screen.getByLabelText("Depth (cm)"), "4");
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(onAdd).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        canStackOnTop: true,
+        canBePlacedOnTop: true,
+        orientation: "any",
+      })
+    );
+  });
+
+  it("submits with changed stacking values", async () => {
+    const user = userEvent.setup();
+    const onAdd = jest.fn();
+
+    render(<ProductForm unit="cm" onAdd={onAdd} />);
+
+    await user.type(screen.getByLabelText("Width (cm)"), "10");
+    await user.type(screen.getByLabelText("Height (cm)"), "10");
+    await user.type(screen.getByLabelText("Depth (cm)"), "5");
+
+    const noButtons = screen.getAllByRole("button", { name: "No" });
+    await user.click(noButtons[0]);
+
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        canStackOnTop: false,
+        canBePlacedOnTop: true,
+      })
+    );
+  });
+
+  it("submits with changed orientation", async () => {
+    const user = userEvent.setup();
+    const onAdd = jest.fn();
+
+    render(<ProductForm unit="cm" onAdd={onAdd} />);
+
+    await user.type(screen.getByLabelText("Width (cm)"), "10");
+    await user.type(screen.getByLabelText("Height (cm)"), "10");
+    await user.type(screen.getByLabelText("Depth (cm)"), "5");
+    await user.selectOptions(screen.getByDisplayValue("Any orientation"), "horizontal");
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orientation: "horizontal",
+      })
+    );
+  });
+
+  it("loads initial constraint values in edit mode", () => {
+    render(
+      <ProductForm
+        unit="cm"
+        onAdd={jest.fn()}
+        initialProduct={{
+          name: "Item",
+          width: 10,
+          height: 10,
+          depth: 5,
+          canStackOnTop: false,
+          canBePlacedOnTop: true,
+          orientation: "vertical",
+        }}
+      />
+    );
+    expect(screen.getByDisplayValue("Vertical only")).toBeInTheDocument();
+  });
 });

@@ -1,5 +1,5 @@
 import { BP3D } from "binpackingjs";
-import type { IBox, IProduct, PackingResult, PackedItem } from "@/types";
+import type { IBox, IProduct, PackingResult, PackedItem, Orientation } from "@/types";
 
 const { Packer, Bin, Item } = BP3D;
 const BINPACKING_SCALE_FACTOR = 10 ** 5;
@@ -46,17 +46,67 @@ function getBoxSpacing(box: IBox): number {
   return Math.max(box.spacing ?? 0, 0);
 }
 
+// BP3D rotation types: each maps [w,h,d] → [X,Y,Z]
+// 0: WHD  w→X h→Y d→Z   (height stays on Y)
+// 1: HWD  h→X w→Y d→Z
+// 2: HDW  h→X d→Y w→Z
+// 3: DHW  d→X h→Y w→Z   (height stays on Y)
+// 4: DWH  d→X w→Y h→Z
+// 5: WDH  w→X d→Y h→Z
+const ALL_ROTATIONS = [0, 1, 2, 3, 4, 5];
+const HEIGHT_ON_Y_ROTATIONS = [0, 3];
+
+function arrangeForOrientation(
+  w: number,
+  h: number,
+  d: number,
+  orientation: Orientation | undefined
+): [number, number, number] {
+  if (!orientation || orientation === "any") return [w, h, d];
+
+  const dims = [w, h, d].sort((a, b) => a - b);
+
+  if (orientation === "horizontal") {
+    return [dims[2], dims[0], dims[1]];
+  }
+
+  return [dims[1], dims[2], dims[0]];
+}
+
+function getAllowedRotations(product: IProduct): number[] {
+  const hasOrientationConstraint =
+    product.orientation === "horizontal" || product.orientation === "vertical";
+  const hasStackingConstraint =
+    product.canStackOnTop === false || product.canBePlacedOnTop === false;
+
+  if (hasOrientationConstraint || hasStackingConstraint) {
+    return HEIGHT_ON_Y_ROTATIONS;
+  }
+
+  return ALL_ROTATIONS;
+}
+
 function getDimensionalWeight(box: IBox): number {
   return Math.ceil((box.width * box.height * box.depth) / 5000);
 }
 
-function normalizePackedItem(item: BinPackingItem, spacing: number): PackedItem {
+function normalizePackedItem(
+  item: BinPackingItem,
+  spacing: number,
+  heightOverrides?: Map<string, number>
+): PackedItem {
   const [inflatedWidth, inflatedHeight, inflatedDepth] = item.getDimension();
+
+  const originalHeight = heightOverrides?.get(item.name);
+  const height =
+    originalHeight != null
+      ? originalHeight
+      : Math.max(inflatedHeight / BINPACKING_SCALE_FACTOR - spacing, 0);
 
   return {
     name: item.name,
     width: Math.max(inflatedWidth / BINPACKING_SCALE_FACTOR - spacing, 0),
-    height: Math.max(inflatedHeight / BINPACKING_SCALE_FACTOR - spacing, 0),
+    height,
     depth: Math.max(inflatedDepth / BINPACKING_SCALE_FACTOR - spacing, 0),
     x: (item.position?.[0] ?? 0) / BINPACKING_SCALE_FACTOR + spacing,
     y: (item.position?.[1] ?? 0) / BINPACKING_SCALE_FACTOR + spacing,
@@ -84,14 +134,41 @@ function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
   );
   packer.addBin(bin);
 
+  const heightOverrides = new Map<string, number>();
+
   for (const product of products) {
+    const [ow, oh, od] = arrangeForOrientation(
+      product.width,
+      product.height,
+      product.depth,
+      product.orientation
+    );
+
+    // Both stacking flags use height inflation to enforce constraints:
+    // - canStackOnTop=false: fills column so nothing can be placed above
+    // - canBePlacedOnTop=false: fills column so item must start at y=0
+    //   (BP3D sorts items by volume internally, so insertion order cannot
+    //   guarantee floor placement — height inflation is the only reliable
+    //   mechanism. As a side effect, it also prevents stacking above.)
+    const needsHeightInflation =
+      product.canStackOnTop === false || product.canBePlacedOnTop === false;
+
+    let itemHeight = oh + spacing;
+    if (needsHeightInflation) {
+      heightOverrides.set(product.name, oh);
+      itemHeight = effectiveHeight;
+    }
+
+    const allowedRotation = getAllowedRotations(product);
+
     packer.addItem(
       new Item(
         product.name,
-        product.width + spacing,
-        product.height + spacing,
-        product.depth + spacing,
-        product.weight ?? 0
+        ow + spacing,
+        itemHeight,
+        od + spacing,
+        product.weight ?? 0,
+        allowedRotation
       )
     );
   }
@@ -101,7 +178,7 @@ function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
   return {
     bin,
     packedItems: bin.items.map((item: BinPackingItem) =>
-      normalizePackedItem(item, spacing)
+      normalizePackedItem(item, spacing, heightOverrides)
     ),
   };
 }

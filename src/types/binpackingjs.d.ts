@@ -33,13 +33,16 @@ declare module "binpackingjs" {
       depth: number;
       weight: number;
       position: number[];
+      rotationType: number;
+      allowedRotation: number[];
       getDimension(): [number, number, number];
       constructor(
         name: string,
         width: number,
         height: number,
         depth: number,
-        weight: number
+        weight: number,
+        allowedRotation?: number[]
       );
     }
   }
