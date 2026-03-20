@@ -1,0 +1,9 @@
+import { ApiReference } from "@scalar/nextjs-api-reference";
+
+export const runtime = "nodejs";
+
+export const GET = ApiReference({
+  url: "/api/v1/openapi.json",
+  theme: "bluePlanet",
+  title: "Packwell.io API Docs",
+});

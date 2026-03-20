@@ -7,6 +7,7 @@ import { UserMenu } from "@/components/layout/user-menu";
 const links = [
   { href: "/dashboard", label: "Shipments" },
   { href: "/settings/packaging", label: "Packaging" },
+  { href: "/settings/api", label: "API" },
 ];
 
 export function Nav() {
