@@ -1,8 +1,9 @@
 import type { NextRequest } from "next/server";
 import { withApi } from "@/lib/api-middleware";
+import { getMeasurementUnits } from "@/lib/api-units";
 import { badRequest } from "@/lib/api-errors";
 import { mapShipmentToApi } from "@/lib/api-mappers";
-import { apiPaginated } from "@/lib/api-response";
+import { apiJson } from "@/lib/api-response";
 import { paginationQuerySchema } from "@/lib/api-schemas";
 import { prisma } from "@/lib/prisma";
 
@@ -42,5 +43,14 @@ export const GET = withApi(async (request, { api }) => {
     }),
   ]);
 
-  return apiPaginated(shipments.map((shipment) => mapShipmentToApi(shipment)), total, page, pageSize);
+  return apiJson({
+    data: shipments.map((shipment) => mapShipmentToApi(shipment, api.unitSystem)),
+    pagination: {
+      total,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    },
+    units: getMeasurementUnits(api.unitSystem),
+  });
 });
