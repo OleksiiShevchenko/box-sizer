@@ -41,4 +41,37 @@ describe("ProductList", () => {
     await user.click(screen.getByRole("button", { name: "Delete" }));
     expect(onRemove).toHaveBeenCalledWith(0);
   });
+
+  it("shows constraint badges for non-default values", () => {
+    render(
+      <ProductList
+        products={[
+          {
+            name: "Fragile",
+            width: 10,
+            height: 10,
+            depth: 5,
+            canStackOnTop: false,
+            canBePlacedOnTop: false,
+            orientation: "horizontal",
+          },
+        ]}
+        unit="cm"
+        onRemove={jest.fn()}
+      />
+    );
+    expect(screen.getByText("No stacking on top")).toBeInTheDocument();
+    expect(screen.getByText("Floor only")).toBeInTheDocument();
+    expect(screen.getByText("Horizontal")).toBeInTheDocument();
+  });
+
+  it("hides badges when all constraints are default", () => {
+    render(
+      <ProductList products={products} unit="cm" onRemove={jest.fn()} />
+    );
+    expect(screen.queryByText("No stacking on top")).not.toBeInTheDocument();
+    expect(screen.queryByText("Floor only")).not.toBeInTheDocument();
+    expect(screen.queryByText("Horizontal")).not.toBeInTheDocument();
+    expect(screen.queryByText("Vertical")).not.toBeInTheDocument();
+  });
 });

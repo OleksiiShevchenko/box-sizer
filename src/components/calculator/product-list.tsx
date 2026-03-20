@@ -59,6 +59,21 @@ export function ProductList({
               {displayDim(product.depth, unit)} {unit}
               {product.weight != null && ` | ${(unit === "in" ? gramsToOz(product.weight) : product.weight).toFixed(1)}${unit === "in" ? "oz" : "g"}`}
             </span>
+            {product.canStackOnTop === false && (
+              <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-700">
+                No stacking on top
+              </span>
+            )}
+            {product.canBePlacedOnTop === false && (
+              <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-700">
+                Floor only
+              </span>
+            )}
+            {product.orientation && product.orientation !== "any" && (
+              <span className="ml-1 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">
+                {product.orientation === "horizontal" ? "Horizontal" : "Vertical"}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {onEdit ? (

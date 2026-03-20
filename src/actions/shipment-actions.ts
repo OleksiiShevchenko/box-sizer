@@ -9,7 +9,7 @@ import {
   calculateIdealBoxPacking,
   calculateShipmentPacking,
 } from "@/services/shipment-packing";
-import type { IProduct, IShipment, IShipmentListItem, PackingResult } from "@/types";
+import type { IProduct, IShipment, IShipmentListItem, Orientation, PackingResult } from "@/types";
 
 const shipmentItemSchema = z.object({
   name: z.string().trim().min(1, "Item name is required"),
@@ -17,6 +17,9 @@ const shipmentItemSchema = z.object({
   height: z.number().positive("Height must be positive"),
   depth: z.number().positive("Depth must be positive"),
   weight: z.number().nonnegative("Weight must be non-negative").nullable().optional(),
+  canStackOnTop: z.boolean().optional().default(true),
+  canBePlacedOnTop: z.boolean().optional().default(true),
+  orientation: z.enum(["any", "horizontal", "vertical"]).optional().default("any"),
 });
 
 const calculateShipmentSchema = z.object({
@@ -78,7 +81,10 @@ export async function getShipments(
         spacingOverride: shipment.spacingOverride,
         dimensionalWeight: shipment.dimensionalWeight,
         box: shipment.box,
-        items: shipment.items,
+        items: shipment.items.map((item) => ({
+          ...item,
+          orientation: item.orientation as Orientation,
+        })),
         itemCount: shipment.items.length,
         createdAt: shipment.createdAt,
         updatedAt: shipment.updatedAt,
@@ -125,7 +131,10 @@ export async function getShipment(id: string): Promise<IShipment | null> {
       spacingOverride: shipment.spacingOverride,
       box: shipment.box,
       dimensionalWeight: shipment.dimensionalWeight,
-      items: shipment.items,
+      items: shipment.items.map((item) => ({
+        ...item,
+        orientation: item.orientation as Orientation,
+      })),
       createdAt: shipment.createdAt,
       updatedAt: shipment.updatedAt,
     };
@@ -222,6 +231,9 @@ export async function calculateAndSaveShipment(
                 height: item.height,
                 depth: item.depth,
                 weight: item.weight,
+                canStackOnTop: item.canStackOnTop,
+                canBePlacedOnTop: item.canBePlacedOnTop,
+                orientation: item.orientation,
               })),
             },
           },
