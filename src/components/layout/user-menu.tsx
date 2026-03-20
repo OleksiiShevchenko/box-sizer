@@ -78,6 +78,14 @@ export function UserMenu() {
           >
             Profile Settings
           </Link>
+          <Link
+            href="/settings/billing"
+            role="menuitem"
+            className="block rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+            onClick={() => setOpen(false)}
+          >
+            Subscription & Billing
+          </Link>
           <button
             type="button"
             role="menuitem"

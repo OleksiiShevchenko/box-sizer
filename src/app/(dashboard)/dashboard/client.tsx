@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { Pagination } from "@/components/ui/pagination";
+import { UsageWidget } from "@/components/dashboard/usage-widget";
 import { NewShipmentButton } from "@/components/shipments/new-shipment-button";
 import { ShipmentEmptyState } from "@/components/shipments/shipment-empty-state";
 import { ShipmentTable } from "@/components/shipments/shipment-table";
-import type { IShipmentListItem, UnitSystem } from "@/types";
+import type { IShipmentListItem, ISubscriptionInfo, UnitSystem } from "@/types";
 
 interface DashboardClientProps {
   hasBoxes: boolean;
@@ -15,6 +16,7 @@ interface DashboardClientProps {
   totalCount: number;
   page: number;
   pageSize: number;
+  subscriptionInfo: ISubscriptionInfo;
   unitSystem: UnitSystem;
 }
 
@@ -24,6 +26,7 @@ export function DashboardClient({
   totalCount,
   page,
   pageSize,
+  subscriptionInfo,
   unitSystem,
 }: DashboardClientProps) {
   const [shipments, setShipments] = useState(initialShipments);
@@ -40,6 +43,8 @@ export function DashboardClient({
         </div>
         {shipments.length > 0 && <NewShipmentButton />}
       </div>
+
+      <UsageWidget subscriptionInfo={subscriptionInfo} />
 
       {!hasBoxes ? (
         <Card className="flex items-center justify-between gap-4 bg-blue-50 p-4">

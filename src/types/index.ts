@@ -1,3 +1,9 @@
+import type {
+  BillingInterval,
+  SubscriptionStatus,
+  SubscriptionTier,
+} from "@/lib/subscription-plans";
+
 export type Orientation = "any" | "horizontal" | "vertical";
 
 export interface IProduct {
@@ -55,6 +61,21 @@ export interface IProfile {
   isGoogleUser: boolean;
   hasPassword: boolean;
   unitSystem: UnitSystem;
+}
+
+export interface ISubscriptionInfo {
+  tier: SubscriptionTier;
+  planName: string;
+  status: SubscriptionStatus;
+  billingInterval: BillingInterval | null;
+  usageCount: number;
+  usageLimit: number | null;
+  hasApiAccess: boolean;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  cancelAtPeriodEnd: boolean;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
 }
 
 export interface PackedItem {
