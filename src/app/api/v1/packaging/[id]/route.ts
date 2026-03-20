@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { withApi } from "@/lib/api-middleware";
+import { convertBoxInputToStorage, getMeasurementUnits } from "@/lib/api-units";
 import { apiErrorResponse, badRequest, notFound } from "@/lib/api-errors";
 import { mapBoxToApi } from "@/lib/api-mappers";
 import { apiJson } from "@/lib/api-response";
@@ -27,7 +28,10 @@ export const GET = withApi(async (_request, ctx) => {
   const { id } = await (ctx.params as Promise<{ id: string }>);
   const box = await getBoxForRequest(ctx.api.userId, id);
 
-  return apiJson(mapBoxToApi(box));
+  return apiJson({
+    ...mapBoxToApi(box, ctx.api.unitSystem),
+    units: getMeasurementUnits(ctx.api.unitSystem),
+  });
 });
 
 export const PUT = withApi(async (request, ctx) => {
@@ -41,22 +45,27 @@ export const PUT = withApi(async (request, ctx) => {
       throw badRequest(parsed.error.issues[0]?.message ?? "Invalid packaging body");
     }
 
+    const requestUnitSystem = parsed.data.unitSystem;
+    const normalized = convertBoxInputToStorage(parsed.data, requestUnitSystem);
     const updated = await prisma.box.update({
       where: { id: box.id },
       data: {
-        name: parsed.data.name,
-        width: parsed.data.width,
-        height: parsed.data.height,
-        depth: parsed.data.depth,
-        spacing: parsed.data.spacing,
-        maxWeight: parsed.data.maxWeight ?? null,
+        name: normalized.name,
+        width: normalized.width,
+        height: normalized.height,
+        depth: normalized.depth,
+        spacing: normalized.spacing,
+        maxWeight: normalized.maxWeight,
       },
     });
 
     revalidatePath("/settings/packaging");
     revalidatePath("/dashboard");
 
-    return apiJson(mapBoxToApi(updated));
+    return apiJson({
+      ...mapBoxToApi(updated, requestUnitSystem),
+      units: getMeasurementUnits(requestUnitSystem),
+    });
   } catch (error) {
     return apiErrorResponse(error);
   }

@@ -1,6 +1,11 @@
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { withApi } from "@/lib/api-middleware";
+import {
+  convertDimensionFromApi,
+  convertShipmentItemInputToStorage,
+  getMeasurementUnits,
+} from "@/lib/api-units";
 import { apiErrorResponse, badRequest } from "@/lib/api-errors";
 import { mapPackingResultToApi, mapShipmentToApi } from "@/lib/api-mappers";
 import { apiJson } from "@/lib/api-response";
@@ -25,7 +30,14 @@ export const GET = withApi(async (_request, ctx) => {
   const visualizationUrls = await getUploadedVisualizationUrls(shipment.publicId);
 
   return apiJson(
-    mapShipmentToApi(shipment, visualizationUrls ? { visualization: { status: "ready", ...visualizationUrls } } : undefined)
+    {
+      ...mapShipmentToApi(
+        shipment,
+        ctx.api.unitSystem,
+        visualizationUrls ? { visualization: { status: "ready", ...visualizationUrls } } : undefined
+      ),
+      units: getMeasurementUnits(ctx.api.unitSystem),
+    }
   );
 });
 
@@ -40,10 +52,18 @@ export const PUT = withApi(async (request, ctx) => {
       throw badRequest(parsed.error.issues[0]?.message ?? "Invalid shipment body");
     }
 
+    const requestUnitSystem = parsed.data.unitSystem;
+    const normalizedItems = parsed.data.items.map((item) =>
+      convertShipmentItemInputToStorage(item, requestUnitSystem)
+    );
+    const normalizedSpacingOverride =
+      parsed.data.spacingOverride == null
+        ? null
+        : convertDimensionFromApi(parsed.data.spacingOverride, requestUnitSystem);
     const calculation = await calculateShipmentForUser(ctx.api.userId, {
       name: parsed.data.name,
-      items: parsed.data.items,
-      spacingOverride: parsed.data.spacingOverride ?? null,
+      items: normalizedItems,
+      spacingOverride: normalizedSpacingOverride,
       includeIdealBox: true,
     });
 
@@ -51,8 +71,8 @@ export const PUT = withApi(async (request, ctx) => {
       shipment,
       {
         name: parsed.data.name,
-        items: parsed.data.items,
-        spacingOverride: parsed.data.spacingOverride ?? null,
+        items: normalizedItems,
+        spacingOverride: normalizedSpacingOverride,
       },
       calculation.results
     );
@@ -87,12 +107,16 @@ export const PUT = withApi(async (request, ctx) => {
     return apiJson({
       shipment: mapShipmentToApi(
         updatedShipment,
+        requestUnitSystem,
         visualization ? { visualization } : undefined
       ),
       result: {
-        boxes: calculation.results.map(mapPackingResultToApi),
-        idealBox: calculation.idealResult ? mapPackingResultToApi(calculation.idealResult) : null,
+        boxes: calculation.results.map((result) => mapPackingResultToApi(result, requestUnitSystem)),
+        idealBox: calculation.idealResult
+          ? mapPackingResultToApi(calculation.idealResult, requestUnitSystem)
+          : null,
       },
+      units: getMeasurementUnits(requestUnitSystem),
       ...(visualization ? { visualization } : {}),
     });
   } catch (error) {

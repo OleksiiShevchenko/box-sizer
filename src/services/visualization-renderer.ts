@@ -1,6 +1,6 @@
 import { access } from "node:fs/promises";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium-min";
+import chromium from "@sparticuz/chromium";
 import type { VisualizationCameraView } from "@/components/calculator/box-visualization-3d";
 import type { PackingResult } from "@/types";
 import { uploadVisualizationImages } from "@/services/visualization-upload";
@@ -44,20 +44,7 @@ async function resolveChromiumExecutablePath() {
     }
   }
 
-  const packLocation = process.env.CHROMIUM_PACK_LOCATION;
-  if (packLocation) {
-    return chromium.executablePath(packLocation);
-  }
-
-  if (await canAccessPath("/tmp/chromium")) {
-    return "/tmp/chromium";
-  }
-
-  if (await canAccessPath("/opt/chromium/chrome")) {
-    return "/opt/chromium/chrome";
-  }
-
-  return chromium.executablePath("/opt/chromium");
+  return chromium.executablePath();
 }
 
 export async function renderVisualizationImages(baseUrl: string, result: PackingResult) {

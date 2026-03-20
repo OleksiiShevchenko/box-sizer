@@ -2,6 +2,11 @@ import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { apiErrorResponse, badRequest } from "@/lib/api-errors";
 import { withApi } from "@/lib/api-middleware";
+import {
+  convertDimensionFromApi,
+  convertShipmentItemInputToStorage,
+  getMeasurementUnits,
+} from "@/lib/api-units";
 import { mapPackingResultToApi } from "@/lib/api-mappers";
 import { apiJson } from "@/lib/api-response";
 import { calculateShipmentBodySchema } from "@/lib/api-schemas";
@@ -21,9 +26,17 @@ export const POST = withApi(async (request, { api }) => {
       throw badRequest(parsed.error.issues[0]?.message ?? "Invalid calculate body");
     }
 
+    const requestUnitSystem = parsed.data.unitSystem;
+    const normalizedItems = parsed.data.items.map((item) =>
+      convertShipmentItemInputToStorage(item, requestUnitSystem)
+    );
+    const normalizedSpacingOverride =
+      parsed.data.spacingOverride == null
+        ? null
+        : convertDimensionFromApi(parsed.data.spacingOverride, requestUnitSystem);
     const calculation = await calculateShipmentForUser(api.userId, {
-      items: parsed.data.items,
-      spacingOverride: parsed.data.spacingOverride ?? null,
+      items: normalizedItems,
+      spacingOverride: normalizedSpacingOverride,
       includeIdealBox: parsed.data.includeIdealBox,
     });
     const primaryResult = calculation.results[0] ?? calculation.idealResult ?? null;
@@ -51,12 +64,13 @@ export const POST = withApi(async (request, { api }) => {
     }
 
     return apiJson({
+      units: getMeasurementUnits(requestUnitSystem),
       result: {
-        boxes: calculation.results.map(mapPackingResultToApi),
+        boxes: calculation.results.map((result) => mapPackingResultToApi(result, requestUnitSystem)),
         ...(parsed.data.includeIdealBox
           ? {
               idealBox: calculation.idealResult
-                ? mapPackingResultToApi(calculation.idealResult)
+                ? mapPackingResultToApi(calculation.idealResult, requestUnitSystem)
                 : null,
             }
           : {}),
