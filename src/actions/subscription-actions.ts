@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import {
   getPriceIdForSelection,
@@ -27,8 +28,40 @@ type StripeSubscriptionSnapshot = {
   current_period_end?: number;
 };
 
-function getAppUrl(): string {
-  return process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+function normalizeAppUrl(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+
+  try {
+    return new URL(candidate).origin;
+  } catch {
+    return null;
+  }
+}
+
+async function getAppUrl(): Promise<string> {
+  const configuredUrl =
+    normalizeAppUrl(process.env.NEXTAUTH_URL) ??
+    normalizeAppUrl(process.env.NEXT_PUBLIC_APP_URL) ??
+    normalizeAppUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL) ??
+    normalizeAppUrl(process.env.VERCEL_URL);
+
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? "https";
+
+  if (host) {
+    return `${protocol}://${host}`;
+  }
+
+  return "http://localhost:3000";
 }
 
 function normalizeStatus(status: string | null | undefined): SubscriptionStatus {
@@ -80,6 +113,7 @@ export async function createCheckoutSession(
   }
 
   const userId = await getAuthUserId();
+  const appUrl = await getAppUrl();
   const priceId = getPriceIdForSelection(tier, interval);
 
   if (!priceId) {
@@ -93,8 +127,8 @@ export async function createCheckoutSession(
     line_items: [{ price: priceId, quantity: 1 }],
     allow_promotion_codes: true,
     client_reference_id: userId,
-    success_url: `${getAppUrl()}/settings/billing?checkout=success`,
-    cancel_url: `${getAppUrl()}/settings/billing?checkout=cancel`,
+    success_url: `${appUrl}/settings/billing?checkout=success`,
+    cancel_url: `${appUrl}/settings/billing?checkout=cancel`,
     metadata: {
       userId,
       tier,
@@ -118,10 +152,11 @@ export async function createCheckoutSession(
 
 export async function createBillingPortalSession(): Promise<{ url?: string; error?: string }> {
   const userId = await getAuthUserId();
+  const appUrl = await getAppUrl();
   const { stripeCustomerId } = await getOrCreateStripeCustomer(userId);
   const session = await stripe.billingPortal.sessions.create({
     customer: stripeCustomerId,
-    return_url: `${getAppUrl()}/settings/billing?portal=return`,
+    return_url: `${appUrl}/settings/billing?portal=return`,
   });
 
   return { url: session.url };
