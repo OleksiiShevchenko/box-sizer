@@ -20,16 +20,22 @@
     "@prisma/client": "^5.22.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@scalar/nextjs-api-reference": "^0.10.4",
+    "@sparticuz/chromium": "^143.0.4",
+    "@vercel/blob": "^2.3.1",
     "bcryptjs": "^3.0.3",
     "binpackingjs": "^3.0.2",
+    "jose": "^6.2.2",
     "next": "16.1.6",
     "next-auth": "5.0.0-beta.30",
+    "puppeteer-core": "^24.40.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.9.3",
     "stripe": "^20.4.1",
     "three": "^0.183.2",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "zod-openapi": "^5.4.6"
   },
   "devDependencies": {
     "@jest/globals": "^30.3.0",

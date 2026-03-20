@@ -24,6 +24,8 @@ model User {
   shipments Shipment[]
   subscription Subscription?
   calculationUsage CalculationUsage[]
+  apiApps  ApiApp[]
+  apiTokens ApiToken[]
 }
 
 model Account {
@@ -61,6 +63,7 @@ model VerificationToken {
 
 model Box {
   id        String   @id @default(cuid())
+  publicId  String   @unique @default(uuid())
   userId    String
   name      String
   width     Float
@@ -75,10 +78,12 @@ model Box {
   shipments Shipment[]
 
   @@index([userId])
+  @@index([publicId])
 }
 
 model Shipment {
   id                String         @id @default(cuid())
+  publicId          String         @unique @default(uuid())
   userId            String
   name              String
   spacingOverride   Float?
@@ -92,10 +97,12 @@ model Shipment {
   items ShipmentItem[]
 
   @@index([userId])
+  @@index([publicId])
 }
 
 model ShipmentItem {
   id               String  @id @default(cuid())
+  publicId         String  @unique @default(uuid())
   shipmentId       String
   name             String
   width            Float
@@ -109,6 +116,39 @@ model ShipmentItem {
   shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
   @@index([shipmentId])
+  @@index([publicId])
+}
+
+model ApiApp {
+  id               String     @id @default(cuid())
+  publicId         String     @unique @default(uuid())
+  userId           String
+  name             String
+  clientId         String     @unique
+  clientSecretHash String
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokens ApiToken[]
+
+  @@index([userId])
+  @@index([clientId])
+}
+
+model ApiToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  appId     String
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  app  ApiApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([appId])
 }
 
 model Subscription {
