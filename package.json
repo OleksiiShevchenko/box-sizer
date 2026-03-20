@@ -21,7 +21,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@scalar/nextjs-api-reference": "^0.10.4",
-    "@sparticuz/chromium-min": "^143.0.4",
+    "@sparticuz/chromium": "^143.0.4",
     "@vercel/blob": "^2.3.1",
     "bcryptjs": "^3.0.3",
     "binpackingjs": "^3.0.2",

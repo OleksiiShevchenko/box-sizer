@@ -1,6 +1,6 @@
 import { access } from "node:fs/promises";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium-min";
+import chromium from "@sparticuz/chromium";
 import type { VisualizationCameraView } from "@/components/calculator/box-visualization-3d";
 import type { PackingResult } from "@/types";
 import { uploadVisualizationImages } from "@/services/visualization-upload";

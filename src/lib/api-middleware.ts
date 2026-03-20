@@ -3,11 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { hashApiToken, verifyApiToken } from "@/lib/api-auth";
 import { apiErrorResponse, unauthorized, tooManyRequests } from "@/lib/api-errors";
 import { checkRateLimit } from "@/lib/api-rate-limit";
+import { normalizeUnitSystem } from "@/lib/api-units";
+import type { UnitSystem } from "@/types";
 
 export type ApiRequestContext = {
   userId: string;
   appId: string;
   tokenHash: string;
+  unitSystem: UnitSystem;
 };
 
 export type ApiContext = {
@@ -39,13 +42,21 @@ export function withApiAuth(handler: ApiRouteHandler) {
       const tokenHash = hashApiToken(token);
       const tokenRecord = await prisma.apiToken.findUnique({
         where: { tokenHash },
+        include: {
+          user: {
+            select: {
+              unitSystem: true,
+            },
+          },
+        },
       });
 
       if (
         !tokenRecord ||
         tokenRecord.userId !== verified.userId ||
         tokenRecord.appId !== verified.appId ||
-        tokenRecord.expiresAt.getTime() <= Date.now()
+        tokenRecord.expiresAt.getTime() <= Date.now() ||
+        !tokenRecord.user
       ) {
         throw unauthorized("Invalid or expired API token", "invalid_token");
       }
@@ -56,6 +67,7 @@ export function withApiAuth(handler: ApiRouteHandler) {
           userId: verified.userId,
           appId: verified.appId,
           tokenHash,
+          unitSystem: normalizeUnitSystem(tokenRecord.user.unitSystem),
         },
       });
     } catch (error) {

@@ -1,0 +1,434 @@
+{
+  "info": {
+    "_postman_id": "7f1c8f12-9df6-4c9b-a892-7b3d6f8e7a41",
+    "name": "Packwell Public API",
+    "description": "Importable Postman collection for the OAuth-protected Packwell public API under /api/v1. Set the collection variables before running requests. The Create Access Token request stores the returned bearer token into the accessToken collection variable automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "clientId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientSecret",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "packagingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "shipmentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Create Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('token request succeeded', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var body = pm.response.json();",
+                  "if (body && body.access_token) {",
+                  "  pm.collectionVariables.set('accessToken', body.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"{{clientId}}\",\n  \"client_secret\": \"{{clientSecret}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/oauth/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "oauth",
+                "token"
+              ]
+            },
+            "description": "Exchanges the API app client credentials for a bearer token. On success, the response access_token is saved to the collection's accessToken variable."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Packaging",
+      "item": [
+        {
+          "name": "List Packaging",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/packaging?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packaging"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Returns the authenticated account's packaging list."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Packaging",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var body = pm.response.json();",
+                  "  if (body && body.id) {",
+                  "    pm.collectionVariables.set('packagingId', body.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Medium Carton\",\n  \"width\": 16,\n  \"height\": 12,\n  \"depth\": 10,\n  \"spacing\": 0.25,\n  \"maxWeight\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/packaging",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packaging"
+              ]
+            },
+            "description": "Creates a packaging record. `unitSystem` is required. On success, the returned id is saved to packagingId."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Packaging",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/packaging/{{packagingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packaging",
+                "{{packagingId}}"
+              ]
+            },
+            "description": "Fetches a single packaging record by public id."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Packaging",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Medium Carton - Updated\",\n  \"width\": 16,\n  \"height\": 12,\n  \"depth\": 10,\n  \"spacing\": 0.5,\n  \"maxWeight\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/packaging/{{packagingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packaging",
+                "{{packagingId}}"
+              ]
+            },
+            "description": "Updates an existing packaging record. `unitSystem` is required."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Packaging",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/packaging/{{packagingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packaging",
+                "{{packagingId}}"
+              ]
+            },
+            "description": "Deletes a packaging record by public id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shipments",
+      "item": [
+        {
+          "name": "List Shipments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shipments?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Returns the authenticated account's shipments."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Shipment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shipments/{{shipmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments",
+                "{{shipmentId}}"
+              ]
+            },
+            "description": "Fetches a shipment by public id."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Shipment And Recalculate",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Demo Shipment\",\n  \"spacingOverride\": 0.25,\n  \"renderVisualization\": false,\n  \"items\": [\n    {\n      \"name\": \"Item A\",\n      \"width\": 8,\n      \"height\": 4,\n      \"depth\": 6,\n      \"weight\": 250,\n      \"canStackOnTop\": true,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"any\"\n    },\n    {\n      \"name\": \"Item B\",\n      \"width\": 5,\n      \"height\": 5,\n      \"depth\": 5,\n      \"weight\": 120,\n      \"canStackOnTop\": false,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"vertical\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shipments/{{shipmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments",
+                "{{shipmentId}}"
+              ]
+            },
+            "description": "Updates an existing shipment and recalculates its packing result. `unitSystem` is required."
+          },
+          "response": []
+        },
+        {
+          "name": "Calculate Shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"spacingOverride\": 0.25,\n  \"includeIdealBox\": true,\n  \"renderVisualization\": false,\n  \"items\": [\n    {\n      \"name\": \"Item A\",\n      \"width\": 8,\n      \"height\": 4,\n      \"depth\": 6,\n      \"weight\": 250,\n      \"canStackOnTop\": true,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"any\"\n    },\n    {\n      \"name\": \"Item B\",\n      \"width\": 5,\n      \"height\": 5,\n      \"depth\": 5,\n      \"weight\": 120,\n      \"canStackOnTop\": false,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"horizontal\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shipments/calculate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments",
+                "calculate"
+              ]
+            },
+            "description": "Calculates the best packaging for a shipment without saving anything. `unitSystem` is required."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Utilities",
+      "item": [
+        {
+          "name": "Get OpenAPI Document",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/openapi.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "openapi.json"
+              ]
+            },
+            "description": "Returns the OpenAPI document for this public API."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

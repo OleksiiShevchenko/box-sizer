@@ -1,9 +1,10 @@
 import { revalidatePath } from "next/cache";
 import type { NextRequest } from "next/server";
 import { withApi } from "@/lib/api-middleware";
+import { convertBoxInputToStorage, getMeasurementUnits } from "@/lib/api-units";
 import { badRequest, apiErrorResponse } from "@/lib/api-errors";
 import { mapBoxToApi } from "@/lib/api-mappers";
-import { apiPaginated, apiJson } from "@/lib/api-response";
+import { apiJson } from "@/lib/api-response";
 import { boxBodySchema, paginationQuerySchema } from "@/lib/api-schemas";
 import { prisma } from "@/lib/prisma";
 
@@ -37,7 +38,16 @@ export const GET = withApi(async (request, { api }) => {
     }),
   ]);
 
-  return apiPaginated(boxes.map(mapBoxToApi), total, page, pageSize);
+  return apiJson({
+    data: boxes.map((box) => mapBoxToApi(box, api.unitSystem)),
+    pagination: {
+      total,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    },
+    units: getMeasurementUnits(api.unitSystem),
+  });
 });
 
 export const POST = withApi(async (request, { api }) => {
@@ -48,22 +58,30 @@ export const POST = withApi(async (request, { api }) => {
       throw badRequest(parsed.error.issues[0]?.message ?? "Invalid packaging body");
     }
 
+    const requestUnitSystem = parsed.data.unitSystem;
+    const normalized = convertBoxInputToStorage(parsed.data, requestUnitSystem);
     const box = await prisma.box.create({
       data: {
         userId: api.userId,
-        name: parsed.data.name,
-        width: parsed.data.width,
-        height: parsed.data.height,
-        depth: parsed.data.depth,
-        spacing: parsed.data.spacing,
-        maxWeight: parsed.data.maxWeight ?? null,
+        name: normalized.name,
+        width: normalized.width,
+        height: normalized.height,
+        depth: normalized.depth,
+        spacing: normalized.spacing,
+        maxWeight: normalized.maxWeight,
       },
     });
 
     revalidatePath("/settings/packaging");
     revalidatePath("/dashboard");
 
-    return apiJson(mapBoxToApi(box), 201);
+    return apiJson(
+      {
+        ...mapBoxToApi(box, requestUnitSystem),
+        units: getMeasurementUnits(requestUnitSystem),
+      },
+      201
+    );
   } catch (error) {
     return apiErrorResponse(error);
   }

@@ -1,5 +1,11 @@
 import type { Box, Prisma, Shipment, ShipmentItem } from "@prisma/client";
 import type { PackingResult } from "@/types";
+import type { UnitSystem } from "@/types";
+import {
+  convertDimensionToApi,
+  convertDimensionalWeightToApi,
+  convertWeightToApi,
+} from "@/lib/api-units";
 
 export type ShipmentWithRelations = Prisma.ShipmentGetPayload<{
   include: {
@@ -8,28 +14,28 @@ export type ShipmentWithRelations = Prisma.ShipmentGetPayload<{
   };
 }>;
 
-export function mapBoxToApi(box: Box) {
+export function mapBoxToApi(box: Box, unitSystem: UnitSystem) {
   return {
     id: box.publicId,
     name: box.name,
-    width: box.width,
-    height: box.height,
-    depth: box.depth,
-    spacing: box.spacing,
-    maxWeight: box.maxWeight,
+    width: convertDimensionToApi(box.width, unitSystem),
+    height: convertDimensionToApi(box.height, unitSystem),
+    depth: convertDimensionToApi(box.depth, unitSystem),
+    spacing: convertDimensionToApi(box.spacing, unitSystem),
+    maxWeight: box.maxWeight == null ? null : convertWeightToApi(box.maxWeight, unitSystem),
     createdAt: box.createdAt.toISOString(),
     updatedAt: box.updatedAt.toISOString(),
   };
 }
 
-export function mapShipmentItemToApi(item: ShipmentItem) {
+export function mapShipmentItemToApi(item: ShipmentItem, unitSystem: UnitSystem) {
   return {
     id: item.publicId,
     name: item.name,
-    width: item.width,
-    height: item.height,
-    depth: item.depth,
-    weight: item.weight,
+    width: convertDimensionToApi(item.width, unitSystem),
+    height: convertDimensionToApi(item.height, unitSystem),
+    depth: convertDimensionToApi(item.depth, unitSystem),
+    weight: item.weight == null ? null : convertWeightToApi(item.weight, unitSystem),
     canStackOnTop: item.canStackOnTop,
     canBePlacedOnTop: item.canBePlacedOnTop,
     orientation: item.orientation,
@@ -38,6 +44,7 @@ export function mapShipmentItemToApi(item: ShipmentItem) {
 
 export function mapShipmentToApi(
   shipment: ShipmentWithRelations | (Shipment & { box?: Box | null; items?: ShipmentItem[] }),
+  unitSystem: UnitSystem,
   options?: {
     visualization?: {
       status: "pending" | "ready";
@@ -51,38 +58,45 @@ export function mapShipmentToApi(
   return {
     id: shipment.publicId,
     name: shipment.name,
-    spacingOverride: shipment.spacingOverride,
-    dimensionalWeight: shipment.dimensionalWeight,
-    box: shipment.box ? mapBoxToApi(shipment.box) : null,
-    items: shipment.items?.map(mapShipmentItemToApi) ?? [],
+    spacingOverride:
+      shipment.spacingOverride == null
+        ? null
+        : convertDimensionToApi(shipment.spacingOverride, unitSystem),
+    dimensionalWeight:
+      shipment.dimensionalWeight == null
+        ? null
+        : convertDimensionalWeightToApi(shipment.dimensionalWeight, unitSystem),
+    box: shipment.box ? mapBoxToApi(shipment.box, unitSystem) : null,
+    items: shipment.items?.map((item) => mapShipmentItemToApi(item, unitSystem)) ?? [],
     createdAt: shipment.createdAt.toISOString(),
     updatedAt: shipment.updatedAt.toISOString(),
     ...(options?.visualization ? { visualization: options.visualization } : {}),
   };
 }
 
-export function mapPackingResultToApi(result: PackingResult) {
+export function mapPackingResultToApi(result: PackingResult, unitSystem: UnitSystem) {
   const boxWithPublicId = result.box as typeof result.box & { publicId?: string };
 
   return {
     box: {
       id: boxWithPublicId.publicId ?? result.box.id,
       name: result.box.name,
-      width: result.box.width,
-      height: result.box.height,
-      depth: result.box.depth,
-      spacing: result.box.spacing ?? 0,
-      maxWeight: result.box.maxWeight ?? null,
+      width: convertDimensionToApi(result.box.width, unitSystem),
+      height: convertDimensionToApi(result.box.height, unitSystem),
+      depth: convertDimensionToApi(result.box.depth, unitSystem),
+      spacing: convertDimensionToApi(result.box.spacing ?? 0, unitSystem),
+      maxWeight:
+        result.box.maxWeight == null ? null : convertWeightToApi(result.box.maxWeight, unitSystem),
     },
     items: result.items.map((item) => ({
       name: item.name,
-      width: item.width,
-      height: item.height,
-      depth: item.depth,
-      x: item.x,
-      y: item.y,
-      z: item.z,
+      width: convertDimensionToApi(item.width, unitSystem),
+      height: convertDimensionToApi(item.height, unitSystem),
+      depth: convertDimensionToApi(item.depth, unitSystem),
+      x: convertDimensionToApi(item.x, unitSystem),
+      y: convertDimensionToApi(item.y, unitSystem),
+      z: convertDimensionToApi(item.z, unitSystem),
     })),
-    dimensionalWeight: result.dimensionalWeight,
+    dimensionalWeight: convertDimensionalWeightToApi(result.dimensionalWeight, unitSystem),
   };
 }
