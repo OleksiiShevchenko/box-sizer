@@ -19,13 +19,9 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-type RouteContext = {
-  params: Promise<{ id: string }>;
-};
-
-export const GET = withApi(async (_request, { api, params }: RouteContext & { api: { userId: string } }) => {
-  const { id } = await params;
-  const shipment = await getShipmentForUser(api.userId, id);
+export const GET = withApi(async (_request, ctx) => {
+  const { id } = await (ctx.params as Promise<{ id: string }>);
+  const shipment = await getShipmentForUser(ctx.api.userId, id);
   const visualizationUrls = await getUploadedVisualizationUrls(shipment.publicId);
 
   return apiJson(
@@ -33,10 +29,10 @@ export const GET = withApi(async (_request, { api, params }: RouteContext & { ap
   );
 });
 
-export const PUT = withApi(async (request, { api, params }: RouteContext & { api: { userId: string } }) => {
+export const PUT = withApi(async (request, ctx) => {
   try {
-    const { id } = await params;
-    const shipment = await getShipmentForUser(api.userId, id);
+    const { id } = await (ctx.params as Promise<{ id: string }>);
+    const shipment = await getShipmentForUser(ctx.api.userId, id);
     const body = await request.json();
     const parsed = shipmentUpdateBodySchema.safeParse(body);
 
@@ -44,7 +40,7 @@ export const PUT = withApi(async (request, { api, params }: RouteContext & { api
       throw badRequest(parsed.error.issues[0]?.message ?? "Invalid shipment body");
     }
 
-    const calculation = await calculateShipmentForUser(api.userId, {
+    const calculation = await calculateShipmentForUser(ctx.api.userId, {
       name: parsed.data.name,
       items: parsed.data.items,
       spacingOverride: parsed.data.spacingOverride ?? null,
@@ -64,7 +60,7 @@ export const PUT = withApi(async (request, { api, params }: RouteContext & { api
     revalidatePath("/dashboard");
     revalidatePath(`/dashboard/shipments/${shipment.id}`);
 
-    const updatedShipment = await getShipmentForUser(api.userId, id);
+    const updatedShipment = await getShipmentForUser(ctx.api.userId, id);
     const primaryResult = calculation.results[0] ?? calculation.idealResult ?? null;
     const visualization =
       parsed.data.renderVisualization && primaryResult

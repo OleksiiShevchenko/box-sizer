@@ -8,10 +8,6 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-type RouteContext = {
-  params: Promise<{ id: string }>;
-};
-
 async function getBoxForRequest(userId: string, publicId: string) {
   const box = await prisma.box.findFirst({
     where: {
@@ -27,17 +23,17 @@ async function getBoxForRequest(userId: string, publicId: string) {
   return box;
 }
 
-export const GET = withApi(async (_request, { api, params }: RouteContext & { api: { userId: string } }) => {
-  const { id } = await params;
-  const box = await getBoxForRequest(api.userId, id);
+export const GET = withApi(async (_request, ctx) => {
+  const { id } = await (ctx.params as Promise<{ id: string }>);
+  const box = await getBoxForRequest(ctx.api.userId, id);
 
   return apiJson(mapBoxToApi(box));
 });
 
-export const PUT = withApi(async (request, { api, params }: RouteContext & { api: { userId: string } }) => {
+export const PUT = withApi(async (request, ctx) => {
   try {
-    const { id } = await params;
-    const box = await getBoxForRequest(api.userId, id);
+    const { id } = await (ctx.params as Promise<{ id: string }>);
+    const box = await getBoxForRequest(ctx.api.userId, id);
     const body = await request.json();
     const parsed = boxBodySchema.safeParse(body);
 
@@ -66,10 +62,10 @@ export const PUT = withApi(async (request, { api, params }: RouteContext & { api
   }
 });
 
-export const DELETE = withApi(async (_request, { api, params }: RouteContext & { api: { userId: string } }) => {
+export const DELETE = withApi(async (_request, ctx) => {
   try {
-    const { id } = await params;
-    const box = await getBoxForRequest(api.userId, id);
+    const { id } = await (ctx.params as Promise<{ id: string }>);
+    const box = await getBoxForRequest(ctx.api.userId, id);
     await prisma.box.delete({
       where: { id: box.id },
     });

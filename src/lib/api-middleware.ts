@@ -4,21 +4,24 @@ import { hashApiToken, verifyApiToken } from "@/lib/api-auth";
 import { apiErrorResponse, unauthorized, tooManyRequests } from "@/lib/api-errors";
 import { checkRateLimit } from "@/lib/api-rate-limit";
 
-type RouteContext = Record<string, unknown>;
-
 export type ApiRequestContext = {
   userId: string;
   appId: string;
   tokenHash: string;
 };
 
-type ApiRouteHandler<TContext extends RouteContext = RouteContext> = (
+export type ApiContext = {
+  api: ApiRequestContext;
+  [key: string]: unknown;
+};
+
+type ApiRouteHandler = (
   request: NextRequest,
-  context: TContext & { api: ApiRequestContext }
+  context: ApiContext
 ) => Promise<Response> | Response;
 
-export function withApiAuth<TContext extends RouteContext>(handler: ApiRouteHandler<TContext>) {
-  return async (request: NextRequest, context: TContext) => {
+export function withApiAuth(handler: ApiRouteHandler) {
+  return async (request: NextRequest, context: Record<string, unknown> = {}): Promise<Response> => {
     try {
       const authorization = request.headers.get("authorization");
       const bearerPrefix = "Bearer ";
@@ -61,14 +64,14 @@ export function withApiAuth<TContext extends RouteContext>(handler: ApiRouteHand
   };
 }
 
-export function withRateLimit<TContext extends RouteContext>(
-  handler: ApiRouteHandler<TContext>,
+export function withRateLimit(
+  handler: ApiRouteHandler,
   options?: {
     limit?: number;
     windowMs?: number;
   }
 ) {
-  return async (request: NextRequest, context: TContext & { api: ApiRequestContext }) => {
+  return async (request: NextRequest, context: ApiContext): Promise<Response> => {
     try {
       const result = checkRateLimit(
         context.api.appId,
@@ -87,8 +90,8 @@ export function withRateLimit<TContext extends RouteContext>(
   };
 }
 
-export function withApi<TContext extends RouteContext>(
-  handler: ApiRouteHandler<TContext>,
+export function withApi(
+  handler: ApiRouteHandler,
   options?: {
     limit?: number;
     windowMs?: number;
