@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { headers } from "next/headers";
 import {
   getOrCreateStripeCustomer,
   getSubscriptionInfoForUser,
@@ -20,6 +21,10 @@ jest.mock("@/lib/auth", () => ({
 
 jest.mock("next/cache", () => ({
   revalidatePath: jest.fn(),
+}));
+
+jest.mock("next/headers", () => ({
+  headers: jest.fn(),
 }));
 
 jest.mock("@/lib/prisma", () => ({
@@ -59,6 +64,7 @@ const subscriptionUpdate = prisma.subscription.update as unknown as jest.Mock;
 const checkoutSessionCreate = stripe.checkout.sessions.create as unknown as jest.Mock;
 const billingPortalCreate = stripe.billingPortal.sessions.create as unknown as jest.Mock;
 const stripeSubscriptionUpdate = stripe.subscriptions.update as unknown as jest.Mock;
+const mockedHeaders = headers as unknown as jest.Mock;
 const mockedSubscriptionService = {
   getOrCreateStripeCustomer: jest.mocked(getOrCreateStripeCustomer),
   getSubscriptionInfoForUser: jest.mocked(getSubscriptionInfoForUser),
@@ -69,9 +75,19 @@ describe("subscription actions", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     process.env.STRIPE_PRO_MONTHLY_PRICE_ID = "price_pro_monthly";
+    process.env.NEXTAUTH_URL = "";
+    process.env.NEXT_PUBLIC_APP_URL = "";
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "";
+    process.env.VERCEL_URL = "";
     mockedAuth.mockResolvedValue({
       user: { id: "user-1", tier: "starter" },
     } as never);
+    mockedHeaders.mockResolvedValue(
+      new Headers({
+        host: "localhost:3000",
+        "x-forwarded-proto": "http",
+      })
+    );
   });
 
   it("creates a Stripe checkout session for a paid plan", async () => {
@@ -90,6 +106,26 @@ describe("subscription actions", () => {
       expect.objectContaining({
         customer: "cus_123",
         line_items: [{ price: "price_pro_monthly", quantity: 1 }],
+      })
+    );
+  });
+
+  it("normalizes host-only app urls before creating Stripe sessions", async () => {
+    process.env.NEXT_PUBLIC_APP_URL = "packwell.io";
+    mockedSubscriptionService.getOrCreateStripeCustomer.mockResolvedValue({
+      stripeCustomerId: "cus_123",
+      subscription: {} as never,
+    });
+    checkoutSessionCreate.mockResolvedValue({
+      url: "https://checkout.stripe.test/session",
+    } as never);
+
+    await createCheckoutSession("pro", "monthly");
+
+    expect(checkoutSessionCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success_url: "https://packwell.io/settings/billing?checkout=success",
+        cancel_url: "https://packwell.io/settings/billing?checkout=cancel",
       })
     );
   });
