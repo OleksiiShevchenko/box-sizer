@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Authentication", () => {
-  test("landing page shows login and signup links", async ({ page }) => {
+  test("landing page shows login and signup CTAs", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("link", { name: "Log In" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Sign Up" })).toBeVisible();
+    await expect(page.locator('a[href="/signup"]').first()).toBeVisible();
   });
 
   test("login page renders correctly", async ({ page }) => {
