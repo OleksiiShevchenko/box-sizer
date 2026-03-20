@@ -12,6 +12,9 @@ const VISUALIZATION_VIEWS: VisualizationCameraView[] = [
   "top",
 ];
 
+const DEFAULT_CHROMIUM_PACK_URL =
+  "https://github.com/nicholasgasior/chromium-releases/raw/main/chromium-v143.0.0-pack.tar";
+
 async function canAccessPath(pathname: string) {
   try {
     await access(pathname);
@@ -44,20 +47,9 @@ async function resolveChromiumExecutablePath() {
     }
   }
 
-  const packLocation = process.env.CHROMIUM_PACK_LOCATION;
-  if (packLocation) {
-    return chromium.executablePath(packLocation);
-  }
-
-  if (await canAccessPath("/tmp/chromium")) {
-    return "/tmp/chromium";
-  }
-
-  if (await canAccessPath("/opt/chromium/chrome")) {
-    return "/opt/chromium/chrome";
-  }
-
-  return chromium.executablePath("/opt/chromium");
+  const packLocation =
+    process.env.CHROMIUM_PACK_LOCATION || DEFAULT_CHROMIUM_PACK_URL;
+  return chromium.executablePath(packLocation);
 }
 
 export async function renderVisualizationImages(baseUrl: string, result: PackingResult) {
