@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { ApiAppCreateDialog } from "@/components/api/api-app-create-dialog";
 import { ApiAppList } from "@/components/api/api-app-list";
@@ -19,6 +20,12 @@ export function ApiSettingsClient({ initialApps }: { initialApps: ApiApp[] }) {
           <p className="mt-1 text-sm text-gray-600">
             Manage OAuth client credentials for the Packwell.io public API.
           </p>
+          <Link
+            href="/api/v1/docs"
+            className="mt-2 inline-flex text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            View API documentation
+          </Link>
         </div>
         <Button type="button" onClick={() => setCreateOpen(true)}>
           Create API App
