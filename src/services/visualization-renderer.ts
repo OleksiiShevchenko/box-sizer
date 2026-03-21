@@ -1,6 +1,6 @@
 import { access } from "node:fs/promises";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium-min";
+import chromium from "@sparticuz/chromium";
 import type { VisualizationCameraView } from "@/components/calculator/box-visualization-3d";
 import type { PackingResult } from "@/types";
 import { uploadVisualizationImages } from "@/services/visualization-upload";
@@ -11,9 +11,6 @@ const VISUALIZATION_VIEWS: VisualizationCameraView[] = [
   "side",
   "top",
 ];
-
-const DEFAULT_CHROMIUM_PACK_URL =
-  "https://github.com/nicholasgasior/chromium-releases/raw/main/chromium-v143.0.0-pack.tar";
 
 async function canAccessPath(pathname: string) {
   try {
@@ -47,9 +44,7 @@ async function resolveChromiumExecutablePath() {
     }
   }
 
-  const packLocation =
-    process.env.CHROMIUM_PACK_LOCATION || DEFAULT_CHROMIUM_PACK_URL;
-  return chromium.executablePath(packLocation);
+  return chromium.executablePath();
 }
 
 export async function renderVisualizationImages(baseUrl: string, result: PackingResult) {
@@ -72,7 +67,7 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
     args: isLocalChrome ? [] : chromium.args,
     defaultViewport: viewport,
     executablePath,
-    headless: isLocalChrome ? true : "shell",
+    headless: true,
   });
   console.log("[visualization] puppeteer launched");
 
