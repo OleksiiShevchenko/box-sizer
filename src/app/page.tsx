@@ -47,6 +47,12 @@ export default async function Home() {
           </div>
           <div className="flex items-center gap-4">
             <Link
+              href="/login"
+              className="text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+            >
+              Log In
+            </Link>
+            <Link
               href="/signup"
               className="bg-primary text-on-primary px-5 py-2 rounded-lg font-medium text-sm hover:bg-primary-container transition-all duration-200 ease-in-out"
             >
