@@ -1,6 +1,6 @@
 import { access } from "node:fs/promises";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 import type { VisualizationCameraView } from "@/components/calculator/box-visualization-3d";
 import type { PackingResult } from "@/types";
 import { uploadVisualizationImages } from "@/services/visualization-upload";
@@ -64,9 +64,7 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
   const isLocalChrome = process.platform === "darwin";
   const executablePath = await resolveChromiumExecutablePath();
   const browser = await puppeteer.launch({
-    args: isLocalChrome
-      ? []
-      : puppeteer.defaultArgs({ args: chromium.args, headless: "shell" }),
+    args: isLocalChrome ? [] : chromium.args,
     defaultViewport: viewport,
     executablePath,
     headless: isLocalChrome ? true : "shell",
@@ -124,6 +122,10 @@ export async function generateAndUploadVisualizations(
   baseUrl: string,
   result: PackingResult
 ) {
+  console.log(`[visualization] starting render for ${id}, baseUrl=${baseUrl}`);
   const images = await renderVisualizationImages(baseUrl, result);
-  return uploadVisualizationImages(id, images);
+  console.log(`[visualization] render complete for ${id}, uploading ${Object.keys(images).length} images`);
+  const urls = await uploadVisualizationImages(id, images);
+  console.log(`[visualization] upload complete for ${id}`);
+  return urls;
 }
