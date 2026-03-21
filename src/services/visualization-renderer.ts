@@ -67,7 +67,7 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
     args: isLocalChrome ? [] : chromium.args,
     defaultViewport: viewport,
     executablePath,
-    headless: isLocalChrome ? true : chromium.headless,
+    headless: isLocalChrome ? true : "shell",
   });
 
   try {
