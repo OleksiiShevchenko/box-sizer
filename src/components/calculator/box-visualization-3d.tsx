@@ -157,7 +157,7 @@ export function BoxVisualization3D({
             <span>
               {dim(box.width, unit)} x {dim(box.height, unit)} x {dim(box.depth, unit)} {unit}
             </span>
-            <span>{items.length} item{items.length === 1 ? "" : "s"}</span>
+            <span>{items.length} unit{items.length === 1 ? "" : "s"}</span>
           </div>
 
           <div className="mt-2 flex flex-wrap gap-2">

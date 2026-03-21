@@ -12,6 +12,7 @@ interface ProductFormProps {
   onAdd: (product: IProduct) => void;
   initialProduct?: IProduct;
   submitLabel?: string;
+  showQuantity?: boolean;
 }
 
 function getDisplayDimension(value: number, unit: UnitSystem): string {
@@ -27,6 +28,7 @@ export function ProductForm({
   onAdd,
   initialProduct,
   submitLabel = "Add Product",
+  showQuantity = false,
 }: ProductFormProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [canStackOnTop, setCanStackOnTop] = useState(initialProduct?.canStackOnTop ?? true);
@@ -42,8 +44,19 @@ export function ProductForm({
     let width = Number(formData.get("width"));
     let height = Number(formData.get("height"));
     let depth = Number(formData.get("depth"));
+    const quantityValue = showQuantity
+      ? Number(formData.get("quantity"))
+      : (initialProduct?.quantity ?? 1);
     const weightStr = formData.get("weight")?.toString().trim() ?? "";
     const name = (formData.get("name") as string) || "Product";
+
+    if (showQuantity) {
+      if (!formData.get("quantity")?.toString().trim()) {
+        nextFieldErrors.quantity = "Quantity is required";
+      } else if (!Number.isInteger(quantityValue) || quantityValue <= 0) {
+        nextFieldErrors.quantity = "Quantity must be at least 1";
+      }
+    }
 
     if (!formData.get("width")?.toString().trim()) {
       nextFieldErrors.width = "Width is required";
@@ -86,6 +99,7 @@ export function ProductForm({
 
     const product: IProduct = {
       name,
+      quantity: quantityValue,
       width,
       height,
       depth,
@@ -115,6 +129,19 @@ export function ProductForm({
         placeholder="e.g., T-Shirt"
         defaultValue={initialProduct?.name ?? ""}
       />
+
+      {showQuantity ? (
+        <Input
+          id="product-quantity"
+          name="quantity"
+          type="number"
+          min="1"
+          step="1"
+          label="How many units"
+          defaultValue={String(initialProduct?.quantity ?? 1)}
+          error={fieldErrors.quantity}
+        />
+      ) : null}
 
       <div className="grid grid-cols-3 gap-3">
         <Input

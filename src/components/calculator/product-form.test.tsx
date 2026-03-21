@@ -40,6 +40,43 @@ describe("ProductForm", () => {
     );
   });
 
+  it("renders and validates the quantity field when enabled", async () => {
+    const user = userEvent.setup();
+    const onAdd = jest.fn();
+
+    render(<ProductForm unit="cm" onAdd={onAdd} showQuantity />);
+
+    expect(screen.getByLabelText("How many units")).toHaveValue(1);
+
+    await user.clear(screen.getByLabelText("How many units"));
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(await screen.findByText("Quantity is required")).toBeInTheDocument();
+    expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  it("includes quantity when the shipment form enables it", async () => {
+    const user = userEvent.setup();
+    const onAdd = jest.fn();
+
+    render(<ProductForm unit="cm" onAdd={onAdd} showQuantity />);
+
+    await user.type(screen.getByLabelText("Product Name"), "Bottle");
+    await user.clear(screen.getByLabelText("How many units"));
+    await user.type(screen.getByLabelText("How many units"), "3");
+    await user.type(screen.getByLabelText("Width (cm)"), "10");
+    await user.type(screen.getByLabelText("Height (cm)"), "20");
+    await user.type(screen.getByLabelText("Depth (cm)"), "10");
+    await user.click(screen.getByRole("button", { name: "Add Product" }));
+
+    expect(onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Bottle",
+        quantity: 3,
+      })
+    );
+  });
+
   it("shows field-level validation errors for empty dimensions", async () => {
     const user = userEvent.setup();
     const onAdd = jest.fn();

@@ -18,6 +18,7 @@ import type { IProduct, IShipment, IShipmentListItem, Orientation, PackingResult
 
 const shipmentItemSchema = z.object({
   name: z.string().trim().min(1, "Item name is required"),
+  quantity: z.number().int().min(1, "Quantity must be at least 1").optional().default(1),
   width: z.number().positive("Width must be positive"),
   height: z.number().positive("Height must be positive"),
   depth: z.number().positive("Depth must be positive"),
@@ -90,7 +91,7 @@ export async function getShipments(
           ...item,
           orientation: item.orientation as Orientation,
         })),
-        itemCount: shipment.items.length,
+        itemCount: shipment.items.reduce((total, item) => total + item.quantity, 0),
         createdAt: shipment.createdAt,
         updatedAt: shipment.updatedAt,
       })),
@@ -240,6 +241,7 @@ export async function calculateAndSaveShipment(
             items: {
               create: parsed.data.items.map((item) => ({
                 name: item.name,
+                quantity: item.quantity,
                 width: item.width,
                 height: item.height,
                 depth: item.depth,
@@ -299,6 +301,7 @@ export async function calculateAndSaveShipment(
           items: {
             create: parsed.data.items.map((item) => ({
               name: item.name,
+              quantity: item.quantity,
               width: item.width,
               height: item.height,
               depth: item.depth,

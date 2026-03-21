@@ -27,13 +27,14 @@ const shipments = [
       {
         id: "item-1",
         name: "Poster",
+        quantity: 3,
         width: 28,
         height: 18,
         depth: 2,
         weight: 100,
       },
     ],
-    itemCount: 1,
+    itemCount: 3,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -48,8 +49,9 @@ describe("ShipmentTable", () => {
     render(<ShipmentTable shipments={shipments} unitSystem="cm" />);
 
     expect(screen.getByRole("columnheader", { name: "Shipment" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Units" })).toBeInTheDocument();
     expect(screen.getByText("Order 1001")).toBeInTheDocument();
-    expect(screen.getByText("Poster")).toBeInTheDocument();
+    expect(screen.getByText("Poster x3")).toBeInTheDocument();
     expect(screen.getByText(/28\.0 x 18\.0 x 2\.0 cm/)).toBeInTheDocument();
   });
 

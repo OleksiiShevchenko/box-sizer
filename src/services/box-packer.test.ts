@@ -213,6 +213,18 @@ describe("calculatePacking", () => {
     expect(results.length).toBe(1);
   });
 
+  it("expands quantity into multiple packed units", () => {
+    const products: IProduct[] = [
+      { name: "Bottle", quantity: 3, width: 10, height: 10, depth: 5 },
+    ];
+
+    const results = calculatePacking(boxes, products);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].items).toHaveLength(3);
+    expect(results[0].items.every((item) => item.name.startsWith("Bottle_"))).toBe(true);
+  });
+
   it("uses multiple boxes when items don't fit in one", () => {
     const products: IProduct[] = [
       { name: "Big1", width: 45, height: 35, depth: 25 },

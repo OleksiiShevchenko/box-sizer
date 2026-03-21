@@ -48,6 +48,7 @@ describe("ProductList", () => {
         products={[
           {
             name: "Fragile",
+            quantity: 2,
             width: 10,
             height: 10,
             depth: 5,
@@ -60,6 +61,7 @@ describe("ProductList", () => {
         onRemove={jest.fn()}
       />
     );
+    expect(screen.getByText("x2")).toBeInTheDocument();
     expect(screen.getByText("No stacking on top")).toBeInTheDocument();
     expect(screen.getByText("Floor only")).toBeInTheDocument();
     expect(screen.getByText("Horizontal")).toBeInTheDocument();

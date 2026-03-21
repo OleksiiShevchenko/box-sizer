@@ -78,6 +78,10 @@ export const boxResponseSchema = boxApiSchema.extend({
 
 const shipmentItemValueSchema = z.object({
   name: z.string().trim().min(1).max(120),
+  quantity: z.number().int().min(1).default(1).meta({
+    description: "Number of identical units for this item definition",
+    example: 3,
+  }),
   width: z.number().positive(),
   height: z.number().positive(),
   depth: z.number().positive(),

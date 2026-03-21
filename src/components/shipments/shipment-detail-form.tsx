@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { IProduct, IShipment, PackingResult, UnitSystem } from "@/types";
-import { cmToInches, inchesToCm } from "@/types";
+import { cmToInches, getTotalProductUnits, inchesToCm } from "@/types";
 
 interface ShipmentDetailFormProps {
   shipment: IShipment;
@@ -108,6 +108,7 @@ export function ShipmentDetailForm({
   }
 
   const editingItem = editingIndex != null ? items[editingIndex] : undefined;
+  const totalUnits = getTotalProductUnits(items);
 
   return (
     <Card className="space-y-6">
@@ -138,7 +139,10 @@ export function ShipmentDetailForm({
       <div className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Products</h2>
-          <p className="text-sm text-gray-500">{items.length} item{items.length === 1 ? "" : "s"}</p>
+          <p className="text-sm text-gray-500">
+            {totalUnits} unit{totalUnits === 1 ? "" : "s"} across {items.length} item
+            {items.length === 1 ? " type" : " types"}
+          </p>
         </div>
 
         {items.length === 0 ? (
@@ -198,6 +202,7 @@ export function ShipmentDetailForm({
           unit={unitSystem}
           initialProduct={editingItem}
           submitLabel={editingIndex == null ? "Add Product" : "Save Product"}
+          showQuantity
           onAdd={handleUpsertItem}
         />
       </Dialog>
