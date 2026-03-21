@@ -62,13 +62,19 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
     isLandscape: true,
   } as const;
   const isLocalChrome = process.platform === "darwin";
+
+  console.log("[visualization] resolving chromium path...");
   const executablePath = await resolveChromiumExecutablePath();
+  console.log(`[visualization] chromium resolved: ${executablePath}`);
+
+  console.log("[visualization] launching puppeteer...");
   const browser = await puppeteer.launch({
     args: isLocalChrome ? [] : chromium.args,
     defaultViewport: viewport,
     executablePath,
     headless: isLocalChrome ? true : "shell",
   });
+  console.log("[visualization] puppeteer launched");
 
   try {
     const page = await browser.newPage();
@@ -94,7 +100,8 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
       renderUrl.searchParams.set("items", items);
       renderUrl.searchParams.set("view", view);
 
-      await page.goto(renderUrl.toString(), { waitUntil: "networkidle0" });
+      console.log(`[visualization] navigating to render page for view=${view}`);
+      await page.goto(renderUrl.toString(), { waitUntil: "networkidle0", timeout: 30_000 });
       await page.waitForSelector("canvas", { timeout: 15_000 });
       await new Promise((resolve) => setTimeout(resolve, 750));
 
@@ -109,6 +116,7 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
       });
 
       buffers[view] = Buffer.isBuffer(screenshot) ? screenshot : Buffer.from(screenshot);
+      console.log(`[visualization] captured view=${view}`);
     }
 
     return buffers;
