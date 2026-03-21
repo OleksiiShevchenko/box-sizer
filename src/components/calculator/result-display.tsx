@@ -53,7 +53,9 @@ export function ResultDisplay({ results, unit }: ResultDisplayProps) {
                   <dt className="text-gray-500">Dimensional Weight</dt>
                   <dd className="text-gray-900">{dimWeight} kg</dd>
                   <dt className="text-gray-500">Items</dt>
-                  <dd className="text-gray-900">{result.items.length}</dd>
+                  <dd className="text-gray-900">
+                    {result.items.length} unit{result.items.length === 1 ? "" : "s"}
+                  </dd>
                 </dl>
               </div>
               <BoxVisualization result={result} unit={unit} />

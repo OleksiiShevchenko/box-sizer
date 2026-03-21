@@ -57,7 +57,9 @@ function ResultCards({
                 {(unitSystem === "in" ? kgToLbs(result.dimensionalWeight) : result.dimensionalWeight).toFixed(1)} {unitSystem === "in" ? "lbs" : "kg"}
               </dd>
               <dt className="text-gray-500">Items packed</dt>
-              <dd className="text-gray-900">{result.items.length}</dd>
+              <dd className="text-gray-900">
+                {result.items.length} unit{result.items.length === 1 ? "" : "s"}
+              </dd>
             </dl>
           </div>
 

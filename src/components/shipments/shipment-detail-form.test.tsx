@@ -18,6 +18,7 @@ const shipment = {
     {
       id: "item-1",
       name: "Shirt",
+      quantity: 1,
       width: 30,
       height: 20,
       depth: 5,
@@ -47,6 +48,7 @@ describe("ShipmentDetailForm", () => {
     expect(screen.getByLabelText("Shipment Name")).toHaveValue("Sample Shipment");
     expect(screen.getByLabelText("Spacing Override (cm, optional)")).toHaveValue(1.5);
     expect(screen.getByText("Shirt")).toBeInTheDocument();
+    expect(screen.getByText("1 unit across 1 item type")).toBeInTheDocument();
   });
 
   it("shows the ideal-box action when no packaging options exist", () => {
@@ -80,12 +82,15 @@ describe("ShipmentDetailForm", () => {
 
     await user.click(screen.getByRole("button", { name: "+ Add Item" }));
     await user.type(screen.getByLabelText("Product Name"), "Poster");
+    await user.clear(screen.getByLabelText("How many units"));
+    await user.type(screen.getByLabelText("How many units"), "3");
     await user.type(screen.getByLabelText("Width (cm)"), "40");
     await user.type(screen.getByLabelText("Height (cm)"), "20");
     await user.type(screen.getByLabelText("Depth (cm)"), "2");
     await user.click(screen.getByRole("button", { name: "Add Product" }));
 
     expect(screen.getByText("Poster")).toBeInTheDocument();
+    expect(screen.getByText("x3")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Calculate Best Box" })).not.toBeDisabled();
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
@@ -145,6 +150,7 @@ describe("ShipmentDetailForm", () => {
           {
             id: "item-1",
             name: "Shirt",
+            quantity: 1,
             width: 30,
             height: 20,
             depth: 5,

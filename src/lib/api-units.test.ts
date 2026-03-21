@@ -39,6 +39,7 @@ describe("api unit helpers", () => {
     const item = convertShipmentItemInputToStorage(
       {
         name: "Widget",
+        quantity: 3,
         width: 4,
         height: 3,
         depth: 2,
@@ -53,6 +54,7 @@ describe("api unit helpers", () => {
     expect(item.depth).toBeCloseTo(5.08);
     expect(item.weight).toBeCloseTo(226.796);
     expect(item.canStackOnTop).toBe(false);
+    expect(item.quantity).toBe(3);
   });
 
   it("returns explicit response unit metadata", () => {

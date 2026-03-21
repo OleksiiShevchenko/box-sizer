@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { IShipmentListItem, UnitSystem } from "@/types";
-import { cmToInches, kgToLbs } from "@/types";
+import { cmToInches, kgToLbs, normalizeProductQuantity } from "@/types";
 
 interface ShipmentTableProps {
   shipments: IShipmentListItem[];
@@ -60,10 +60,10 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
             <thead className="bg-gray-50">
               <tr className="text-left text-sm font-medium text-gray-600">
                 <th className="px-4 py-3">Shipment</th>
-                <th className="px-4 py-3">Products</th>
+                <th className="px-4 py-3">Units</th>
                 <th className="px-4 py-3">Box Size</th>
                 <th className="px-4 py-3">Dimensional Weight</th>
-                <th className="px-4 py-3 text-right" colSpan={2}>Actions</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -83,7 +83,9 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
                         <div className="space-y-1">
                           {shipment.items.map((item) => (
                             <div key={item.id}>
-                              <p className="font-medium">{item.name}</p>
+                              <p className="font-medium">
+                                {item.name} x{normalizeProductQuantity(item.quantity)}
+                              </p>
                               <p className="text-gray-300">
                                 {dim(item.width, unitSystem)} x {dim(item.height, unitSystem)} x{" "}
                                 {dim(item.depth, unitSystem)} {unitSystem}
@@ -98,7 +100,6 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
                       </span>
                     </Tooltip>
                   </td>
-                  <td className="px-4 py-4">{shipment.itemCount}</td>
                   <td className="px-4 py-4">{formatDimensions(shipment, unitSystem)}</td>
                   <td className="px-4 py-4">
                     {shipment.dimensionalWeight != null

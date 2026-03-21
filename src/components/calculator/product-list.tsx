@@ -2,8 +2,13 @@
 
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import type { IProduct, UnitSystem } from "@/types";
-import { cmToInches, gramsToOz } from "@/types";
+import {
+  cmToInches,
+  gramsToOz,
+  normalizeProductQuantity,
+  type IProduct,
+  type UnitSystem,
+} from "@/types";
 
 interface ProductListProps {
   products: IProduct[];
@@ -54,6 +59,11 @@ export function ProductList({
             <span className="font-medium text-gray-900">
               {product.name || `Product ${index + 1}`}
             </span>
+            {normalizeProductQuantity(product.quantity) > 1 ? (
+              <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">
+                x{normalizeProductQuantity(product.quantity)}
+              </span>
+            ) : null}
             <span className="ml-2 text-sm text-gray-500">
               {displayDim(product.width, unit)} x {displayDim(product.height, unit)} x{" "}
               {displayDim(product.depth, unit)} {unit}

@@ -2,6 +2,8 @@ import {
   cmToInches,
   inchesToCm,
   calculateDimensionalWeight,
+  getTotalProductUnits,
+  normalizeProductQuantity,
 } from "./index";
 
 describe("unit conversions", () => {
@@ -25,5 +27,24 @@ describe("calculateDimensionalWeight", () => {
   it("calculates dimensional weight in inches", () => {
     // 12 x 8 x 4 = 384 / 139 = 2.76 → ceil = 3
     expect(calculateDimensionalWeight(12, 8, 4, "in")).toBe(3);
+  });
+});
+
+describe("product quantity helpers", () => {
+  it("normalizes invalid quantities to one", () => {
+    expect(normalizeProductQuantity(undefined)).toBe(1);
+    expect(normalizeProductQuantity(0)).toBe(1);
+    expect(normalizeProductQuantity(-5)).toBe(1);
+    expect(normalizeProductQuantity(2.9)).toBe(2);
+  });
+
+  it("sums total product units", () => {
+    expect(
+      getTotalProductUnits([
+        { quantity: 3 },
+        { quantity: 2 },
+        {},
+      ])
+    ).toBe(6);
   });
 });
