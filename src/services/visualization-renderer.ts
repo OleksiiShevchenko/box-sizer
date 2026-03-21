@@ -12,9 +12,6 @@ const VISUALIZATION_VIEWS: VisualizationCameraView[] = [
   "top",
 ];
 
-const DEFAULT_CHROMIUM_PACK_URL =
-  "https://github.com/nicholasgasior/chromium-releases/raw/main/chromium-v143.0.0-pack.tar";
-
 async function canAccessPath(pathname: string) {
   try {
     await access(pathname);
@@ -47,9 +44,7 @@ async function resolveChromiumExecutablePath() {
     }
   }
 
-  const packLocation =
-    process.env.CHROMIUM_PACK_LOCATION || DEFAULT_CHROMIUM_PACK_URL;
-  return chromium.executablePath(packLocation);
+  return chromium.executablePath();
 }
 
 export async function renderVisualizationImages(baseUrl: string, result: PackingResult) {
@@ -62,15 +57,19 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
     isLandscape: true,
   } as const;
   const isLocalChrome = process.platform === "darwin";
+
+  console.log("[visualization] resolving chromium path...");
   const executablePath = await resolveChromiumExecutablePath();
+  console.log(`[visualization] chromium resolved: ${executablePath}`);
+
+  console.log("[visualization] launching puppeteer...");
   const browser = await puppeteer.launch({
-    args: isLocalChrome
-      ? []
-      : puppeteer.defaultArgs({ args: chromium.args, headless: "shell" }),
+    args: isLocalChrome ? [] : chromium.args,
     defaultViewport: viewport,
     executablePath,
-    headless: isLocalChrome ? true : "shell",
+    headless: true,
   });
+  console.log("[visualization] puppeteer launched");
 
   try {
     const page = await browser.newPage();
@@ -96,7 +95,8 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
       renderUrl.searchParams.set("items", items);
       renderUrl.searchParams.set("view", view);
 
-      await page.goto(renderUrl.toString(), { waitUntil: "networkidle0" });
+      console.log(`[visualization] navigating to render page for view=${view}`);
+      await page.goto(renderUrl.toString(), { waitUntil: "networkidle0", timeout: 30_000 });
       await page.waitForSelector("canvas", { timeout: 15_000 });
       await new Promise((resolve) => setTimeout(resolve, 750));
 
@@ -111,6 +111,7 @@ export async function renderVisualizationImages(baseUrl: string, result: Packing
       });
 
       buffers[view] = Buffer.isBuffer(screenshot) ? screenshot : Buffer.from(screenshot);
+      console.log(`[visualization] captured view=${view}`);
     }
 
     return buffers;
@@ -124,6 +125,10 @@ export async function generateAndUploadVisualizations(
   baseUrl: string,
   result: PackingResult
 ) {
+  console.log(`[visualization] starting render for ${id}, baseUrl=${baseUrl}`);
   const images = await renderVisualizationImages(baseUrl, result);
-  return uploadVisualizationImages(id, images);
+  console.log(`[visualization] render complete for ${id}, uploading ${Object.keys(images).length} images`);
+  const urls = await uploadVisualizationImages(id, images);
+  console.log(`[visualization] upload complete for ${id}`);
+  return urls;
 }

@@ -341,7 +341,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Demo Shipment\",\n  \"spacingOverride\": 0.25,\n  \"renderVisualization\": false,\n  \"items\": [\n    {\n      \"name\": \"Item A\",\n      \"width\": 8,\n      \"height\": 4,\n      \"depth\": 6,\n      \"weight\": 250,\n      \"canStackOnTop\": true,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"any\"\n    },\n    {\n      \"name\": \"Item B\",\n      \"width\": 5,\n      \"height\": 5,\n      \"depth\": 5,\n      \"weight\": 120,\n      \"canStackOnTop\": false,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"vertical\"\n    }\n  ]\n}",
+              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Demo Shipment\",\n  \"spacingOverride\": 0.25,\n  \"renderVisualization\": false,\n  \"items\": [\n    {\n      \"name\": \"Item A\",\n      \"quantity\": 3,\n      \"width\": 8,\n      \"height\": 4,\n      \"depth\": 6,\n      \"weight\": 250,\n      \"canStackOnTop\": true,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"any\"\n    },\n    {\n      \"name\": \"Item B\",\n      \"quantity\": 1,\n      \"width\": 5,\n      \"height\": 5,\n      \"depth\": 5,\n      \"weight\": 120,\n      \"canStackOnTop\": false,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"vertical\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -360,7 +360,7 @@
                 "{{shipmentId}}"
               ]
             },
-            "description": "Updates an existing shipment and recalculates its packing result. `unitSystem` is required."
+            "description": "Updates an existing shipment and recalculates its packing result. Use `quantity` to represent multiple identical units in one item entry. `unitSystem` is required."
           },
           "response": []
         },
@@ -377,7 +377,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"spacingOverride\": 0.25,\n  \"includeIdealBox\": true,\n  \"renderVisualization\": false,\n  \"items\": [\n    {\n      \"name\": \"Item A\",\n      \"width\": 8,\n      \"height\": 4,\n      \"depth\": 6,\n      \"weight\": 250,\n      \"canStackOnTop\": true,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"any\"\n    },\n    {\n      \"name\": \"Item B\",\n      \"width\": 5,\n      \"height\": 5,\n      \"depth\": 5,\n      \"weight\": 120,\n      \"canStackOnTop\": false,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"horizontal\"\n    }\n  ]\n}",
+              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"spacingOverride\": 0.25,\n  \"includeIdealBox\": true,\n  \"renderVisualization\": false,\n  \"items\": [\n    {\n      \"name\": \"Item A\",\n      \"quantity\": 3,\n      \"width\": 8,\n      \"height\": 4,\n      \"depth\": 6,\n      \"weight\": 250,\n      \"canStackOnTop\": true,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"any\"\n    },\n    {\n      \"name\": \"Item B\",\n      \"quantity\": 2,\n      \"width\": 5,\n      \"height\": 5,\n      \"depth\": 5,\n      \"weight\": 120,\n      \"canStackOnTop\": false,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"horizontal\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -396,7 +396,7 @@
                 "calculate"
               ]
             },
-            "description": "Calculates the best packaging for a shipment without saving anything. `unitSystem` is required."
+            "description": "Calculates the best packaging for a shipment without saving anything. Use `quantity` to represent multiple identical units in one item entry. `unitSystem` is required."
           },
           "response": []
         }

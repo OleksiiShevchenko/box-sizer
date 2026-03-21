@@ -1,5 +1,12 @@
 import { BP3D } from "binpackingjs";
-import type { IBox, IProduct, PackingResult, PackedItem, Orientation } from "@/types";
+import {
+  normalizeProductQuantity,
+  type IBox,
+  type IProduct,
+  type PackingResult,
+  type PackedItem,
+  type Orientation,
+} from "@/types";
 
 const { Packer, Bin, Item } = BP3D;
 const BINPACKING_SCALE_FACTOR = 10 ** 5;
@@ -25,8 +32,18 @@ function getDisplayItemName(name: string): string {
 function makeProductsUnique(products: IProduct[]): IProduct[] {
   return products.map((product, index) => ({
     ...product,
+    quantity: 1,
     name: `${product.name}_${index}`,
   }));
+}
+
+function expandProductsByQuantity(products: IProduct[]): IProduct[] {
+  return products.flatMap((product) =>
+    Array.from({ length: normalizeProductQuantity(product.quantity) }, () => ({
+      ...product,
+      quantity: 1,
+    }))
+  );
 }
 
 function formatUnpackedItemNames(products: IProduct[]): string {
@@ -266,11 +283,13 @@ export function findIdealBox(
   products: IProduct[],
   spacing = 0
 ): PackingResult | null {
-  if (products.length === 0) {
+  const expandedProducts = expandProductsByQuantity(products);
+
+  if (expandedProducts.length === 0) {
     return null;
   }
 
-  const uniqueProducts = makeProductsUnique(products);
+  const uniqueProducts = makeProductsUnique(expandedProducts);
   const normalizedSpacing = Math.max(spacing, 0);
   const lowerBounds = {
     width: Math.max(...uniqueProducts.map((product) => product.width)),
@@ -340,7 +359,7 @@ export function calculatePacking(
   if (products.length === 0) return [];
   if (boxes.length === 0) throw new Error("No boxes available");
 
-  const uniqueProducts = makeProductsUnique(products);
+  const uniqueProducts = makeProductsUnique(expandProductsByQuantity(products));
 
   // Try single box first
   const singleResult = getSmallestSuitableBox(boxes, uniqueProducts);

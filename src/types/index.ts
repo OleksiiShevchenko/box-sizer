@@ -8,6 +8,7 @@ export type Orientation = "any" | "horizontal" | "vertical";
 
 export interface IProduct {
   name: string;
+  quantity?: number;
   width: number;
   height: number;
   depth: number;
@@ -126,4 +127,21 @@ export function calculateDimensionalWeight(
     return Math.ceil((width * height * depth) / 5000);
   }
   return Math.ceil((width * height * depth) / 139);
+}
+
+export function normalizeProductQuantity(quantity?: number | null): number {
+  if (quantity == null) {
+    return 1;
+  }
+
+  const normalizedQuantity = Math.trunc(quantity);
+  return normalizedQuantity > 0 ? normalizedQuantity : 1;
+}
+
+export function getTotalProductUnits(
+  products: Array<{
+    quantity?: number | null;
+  }>
+): number {
+  return products.reduce((total, product) => total + normalizeProductQuantity(product.quantity), 0);
 }

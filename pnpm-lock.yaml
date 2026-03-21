@@ -24,7 +24,7 @@ importers:
         specifier: ^0.10.4
         version: 0.10.4(next@16.1.6(@babel/core@7.29.0)(@playwright/test@1.58.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
       '@sparticuz/chromium':
-        specifier: ^143.0.4
+        specifier: 143.0.4
         version: 143.0.4
       '@vercel/blob':
         specifier: ^2.3.1

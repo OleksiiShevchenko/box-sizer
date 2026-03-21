@@ -32,6 +32,7 @@ export function mapShipmentItemToApi(item: ShipmentItem, unitSystem: UnitSystem)
   return {
     id: item.publicId,
     name: item.name,
+    quantity: item.quantity,
     width: convertDimensionToApi(item.width, unitSystem),
     height: convertDimensionToApi(item.height, unitSystem),
     depth: convertDimensionToApi(item.depth, unitSystem),

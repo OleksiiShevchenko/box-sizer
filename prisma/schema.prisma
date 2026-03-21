@@ -105,6 +105,7 @@ model ShipmentItem {
   publicId         String  @unique @default(uuid())
   shipmentId       String
   name             String
+  quantity         Int     @default(1)
   width            Float
   height           Float
   depth            Float

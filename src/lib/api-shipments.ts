@@ -123,6 +123,7 @@ export async function saveShipmentCalculation(
         items: {
           create: input.items.map((item) => ({
             name: item.name,
+            quantity: item.quantity ?? 1,
             width: item.width,
             height: item.height,
             depth: item.depth,
