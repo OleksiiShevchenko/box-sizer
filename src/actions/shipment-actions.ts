@@ -9,6 +9,11 @@ import {
   calculateIdealBoxPacking,
   calculateShipmentPacking,
 } from "@/services/shipment-packing";
+import {
+  canPerformCalculation,
+  getSubscriptionInfoForUser,
+  recordCalculationUsage,
+} from "@/services/subscription";
 import type { IProduct, IShipment, IShipmentListItem, Orientation, PackingResult } from "@/types";
 
 const shipmentItemSchema = z.object({
@@ -194,6 +199,14 @@ export async function calculateAndSaveShipment(
     return { error: parsed.error.issues[0]?.message ?? "Invalid shipment data" };
   }
 
+  const canCalculate = await canPerformCalculation(userId);
+  if (!canCalculate) {
+    const subscriptionInfo = await getSubscriptionInfoForUser(userId);
+    return {
+      error: `You have used all ${subscriptionInfo.usageLimit} calculations for this month. Upgrade your plan to continue.`,
+    };
+  }
+
   const boxes = await prisma.box.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -240,6 +253,7 @@ export async function calculateAndSaveShipment(
         });
       });
 
+      await recordCalculationUsage(userId);
       revalidatePath("/dashboard");
       revalidatePath(`/dashboard/shipments/${id}`);
       return { idealResult };
@@ -298,6 +312,7 @@ export async function calculateAndSaveShipment(
       });
     });
 
+    await recordCalculationUsage(userId);
     revalidatePath("/dashboard");
     revalidatePath(`/dashboard/shipments/${id}`);
     return { results, idealResult };

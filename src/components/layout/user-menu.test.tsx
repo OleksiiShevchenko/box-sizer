@@ -21,7 +21,7 @@ describe("UserMenu", () => {
     signOut.mockReset();
   });
 
-  it("opens the dropdown and shows profile settings", async () => {
+  it("opens the dropdown and shows settings links", async () => {
     const user = userEvent.setup();
     render(<UserMenu />);
 
@@ -32,6 +32,9 @@ describe("UserMenu", () => {
       "href",
       "/settings/profile"
     );
+    expect(
+      screen.getByRole("menuitem", { name: "Subscription & Billing" })
+    ).toHaveAttribute("href", "/settings/billing");
   });
 
   it("calls signOut when logout is clicked", async () => {
