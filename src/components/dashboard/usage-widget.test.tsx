@@ -23,6 +23,10 @@ describe("UsageWidget", () => {
     );
 
     expect(screen.getByText("6 / 15 calculations used")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: "Monthly usage" })).toHaveAttribute(
+      "aria-valuenow",
+      "40"
+    );
     expect(screen.getByRole("link", { name: "Upgrade Plan" })).toHaveAttribute(
       "href",
       "/pricing"

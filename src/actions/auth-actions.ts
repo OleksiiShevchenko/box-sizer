@@ -15,6 +15,7 @@ const signUpSchema = z.object({
 const IMPERIAL_COUNTRIES = new Set([
   "US", "LR", "MM",
 ]);
+const VERIFICATION_EMAIL_ERROR = "Failed to send verification email. Please try again.";
 
 export async function signUp(formData: FormData) {
   const raw = {
@@ -63,7 +64,20 @@ export async function signUp(formData: FormData) {
     },
   });
 
-  await sendVerificationEmail(email, token);
+  try {
+    await sendVerificationEmail(email, token);
+  } catch {
+    await prisma.$transaction([
+      prisma.verificationToken.deleteMany({
+        where: { identifier: email },
+      }),
+      prisma.user.delete({
+        where: { email },
+      }),
+    ]);
+
+    return { error: VERIFICATION_EMAIL_ERROR };
+  }
 
   return { success: true };
 }

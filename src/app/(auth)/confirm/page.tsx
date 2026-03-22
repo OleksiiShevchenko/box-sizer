@@ -1,10 +1,12 @@
 "use client";
 
-import { use, Suspense, useMemo } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { confirmEmail } from "@/actions/auth-actions";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
+
+type ConfirmEmailResult = Awaited<ReturnType<typeof confirmEmail>>;
 
 function ConfirmResult({
   token,
@@ -13,11 +15,36 @@ function ConfirmResult({
   token: string;
   email: string;
 }) {
-  const resultPromise = useMemo(
-    () => confirmEmail(token, email),
-    [token, email]
-  );
-  const result = use(resultPromise);
+  const [result, setResult] = useState<ConfirmEmailResult | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void confirmEmail(token, email)
+      .then((nextResult) => {
+        if (!cancelled) {
+          setResult(nextResult);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setResult({ error: "Confirmation failed. Please try again." });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, email]);
+
+  if (!result) {
+    return (
+      <>
+        <div className="text-4xl mb-4">⏳</div>
+        <h1 className="text-2xl font-bold mb-2">Confirming your email...</h1>
+      </>
+    );
+  }
 
   if (result.error) {
     return (
@@ -69,16 +96,7 @@ function ConfirmContent() {
 
   return (
     <Card className="w-full max-w-md mx-auto text-center">
-      <Suspense
-        fallback={
-          <>
-            <div className="text-4xl mb-4">⏳</div>
-            <h1 className="text-2xl font-bold">Confirming your email...</h1>
-          </>
-        }
-      >
-        <ConfirmResult token={token} email={email} />
-      </Suspense>
+      <ConfirmResult token={token} email={email} />
     </Card>
   );
 }

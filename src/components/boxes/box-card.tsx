@@ -6,6 +6,7 @@ import { deleteBox } from "@/actions/box-actions";
 import { useState } from "react";
 import { BoxForm } from "@/components/boxes/box-form";
 import { Dialog } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
 import type { BoxFormValues } from "./types";
 
 interface BoxCardProps extends BoxFormValues {
@@ -20,48 +21,74 @@ function convert(value: number, unit: "cm" | "in"): string {
 export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, unit }: BoxCardProps) {
   const [deleting, setDeleting] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
-  async function handleDelete() {
+  async function handleDelete(): Promise<boolean> {
     setDeleting(true);
-    await deleteBox(id);
+    setDeleteError("");
+    const result = await deleteBox(id);
+    setDeleting(false);
+
+    if (result.success) {
+      return true;
+    }
+
+    setDeleteError(result.error ?? "Failed to delete packaging");
+    return false;
   }
 
   return (
-    <Card className="flex items-center justify-between">
-      <div>
-        <h3 className="font-semibold text-gray-900">{name}</h3>
-        <p className="text-sm text-gray-500">
-          {convert(width, unit)} x {convert(height, unit)} x {convert(depth, unit)} {unit}
-          {" | "}Spacing: {convert(spacing ?? 0, unit)} {unit}
-          {maxWeight != null && ` | Max: ${(unit === "in" ? maxWeight / 28.3495 : maxWeight).toFixed(1)}${unit === "in" ? "oz" : "g"}`}
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button type="button" variant="secondary" size="sm" onClick={() => setIsEditDialogOpen(true)}>
-          Edit
-        </Button>
-        <Button
-          type="button"
-          variant="danger"
-          size="sm"
-          onClick={handleDelete}
-          disabled={deleting}
-        >
-          {deleting ? "..." : "Delete"}
-        </Button>
-      </div>
+    <>
+      <Card className="flex items-center justify-between">
+        <div>
+          <h3 className="font-semibold text-gray-900">{name}</h3>
+          <p className="text-sm text-gray-500">
+            {convert(width, unit)} x {convert(height, unit)} x {convert(depth, unit)} {unit}
+            {" | "}Spacing: {convert(spacing ?? 0, unit)} {unit}
+            {maxWeight != null && ` | Max: ${(unit === "in" ? maxWeight / 28.3495 : maxWeight).toFixed(1)}${unit === "in" ? "oz" : "g"}`}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="secondary" size="sm" onClick={() => setIsEditDialogOpen(true)}>
+            Edit
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            size="sm"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            disabled={deleting}
+          >
+            Delete
+          </Button>
+        </div>
 
-      <Dialog
-        open={isEditDialogOpen}
-        title={`Edit ${name}`}
-        onClose={() => setIsEditDialogOpen(false)}
-      >
-        <BoxForm
-          unit={unit}
-          box={{ id, name, width, height, depth, spacing, maxWeight }}
-          onSuccess={() => setIsEditDialogOpen(false)}
-        />
-      </Dialog>
-    </Card>
+        <Dialog
+          open={isEditDialogOpen}
+          title={`Edit ${name}`}
+          onClose={() => setIsEditDialogOpen(false)}
+        >
+          <BoxForm
+            unit={unit}
+            box={{ id, name, width, height, depth, spacing, maxWeight }}
+            onSuccess={() => setIsEditDialogOpen(false)}
+          />
+        </Dialog>
+      </Card>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        title="Delete packaging"
+        entityName={name}
+        error={deleteError}
+        loading={deleting}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setDeleteError("");
+        }}
+        onConfirm={handleDelete}
+      />
+    </>
   );
 }

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
 import type { ISubscriptionInfo } from "@/types";
 
 interface UsageWidgetProps {
@@ -17,7 +16,7 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
   );
 
   return (
-    <Card className="space-y-4 bg-slate-900 text-white">
+    <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-200">
@@ -37,7 +36,14 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
         ) : null}
       </div>
 
-      <div className="h-3 overflow-hidden rounded-full bg-white/15">
+      <div
+        className="h-3 overflow-hidden rounded-full bg-white/15"
+        role="progressbar"
+        aria-label="Monthly usage"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
         <div
           className="h-full rounded-full bg-blue-400 transition-[width]"
           style={{ width: `${progress}%` }}
@@ -49,6 +55,6 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
           ? "Starter includes 15 calculations per month."
           : "Upgrade to Business for unlimited calculations and API access."}
       </p>
-    </Card>
+    </div>
   );
 }
