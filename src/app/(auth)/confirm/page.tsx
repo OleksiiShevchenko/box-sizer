@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { confirmEmail } from "@/actions/auth-actions";
 import { Card } from "@/components/ui/card";
@@ -104,7 +104,16 @@ function ConfirmContent() {
 export default function ConfirmPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <ConfirmContent />
+      <Suspense
+        fallback={
+          <Card className="w-full max-w-md mx-auto text-center">
+            <div className="text-4xl mb-4">⏳</div>
+            <h1 className="text-2xl font-bold">Loading...</h1>
+          </Card>
+        }
+      >
+        <ConfirmContent />
+      </Suspense>
     </div>
   );
 }
