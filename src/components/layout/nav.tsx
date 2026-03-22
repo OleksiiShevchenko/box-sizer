@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PackwellLogo } from "@/components/layout/packwell-logo";
 import { UserMenu } from "@/components/layout/user-menu";
 
 const links = [
@@ -18,8 +19,8 @@ export function Nav() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-              Box Sizer
+            <Link href="/dashboard" className="flex items-center text-slate-950">
+              <PackwellLogo className="h-7 w-auto" />
             </Link>
             <div className="flex gap-1">
               {links.map((link) => {

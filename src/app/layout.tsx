@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Box Sizer - Find the Perfect Shipping Box",
+  title: "Packwell - Find the Perfect Shipping Box",
   description: "Determine the right shipment box size for your products",
 };
 

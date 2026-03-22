@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Card } from "@/components/ui/card";
 import type { ISubscriptionInfo } from "@/types";
 
 interface UsageWidgetProps {
@@ -16,45 +17,51 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
   );
 
   return (
-    <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+    <Card className="space-y-5 border-blue-100 bg-gradient-to-br from-white to-blue-50/40">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-200">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">
             Monthly Usage
           </p>
-          <h2 className="mt-2 text-2xl font-semibold">
+          <h2 className="mt-2 text-3xl font-semibold text-slate-950">
             {subscriptionInfo.usageCount} / {subscriptionInfo.usageLimit} calculations used
           </h2>
         </div>
         {subscriptionInfo.tier === "starter" ? (
           <Link
             href="/pricing"
-            className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-100"
+            className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
           >
             Upgrade Plan
           </Link>
         ) : null}
       </div>
 
-      <div
-        className="h-3 overflow-hidden rounded-full bg-white/15"
-        role="progressbar"
-        aria-label="Monthly usage"
-        aria-valuenow={progress}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      >
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-slate-600">Usage this month</span>
+          <span className="font-medium text-slate-900">{progress}%</span>
+        </div>
         <div
-          className="h-full rounded-full bg-blue-400 transition-[width]"
-          style={{ width: `${progress}%` }}
-        />
+          className="h-3 overflow-hidden rounded-full bg-slate-200"
+          role="progressbar"
+          aria-label="Monthly usage"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full rounded-full bg-blue-600 transition-[width]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
 
-      <p className="text-sm text-slate-300">
+      <p className="text-sm text-slate-600">
         {subscriptionInfo.tier === "starter"
           ? "Starter includes 15 calculations per month."
           : "Upgrade to Business for unlimited calculations and API access."}
       </p>
-    </div>
+    </Card>
   );
 }
