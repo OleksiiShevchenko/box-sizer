@@ -1,13 +1,24 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const TRANSACTIONAL_FROM_EMAIL = "noreply@packwell.io";
+
+async function sendEmailOrThrow(payload: Parameters<typeof resend.emails.send>[0]) {
+  const result = await resend.emails.send(payload);
+
+  if (result.error) {
+    throw new Error(result.error.message || "Failed to send email");
+  }
+
+  return result.data;
+}
 
 export async function sendVerificationEmail(email: string, token: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const confirmUrl = `${appUrl}/confirm?token=${token}&email=${encodeURIComponent(email)}`;
 
-  await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+  await sendEmailOrThrow({
+    from: process.env.RESEND_FROM_EMAIL || TRANSACTIONAL_FROM_EMAIL,
     to: email,
     subject: "Confirm your Box Sizer account",
     html: `
@@ -27,11 +38,15 @@ export async function sendVerificationEmail(email: string, token: string) {
   // Also notify config email about new signup
   const configEmail = process.env.CONFIG_EMAIL;
   if (configEmail) {
-    await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
-      to: configEmail,
-      subject: "New Box Sizer signup",
-      html: `<p>New user signed up: <strong>${email}</strong></p>`,
-    });
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || TRANSACTIONAL_FROM_EMAIL,
+        to: configEmail,
+        subject: "New Box Sizer signup",
+        html: `<p>New user signed up: <strong>${email}</strong></p>`,
+      });
+    } catch {
+      // Admin notifications are best-effort and must not block signup.
+    }
   }
 }
