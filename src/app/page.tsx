@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { PackwellLogo } from "@/components/layout/packwell-logo";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -16,9 +17,7 @@ export default async function Home() {
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl shadow-sm">
         <div className="flex justify-between items-center max-w-7xl mx-auto px-6 py-4">
-          <div className="text-xl font-bold tracking-tighter text-slate-900">
-            Packwell
-          </div>
+          <PackwellLogo className="h-8 w-auto text-slate-900" />
           <div className="hidden md:flex gap-8 items-center tracking-tight text-sm font-medium">
             <Link
               href="#"
@@ -783,8 +782,8 @@ export default async function Home() {
       <footer className="bg-slate-50 w-full pt-20 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-7xl mx-auto px-8">
           <div className="col-span-1" data-reveal="up">
-            <div className="text-lg font-bold text-slate-900 mb-6">
-              Packwell
+            <div className="mb-6">
+              <PackwellLogo className="h-7 w-auto text-slate-900" />
             </div>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
               Advanced packing intelligence for modern fulfillment. Engineering
