@@ -107,9 +107,9 @@ export default async function Home() {
               <div className="aspect-square bg-surface-container-low rounded-lg mb-6 flex items-center justify-center relative overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  alt="3D Packing Visualization"
-                  className="w-full h-full object-cover mix-blend-multiply opacity-80"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1dkRaLc_SavKm_hbo2-2KMLY2MA-HuUoFCnKJppaPpXJVWE0C06PFAWwuDGN_FGXjankSHmayo5RVELdu8I0WzPrVoYBUVkYPhoDNF0UVflefNsHlzfw7x3jDxAzUK8v9daS3iE9x_61_f0oVc7qxcmmeEh_fSd6rSipO-NcxFV1CJ5mM3vwXnw4gYvdFxqbVwR7CEtvn9ZeTn1OHG4dXmh1B5umXt6p7Hh6DR0TtgXqVWLwLztGwF67i21wByGExZ7-2vYDjXP9I"
+                  alt="Packwell box visualization"
+                  className="absolute inset-0 h-full w-full object-cover object-center -translate-y-[11px] sm:-translate-y-2 lg:-translate-y-1"
+                  src="/hero-box.png"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-container-low/50 to-transparent"></div>
               </div>
