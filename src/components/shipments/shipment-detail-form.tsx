@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { calculateAndSaveShipment } from "@/actions/shipment-actions";
 import { ProductForm } from "@/components/calculator/product-form";
 import { ProductList } from "@/components/calculator/product-list";
@@ -10,6 +11,8 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { IProduct, IShipment, PackingResult, UnitSystem } from "@/types";
 import { cmToInches, getTotalProductUnits, inchesToCm } from "@/types";
+
+const QUOTA_UPGRADE_SUFFIX = "Upgrade your plan to continue.";
 
 interface ShipmentDetailFormProps {
   shipment: IShipment;
@@ -109,6 +112,10 @@ export function ShipmentDetailForm({
 
   const editingItem = editingIndex != null ? items[editingIndex] : undefined;
   const totalUnits = getTotalProductUnits(items);
+  const showsQuotaUpgradeLink = error.endsWith(QUOTA_UPGRADE_SUFFIX);
+  const quotaErrorPrefix = showsQuotaUpgradeLink
+    ? error.slice(0, -QUOTA_UPGRADE_SUFFIX.length)
+    : "";
 
   return (
     <Card className="space-y-6">
@@ -172,7 +179,21 @@ export function ShipmentDetailForm({
         )}
       </div>
 
-      {error ? <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div> : null}
+      {error ? (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+          {showsQuotaUpgradeLink ? (
+            <>
+              {quotaErrorPrefix}
+              <Link href="/pricing" className="font-medium underline hover:no-underline">
+                Upgrade
+              </Link>{" "}
+              your plan to continue.
+            </>
+          ) : (
+            error
+          )}
+        </div>
+      ) : null}
 
       <div className="flex justify-end">
         <Button

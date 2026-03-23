@@ -166,4 +166,30 @@ describe("ShipmentDetailForm", () => {
       );
     });
   });
+
+  it("renders the quota upgrade error with a link to pricing", async () => {
+    const user = userEvent.setup();
+    calculateAndSaveShipment.mockResolvedValue({
+      error: "You have used all 15 calculations for this month. Upgrade your plan to continue.",
+    });
+
+    render(
+      <ShipmentDetailForm
+        shipment={shipment}
+        hasBoxes={true}
+        unitSystem="cm"
+        onCalculated={jest.fn()}
+        onNameChange={jest.fn()}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Calculate Best Box" }));
+
+    const upgradeLink = await screen.findByRole("link", { name: "Upgrade" });
+    expect(upgradeLink).toHaveAttribute("href", "/pricing");
+    expect(
+      screen.getByText("You have used all 15 calculations for this month.", { exact: false })
+    ).toBeInTheDocument();
+    expect(screen.getByText("your plan to continue.", { exact: false })).toBeInTheDocument();
+  });
 });
