@@ -32,8 +32,14 @@ function dim(value: number, unit: UnitSystem): string {
   return value.toFixed(1);
 }
 
+function shrinkDimension(value: number, inset: number) {
+  const appliedInset = Math.min(inset, Math.max((value - 0.001) / 2, 0));
+  return Math.max(value - appliedInset * 2, 0.001);
+}
+
 function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
   const { box, items } = result;
+  const renderInset = Math.min(Math.max(Math.max(box.width, box.height, box.depth) * 0.002, 0.03), 0.12);
   const boxPosition: [number, number, number] = [
     box.width / 2,
     box.height / 2,
@@ -66,10 +72,13 @@ function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
           item.y + item.height / 2,
           item.z + item.depth / 2,
         ];
+        const renderWidth = shrinkDimension(item.width, renderInset);
+        const renderHeight = shrinkDimension(item.height, renderInset);
+        const renderDepth = shrinkDimension(item.depth, renderInset);
 
         return (
           <mesh key={`${item.name}-${index}`} position={itemPosition}>
-            <boxGeometry args={[item.width, item.height, item.depth]} />
+            <boxGeometry args={[renderWidth, renderHeight, renderDepth]} />
             <meshBasicMaterial color={color} transparent opacity={0.6} />
             <Edges color={color} lineWidth={1} />
           </mesh>

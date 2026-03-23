@@ -16,7 +16,7 @@ interface BoxFormProps {
 type FieldErrors = Record<string, string>;
 
 function validateBoxValues(formData: FormData): FieldErrors {
-  const name = formData.get("name")?.toString().trim() ?? "";
+  const name = formData.get("boxName")?.toString().trim() ?? "";
   const width = formData.get("width")?.toString().trim() ?? "";
   const height = formData.get("height")?.toString().trim() ?? "";
   const depth = formData.get("depth")?.toString().trim() ?? "";
@@ -132,8 +132,8 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
       )}
 
       <Input
-        id="name"
-        name="name"
+        id="box-name"
+        name="boxName"
         label="Box Name"
         placeholder="e.g., Small Box"
         defaultValue={box?.name ?? ""}

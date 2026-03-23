@@ -61,6 +61,32 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+a[href],
+button,
+[role="button"],
+label[for],
+summary,
+select,
+input:is(
+    [type="button"],
+    [type="submit"],
+    [type="reset"],
+    [type="checkbox"],
+    [type="radio"],
+    [type="file"],
+    [type="color"],
+    [type="range"],
+    [type="image"]
+  ) {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"],
+input:disabled:is([type="button"], [type="submit"], [type="reset"]) {
+  cursor: not-allowed;
+}
+
 .scroll-reveal-ready [data-reveal] {
   --reveal-x: 0px;
   --reveal-y: 32px;

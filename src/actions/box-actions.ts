@@ -49,7 +49,7 @@ function mapZodIssuesToFieldErrors(error: z.ZodError): BoxFieldErrors {
 
 function parseBoxFormData(formData: FormData) {
   return createBoxSchema.safeParse({
-    name: formData.get("name")?.toString() ?? "",
+    name: formData.get("boxName")?.toString() ?? "",
     width: parseOptionalNumber(formData.get("width")),
     height: parseOptionalNumber(formData.get("height")),
     depth: parseOptionalNumber(formData.get("depth")),

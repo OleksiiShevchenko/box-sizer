@@ -48,7 +48,7 @@ export function ProductForm({
       ? Number(formData.get("quantity"))
       : (initialProduct?.quantity ?? 1);
     const weightStr = formData.get("weight")?.toString().trim() ?? "";
-    const name = (formData.get("name") as string) || "Product";
+    const name = (formData.get("productName") as string) || "Product";
 
     if (showQuantity) {
       if (!formData.get("quantity")?.toString().trim()) {
@@ -124,7 +124,7 @@ export function ProductForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
         id="product-name"
-        name="name"
+        name="productName"
         label="Product Name"
         placeholder="e.g., T-Shirt"
         defaultValue={initialProduct?.name ?? ""}
