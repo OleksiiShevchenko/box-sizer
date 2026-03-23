@@ -40,6 +40,7 @@ function shrinkDimension(value: number, inset: number) {
 function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
   const { box, items } = result;
   const renderInset = Math.min(Math.max(Math.max(box.width, box.height, box.depth) * 0.002, 0.03), 0.12);
+  const outlineInset = Math.min(Math.max(Math.max(box.width, box.height, box.depth) * 0.0015, 0.02), 0.08);
   const boxPosition: [number, number, number] = [
     box.width / 2,
     box.height / 2,
@@ -53,8 +54,14 @@ function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
 
   return (
     <group position={centeredOffset}>
-      <mesh position={boxPosition}>
-        <boxGeometry args={[box.width, box.height, box.depth]} />
+      <mesh position={boxPosition} renderOrder={3}>
+        <boxGeometry
+          args={[
+            box.width + outlineInset * 2,
+            box.height + outlineInset * 2,
+            box.depth + outlineInset * 2,
+          ]}
+        />
         <meshBasicMaterial transparent opacity={0} />
         <Edges
           color="#6b7280"
@@ -62,6 +69,8 @@ function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
           dashSize={0.45}
           gapSize={0.25}
           lineWidth={1}
+          renderOrder={3}
+          depthTest={false}
         />
       </mesh>
 
@@ -77,10 +86,10 @@ function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
         const renderDepth = shrinkDimension(item.depth, renderInset);
 
         return (
-          <mesh key={`${item.name}-${index}`} position={itemPosition}>
+          <mesh key={`${item.name}-${index}`} position={itemPosition} renderOrder={1}>
             <boxGeometry args={[renderWidth, renderHeight, renderDepth]} />
-            <meshBasicMaterial color={color} transparent opacity={0.6} />
-            <Edges color={color} lineWidth={1} />
+            <meshBasicMaterial color={color} transparent opacity={0.6} depthWrite={false} />
+            <Edges color={color} lineWidth={1} renderOrder={2} />
           </mesh>
         );
       })}
