@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { getCurrentUserId } from "@/lib/current-user";
 import {
   getPriceIdForSelection,
   isBillingInterval,
@@ -76,15 +76,6 @@ function unixSecondsToDate(value: number | null | undefined): Date | null {
   return typeof value === "number" ? new Date(value * 1000) : null;
 }
 
-async function getAuthUserId(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  return session.user.id;
-}
-
 async function syncSubscriptionSnapshot(userId: string, subscription: {
   id: string;
   status: string;
@@ -112,7 +103,7 @@ export async function createCheckoutSession(
     return { error: "Invalid subscription selection" };
   }
 
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const appUrl = await getAppUrl();
   const priceId = getPriceIdForSelection(tier, interval);
 
@@ -151,7 +142,7 @@ export async function createCheckoutSession(
 }
 
 export async function createBillingPortalSession(): Promise<{ url?: string; error?: string }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const appUrl = await getAppUrl();
   const { stripeCustomerId } = await getOrCreateStripeCustomer(userId);
   const session = await stripe.billingPortal.sessions.create({
@@ -163,7 +154,7 @@ export async function createBillingPortalSession(): Promise<{ url?: string; erro
 }
 
 export async function getSubscriptionInfo(): Promise<ISubscriptionInfo> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   return getSubscriptionInfoForUser(userId);
 }
 
@@ -172,7 +163,7 @@ export async function cancelSubscription(): Promise<{
   error?: string;
   subscription?: ISubscriptionInfo;
 }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const subscription = await getUserSubscription(userId);
 
   if (!subscription.stripeSubscriptionId) {
@@ -199,7 +190,7 @@ export async function resumeSubscription(): Promise<{
   error?: string;
   subscription?: ISubscriptionInfo;
 }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const subscription = await getUserSubscription(userId);
 
   if (!subscription.stripeSubscriptionId) {

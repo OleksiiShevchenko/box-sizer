@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod/v4";
-import { auth } from "@/lib/auth";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import {
   calculateIdealBoxPacking,
@@ -34,15 +34,6 @@ const calculateShipmentSchema = z.object({
   items: z.array(shipmentItemSchema).min(1, "Add at least one item"),
 });
 
-async function getAuthUserId(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  return session.user.id;
-}
-
 function isMissingShipmentSchemaError(error: unknown): boolean {
   return (
     error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -56,7 +47,7 @@ export async function getShipments(
   page = 1,
   pageSize = 10
 ): Promise<{ shipments: IShipmentListItem[]; totalCount: number; schemaReady: boolean }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const normalizedPage = Math.max(1, Math.floor(page));
   const normalizedPageSize = Math.max(1, Math.floor(pageSize));
   const skip = (normalizedPage - 1) * normalizedPageSize;
@@ -112,7 +103,7 @@ export async function getShipments(
 }
 
 export async function getShipment(id: string): Promise<IShipment | null> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   try {
     const shipment = await prisma.shipment.findFirst({
       where: {
@@ -154,7 +145,7 @@ export async function getShipment(id: string): Promise<IShipment | null> {
 }
 
 export async function createShipment(name = "Untitled Shipment"): Promise<{ id: string }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const shipment = await prisma.shipment.create({
     data: {
       userId,
@@ -178,7 +169,7 @@ export async function calculateAndSaveShipment(
   idealResult?: PackingResult | null;
   error?: string;
 }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const shipment = await prisma.shipment.findFirst({
     where: {
       id,
@@ -327,7 +318,7 @@ export async function calculateAndSaveShipment(
 }
 
 export async function deleteShipment(id: string): Promise<{ success?: true; error?: string }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const shipment = await prisma.shipment.findFirst({
     where: {
       id,

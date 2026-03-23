@@ -72,6 +72,7 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
                   <td className="px-4 py-4">
                     <Link
                       href={`/dashboard/shipments/${shipment.id}`}
+                      prefetch={false}
                       className="font-medium text-gray-900 underline decoration-transparent transition-colors hover:text-blue-600 hover:decoration-blue-600"
                     >
                       {shipment.name}
@@ -110,6 +111,7 @@ export function ShipmentTable({ shipments, unitSystem, onDeleted }: ShipmentTabl
                     <div className="flex justify-end gap-2">
                       <Link
                         href={`/dashboard/shipments/${shipment.id}`}
+                        prefetch={false}
                         className="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
                       >
                         Edit

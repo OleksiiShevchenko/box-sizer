@@ -3,24 +3,15 @@
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { z } from "zod/v4";
-import { auth } from "@/lib/auth";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import type { IProfile, UnitSystem } from "@/types";
 
 const emailSchema = z.string().trim().email("Enter a valid email address");
 const passwordSchema = z.string().min(8, "Password must be at least 8 characters");
 
-async function getAuthUserId(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  return session.user.id;
-}
-
 export async function getProfile(): Promise<IProfile> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const [user, googleAccount] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: userId },
@@ -46,7 +37,7 @@ export async function getProfile(): Promise<IProfile> {
 export async function updateEmail(
   email: string
 ): Promise<{ success?: true; error?: string }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const parsedEmail = emailSchema.safeParse(email);
   if (!parsedEmail.success) {
     return { error: parsedEmail.error.issues[0]?.message ?? "Invalid email" };
@@ -90,7 +81,7 @@ export async function updatePassword(
   currentPassword: string,
   nextPassword: string
 ): Promise<{ success?: true; error?: string }> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const parsedPassword = passwordSchema.safeParse(nextPassword);
   if (!parsedPassword.success) {
     return {
@@ -132,7 +123,7 @@ export async function updatePassword(
 }
 
 export async function getUnitSystem(): Promise<UnitSystem> {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     select: { unitSystem: true },
@@ -147,7 +138,7 @@ export async function updateUnitSystem(
     return { error: "Invalid unit system" };
   }
 
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   await prisma.user.update({
     where: { id: userId },
     data: { unitSystem },
