@@ -1,9 +1,9 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod/v4";
 import { revalidatePath } from "next/cache";
+import { getCurrentUserId } from "@/lib/current-user";
 
 const createBoxSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -58,24 +58,26 @@ function parseBoxFormData(formData: FormData) {
   });
 }
 
-async function getAuthUserId(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
-  return session.user.id;
-}
-
 export async function getBoxes() {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   return prisma.box.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
   });
 }
 
+export async function hasBoxes(): Promise<boolean> {
+  const userId = await getCurrentUserId();
+  const box = await prisma.box.findFirst({
+    where: { userId },
+    select: { id: true },
+  });
+
+  return Boolean(box);
+}
+
 export async function createBox(formData: FormData) {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const parsed = parseBoxFormData(formData);
   if (!parsed.success) {
     return { fieldErrors: mapZodIssuesToFieldErrors(parsed.error) };
@@ -94,7 +96,7 @@ export async function createBox(formData: FormData) {
 }
 
 export async function updateBox(id: string, formData: FormData) {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
 
   const box = await prisma.box.findUnique({ where: { id } });
   if (!box || box.userId !== userId) {
@@ -117,7 +119,7 @@ export async function updateBox(id: string, formData: FormData) {
 }
 
 export async function deleteBox(id: string) {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
 
   const box = await prisma.box.findUnique({ where: { id } });
   if (!box || box.userId !== userId) {

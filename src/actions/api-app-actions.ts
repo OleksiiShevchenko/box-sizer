@@ -4,19 +4,10 @@ import { randomBytes, randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { z } from "zod/v4";
-import { auth } from "@/lib/auth";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
 const apiAppNameSchema = z.string().trim().min(1, "Name is required").max(120, "Name is too long");
-
-async function getAuthUserId() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  return session.user.id;
-}
 
 function mapApiApp(app: {
   id: string;
@@ -37,7 +28,7 @@ function mapApiApp(app: {
 }
 
 export async function getApiApps() {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const apps = await prisma.apiApp.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -47,7 +38,7 @@ export async function getApiApps() {
 }
 
 export async function createApiApp(name: string) {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const parsedName = apiAppNameSchema.safeParse(name);
 
   if (!parsedName.success) {
@@ -76,7 +67,7 @@ export async function createApiApp(name: string) {
 }
 
 export async function updateApiAppName(publicId: string, name: string) {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const parsedName = apiAppNameSchema.safeParse(name);
 
   if (!parsedName.success) {
@@ -107,7 +98,7 @@ export async function updateApiAppName(publicId: string, name: string) {
 }
 
 export async function deleteApiApp(publicId: string) {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const app = await prisma.apiApp.findFirst({
     where: {
       publicId,
@@ -129,7 +120,7 @@ export async function deleteApiApp(publicId: string) {
 }
 
 export async function regenerateClientSecret(publicId: string) {
-  const userId = await getAuthUserId();
+  const userId = await getCurrentUserId();
   const app = await prisma.apiApp.findFirst({
     where: {
       publicId,
