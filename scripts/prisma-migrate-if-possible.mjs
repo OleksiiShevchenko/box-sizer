@@ -85,6 +85,13 @@ function bootstrapFreshDatabase() {
   }
 }
 
+function resetMigrationHistory() {
+  console.log("Resetting incomplete Prisma migration history on empty database...");
+  runPrismaCommand(["db", "execute", "--stdin", `--url=${migrationDatabaseUrl}`], {
+    input: 'DROP TABLE IF EXISTS "_prisma_migrations";',
+  });
+}
+
 if (!directConnectionPattern.test(migrationDatabaseUrl)) {
   console.log(
     "Skipping prisma migrate deploy: no direct database connection was provided."
@@ -103,19 +110,24 @@ const prisma = new PrismaClient({
 try {
   const migrationsTablePresent = await tableExists(prisma, "_prisma_migrations");
   const userTablePresent = await tableExists(prisma, "User");
+  let bootstrapped = false;
 
-  if (!migrationsTablePresent) {
-    if (userTablePresent) {
-      throw new Error(
-        "Database contains app tables but has no Prisma migration history. Refusing to guess how to baseline it."
-      );
+  if (!userTablePresent) {
+    if (migrationsTablePresent) {
+      resetMigrationHistory();
     }
-
     bootstrapFreshDatabase();
+    bootstrapped = true;
+  } else if (!migrationsTablePresent) {
+    throw new Error(
+      "Database contains app tables but has no Prisma migration history. Refusing to guess how to baseline it."
+    );
   }
 
-  console.log("Running prisma migrate deploy before build...");
-  runPrismaCommand(["migrate", "deploy", `--schema=${schemaPath}`]);
+  if (!bootstrapped) {
+    console.log("Running prisma migrate deploy before build...");
+    runPrismaCommand(["migrate", "deploy", `--schema=${schemaPath}`]);
+  }
 } finally {
   await prisma.$disconnect();
 }
