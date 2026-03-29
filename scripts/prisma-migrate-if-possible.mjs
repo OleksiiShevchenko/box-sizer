@@ -1,7 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import path from "node:path";
-import { tmpdir } from "node:os";
 import { PrismaClient } from "@prisma/client";
 
 const schemaPath = path.resolve("prisma/schema.prisma");
@@ -23,7 +22,7 @@ function runPrismaCommand(args, options = {}) {
   execFileSync("pnpm", ["exec", "prisma", ...args], {
     stdio: "inherit",
     env: getMigrationEnv(),
-    timeout: 30_000,
+    timeout: 60_000,
     ...options,
   });
 }
@@ -49,32 +48,8 @@ async function tableExists(prisma, tableName) {
 
 function bootstrapFreshDatabase() {
   console.log("Bootstrapping fresh database schema from prisma/schema.prisma...");
-  const tempDir = mkdtempSync(path.join(tmpdir(), "box-sizer-prisma-"));
-  const bootstrapSqlPath = path.join(tempDir, "bootstrap.sql");
-
-  try {
-    console.log(`Writing bootstrap SQL to ${bootstrapSqlPath}...`);
-    runPrismaCommand([
-      "migrate",
-      "diff",
-      "--from-empty",
-      `--to-schema-datamodel=${schemaPath}`,
-      "--script",
-      `--output=${bootstrapSqlPath}`,
-    ]);
-
-    const bootstrapSql = readFileSync(bootstrapSqlPath, "utf8");
-    if (!bootstrapSql.trim()) {
-      throw new Error("Bootstrap SQL was empty.");
-    }
-
-    console.log("Applying bootstrap SQL...");
-    runPrismaCommand(["db", "execute", "--stdin", `--url=${migrationDatabaseUrl}`], {
-      input: bootstrapSql,
-    });
-  } finally {
-    rmSync(tempDir, { recursive: true, force: true });
-  }
+  console.log("Pushing schema with prisma db push...");
+  runPrismaCommand(["db", "push", `--schema=${schemaPath}`, "--skip-generate"]);
 
   for (const migrationName of getMigrationNames()) {
     runPrismaCommand([
