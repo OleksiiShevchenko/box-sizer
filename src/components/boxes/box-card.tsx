@@ -34,7 +34,7 @@ export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, un
       return true;
     }
 
-    setDeleteError(result.error ?? "Failed to delete packaging");
+    setDeleteError(result.error ?? "Failed to delete box");
     return false;
   }
 
@@ -79,7 +79,7 @@ export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, un
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}
-        title="Delete packaging"
+        title="Delete box"
         entityName={name}
         error={deleteError}
         loading={deleting}

@@ -7,6 +7,8 @@ import {
   type UnitSystem,
 } from "@/types";
 
+export type ApiMeasurementSystem = "metric" | "imperial";
+
 export type ApiMeasurementUnits = {
   unitSystem: UnitSystem;
   dimension: "cm" | "in";
@@ -16,6 +18,16 @@ export type ApiMeasurementUnits = {
 
 export function normalizeUnitSystem(unitSystem: string | null | undefined): UnitSystem {
   return unitSystem === "in" ? "in" : "cm";
+}
+
+export function getMeasurementSystem(unitSystem: UnitSystem): ApiMeasurementSystem {
+  return unitSystem === "in" ? "imperial" : "metric";
+}
+
+export function getUnitSystemFromMeasurementSystem(
+  measurementSystem: ApiMeasurementSystem
+): UnitSystem {
+  return measurementSystem === "imperial" ? "in" : "cm";
 }
 
 export function getMeasurementUnits(unitSystem: UnitSystem): ApiMeasurementUnits {
@@ -81,7 +93,7 @@ export function convertBoxInputToStorage<T extends {
   };
 }
 
-export function convertShipmentItemInputToStorage<T extends {
+export function convertPackingPlanItemInputToStorage<T extends {
   width: number;
   height: number;
   depth: number;

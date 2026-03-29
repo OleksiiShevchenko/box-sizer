@@ -1,9 +1,9 @@
 import { getBoxes } from "@/actions/box-actions";
 import { getUnitSystem } from "@/actions/profile-actions";
-import { PackagingSettingsClient } from "./client";
+import { BoxesSettingsClient } from "./client";
 
-export default async function PackagingPage() {
+export default async function BoxPage() {
   const [boxes, unitSystem] = await Promise.all([getBoxes(), getUnitSystem()]);
 
-  return <PackagingSettingsClient boxes={boxes} unitSystem={unitSystem} />;
+  return <BoxesSettingsClient boxes={boxes} unitSystem={unitSystem} />;
 }

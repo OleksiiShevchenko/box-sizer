@@ -1,16 +1,16 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ShipmentTable } from "./shipment-table";
+import { PackingPlanTable } from "./packing-plan-table";
 
-const deleteShipment = jest.fn();
+const deletePackingPlan = jest.fn();
 
-jest.mock("@/actions/shipment-actions", () => ({
-  deleteShipment: (...args: unknown[]) => deleteShipment(...args),
+jest.mock("@/actions/packing-plan-actions", () => ({
+  deletePackingPlan: (...args: unknown[]) => deletePackingPlan(...args),
 }));
 
-const shipments = [
+const packingPlans = [
   {
-    id: "shipment-1",
+    id: "packingPlan-1",
     name: "Order 1001",
     spacingOverride: null,
     dimensionalWeight: 4,
@@ -40,15 +40,15 @@ const shipments = [
   },
 ];
 
-describe("ShipmentTable", () => {
+describe("PackingPlanTable", () => {
   beforeEach(() => {
-    deleteShipment.mockReset();
+    deletePackingPlan.mockReset();
   });
 
-  it("renders the shipment columns and tooltip content", () => {
-    render(<ShipmentTable shipments={shipments} unitSystem="cm" />);
+  it("renders the packing plan columns and tooltip content", () => {
+    render(<PackingPlanTable packingPlans={packingPlans} unitSystem="cm" />);
 
-    expect(screen.getByRole("columnheader", { name: "Shipment" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Packing plan" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Units" })).toBeInTheDocument();
     expect(screen.getByText("Order 1001")).toBeInTheDocument();
     expect(screen.getByText("Poster x3")).toBeInTheDocument();
@@ -58,26 +58,26 @@ describe("ShipmentTable", () => {
   it("opens the delete dialog and confirms deletion", async () => {
     const user = userEvent.setup();
     const onDeleted = jest.fn();
-    deleteShipment.mockResolvedValue({ success: true });
+    deletePackingPlan.mockResolvedValue({ success: true });
 
-    render(<ShipmentTable shipments={shipments} unitSystem="cm" onDeleted={onDeleted} />);
+    render(<PackingPlanTable packingPlans={packingPlans} unitSystem="cm" onDeleted={onDeleted} />);
 
     await user.click(screen.getByRole("button", { name: "Delete" }));
-    expect(screen.getByRole("heading", { name: "Delete shipment" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Delete packing plan" })).toBeInTheDocument();
 
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: /^Delete$/ }));
 
     await waitFor(() => {
-      expect(deleteShipment).toHaveBeenCalledWith("shipment-1");
-      expect(onDeleted).toHaveBeenCalledWith("shipment-1");
+      expect(deletePackingPlan).toHaveBeenCalledWith("packingPlan-1");
+      expect(onDeleted).toHaveBeenCalledWith("packingPlan-1");
     });
   });
 
   it("keeps the delete dialog open and shows the error on failure", async () => {
     const user = userEvent.setup();
-    deleteShipment.mockResolvedValue({ error: "Delete failed" });
+    deletePackingPlan.mockResolvedValue({ error: "Delete failed" });
 
-    render(<ShipmentTable shipments={shipments} unitSystem="cm" />);
+    render(<PackingPlanTable packingPlans={packingPlans} unitSystem="cm" />);
 
     await user.click(screen.getByRole("button", { name: "Delete" }));
     await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: /^Delete$/ }));

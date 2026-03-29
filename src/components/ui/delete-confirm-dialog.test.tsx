@@ -11,7 +11,7 @@ describe("DeleteConfirmDialog", () => {
     render(
       <DeleteConfirmDialog
         open
-        entityName="Shipment A"
+        entityName="Packing Plan A"
         onClose={onClose}
         onConfirm={() => {
           onConfirm();
@@ -33,8 +33,8 @@ describe("DeleteConfirmDialog", () => {
     render(
       <DeleteConfirmDialog
         open
-        title="Delete shipment"
-        entityName="Shipment A"
+        title="Delete packing plan"
+        entityName="Packing Plan A"
         onClose={onClose}
         onConfirm={async () => {
           await onConfirm();
@@ -59,8 +59,8 @@ describe("DeleteConfirmDialog", () => {
     render(
       <DeleteConfirmDialog
         open
-        title="Delete shipment"
-        entityName="Shipment A"
+        title="Delete packing plan"
+        entityName="Packing Plan A"
         error="Deletion failed"
         onClose={onClose}
         onConfirm={onConfirm}

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { PackagingSettingsClient } from "./client";
+import { BoxesSettingsClient } from "./client";
 
 jest.mock("@/actions/box-actions", () => ({
   createBox: jest.fn().mockResolvedValue({ success: true }),
@@ -20,11 +20,11 @@ const boxes = [
   },
 ];
 
-describe("PackagingSettingsClient", () => {
+describe("BoxesSettingsClient", () => {
   it("opens and closes the add dialog", async () => {
     const user = userEvent.setup();
 
-    render(<PackagingSettingsClient boxes={boxes} unitSystem="cm" />);
+    render(<BoxesSettingsClient boxes={boxes} unitSystem="cm" />);
 
     await user.click(screen.getByRole("button", { name: "Add New Box" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();

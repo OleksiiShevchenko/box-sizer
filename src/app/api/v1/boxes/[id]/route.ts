@@ -1,6 +1,10 @@
 import { revalidatePath } from "next/cache";
 import { withApi } from "@/lib/api-middleware";
-import { convertBoxInputToStorage, getMeasurementUnits } from "@/lib/api-units";
+import {
+  convertBoxInputToStorage,
+  getMeasurementSystem,
+  getUnitSystemFromMeasurementSystem,
+} from "@/lib/api-units";
 import { apiErrorResponse, badRequest, notFound } from "@/lib/api-errors";
 import { mapBoxToApi } from "@/lib/api-mappers";
 import { apiJson } from "@/lib/api-response";
@@ -18,7 +22,7 @@ async function getBoxForRequest(userId: string, publicId: string) {
   });
 
   if (!box) {
-    throw notFound("Packaging not found");
+    throw notFound("Box not found");
   }
 
   return box;
@@ -30,7 +34,7 @@ export const GET = withApi(async (_request, ctx) => {
 
   return apiJson({
     ...mapBoxToApi(box, ctx.api.unitSystem),
-    units: getMeasurementUnits(ctx.api.unitSystem),
+    measurementUnits: getMeasurementSystem(ctx.api.unitSystem),
   });
 });
 
@@ -42,10 +46,12 @@ export const PUT = withApi(async (request, ctx) => {
     const parsed = boxBodySchema.safeParse(body);
 
     if (!parsed.success) {
-      throw badRequest(parsed.error.issues[0]?.message ?? "Invalid packaging body");
+      throw badRequest(parsed.error.issues[0]?.message ?? "Invalid box body");
     }
 
-    const requestUnitSystem = parsed.data.unitSystem;
+    const requestUnitSystem = getUnitSystemFromMeasurementSystem(
+      parsed.data.measurementUnits
+    );
     const normalized = convertBoxInputToStorage(parsed.data, requestUnitSystem);
     const updated = await prisma.box.update({
       where: { id: box.id },
@@ -59,12 +65,12 @@ export const PUT = withApi(async (request, ctx) => {
       },
     });
 
-    revalidatePath("/settings/packaging");
+    revalidatePath("/settings/boxes");
     revalidatePath("/dashboard");
 
     return apiJson({
       ...mapBoxToApi(updated, requestUnitSystem),
-      units: getMeasurementUnits(requestUnitSystem),
+      measurementUnits: getMeasurementSystem(requestUnitSystem),
     });
   } catch (error) {
     return apiErrorResponse(error);
@@ -79,7 +85,7 @@ export const DELETE = withApi(async (_request, ctx) => {
       where: { id: box.id },
     });
 
-    revalidatePath("/settings/packaging");
+    revalidatePath("/settings/boxes");
     revalidatePath("/dashboard");
 
     return apiJson({ id: box.publicId });

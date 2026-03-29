@@ -8,13 +8,13 @@ import { Dialog } from "@/components/ui/dialog";
 import type { UnitSystem } from "@/types";
 import type { BoxFormValues } from "@/components/boxes/types";
 
-export function PackagingSettingsClient({ boxes, unitSystem }: { boxes: BoxFormValues[]; unitSystem: UnitSystem }) {
+export function BoxesSettingsClient({ boxes, unitSystem }: { boxes: BoxFormValues[]; unitSystem: UnitSystem }) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Packaging Settings</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Box Settings</h1>
         <Button type="button" onClick={() => setIsAddDialogOpen(true)}>
           Add New Box
         </Button>

@@ -90,7 +90,7 @@ export async function createBox(formData: FormData) {
     },
   });
 
-  revalidatePath("/settings/packaging");
+  revalidatePath("/settings/boxes");
   revalidatePath("/dashboard");
   return { success: true };
 }
@@ -113,7 +113,7 @@ export async function updateBox(id: string, formData: FormData) {
     data: parsed.data,
   });
 
-  revalidatePath("/settings/packaging");
+  revalidatePath("/settings/boxes");
   revalidatePath("/dashboard");
   return { success: true };
 }
@@ -128,7 +128,7 @@ export async function deleteBox(id: string) {
 
   await prisma.box.delete({ where: { id } });
 
-  revalidatePath("/settings/packaging");
+  revalidatePath("/settings/boxes");
   revalidatePath("/dashboard");
   return { success: true };
 }

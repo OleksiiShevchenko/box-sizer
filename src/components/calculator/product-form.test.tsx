@@ -55,7 +55,7 @@ describe("ProductForm", () => {
     expect(onAdd).not.toHaveBeenCalled();
   });
 
-  it("includes quantity when the shipment form enables it", async () => {
+  it("includes quantity when the packingPlan form enables it", async () => {
     const user = userEvent.setup();
     const onAdd = jest.fn();
 

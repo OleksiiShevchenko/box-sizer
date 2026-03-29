@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Packwell - Find the Perfect Shipping Box",
-  description: "Determine the right shipment box size for your products",
+  description: "Determine the right box size for your products",
 };
 
 export default function RootLayout({

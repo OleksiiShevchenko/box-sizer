@@ -1,4 +1,4 @@
-import type { Box, Prisma, Shipment, ShipmentItem } from "@prisma/client";
+import type { Box, Prisma, PackingPlan, PackingPlanItem } from "@prisma/client";
 import type { PackingResult } from "@/types";
 import type { UnitSystem } from "@/types";
 import {
@@ -7,7 +7,7 @@ import {
   convertWeightToApi,
 } from "@/lib/api-units";
 
-export type ShipmentWithRelations = Prisma.ShipmentGetPayload<{
+export type PackingPlanWithRelations = Prisma.PackingPlanGetPayload<{
   include: {
     box: true;
     items: true;
@@ -28,7 +28,7 @@ export function mapBoxToApi(box: Box, unitSystem: UnitSystem) {
   };
 }
 
-export function mapShipmentItemToApi(item: ShipmentItem, unitSystem: UnitSystem) {
+export function mapPackingPlanItemToApi(item: PackingPlanItem, unitSystem: UnitSystem) {
   return {
     id: item.publicId,
     name: item.name,
@@ -43,8 +43,8 @@ export function mapShipmentItemToApi(item: ShipmentItem, unitSystem: UnitSystem)
   };
 }
 
-export function mapShipmentToApi(
-  shipment: ShipmentWithRelations | (Shipment & { box?: Box | null; items?: ShipmentItem[] }),
+export function mapPackingPlanToApi(
+  packingPlan: PackingPlanWithRelations | (PackingPlan & { box?: Box | null; items?: PackingPlanItem[] }),
   unitSystem: UnitSystem,
   options?: {
     visualization?: {
@@ -57,20 +57,20 @@ export function mapShipmentToApi(
   }
 ) {
   return {
-    id: shipment.publicId,
-    name: shipment.name,
+    id: packingPlan.publicId,
+    name: packingPlan.name,
     spacingOverride:
-      shipment.spacingOverride == null
+      packingPlan.spacingOverride == null
         ? null
-        : convertDimensionToApi(shipment.spacingOverride, unitSystem),
+        : convertDimensionToApi(packingPlan.spacingOverride, unitSystem),
     dimensionalWeight:
-      shipment.dimensionalWeight == null
+      packingPlan.dimensionalWeight == null
         ? null
-        : convertDimensionalWeightToApi(shipment.dimensionalWeight, unitSystem),
-    box: shipment.box ? mapBoxToApi(shipment.box, unitSystem) : null,
-    items: shipment.items?.map((item) => mapShipmentItemToApi(item, unitSystem)) ?? [],
-    createdAt: shipment.createdAt.toISOString(),
-    updatedAt: shipment.updatedAt.toISOString(),
+        : convertDimensionalWeightToApi(packingPlan.dimensionalWeight, unitSystem),
+    box: packingPlan.box ? mapBoxToApi(packingPlan.box, unitSystem) : null,
+    items: packingPlan.items?.map((item) => mapPackingPlanItemToApi(item, unitSystem)) ?? [],
+    createdAt: packingPlan.createdAt.toISOString(),
+    updatedAt: packingPlan.updatedAt.toISOString(),
     ...(options?.visualization ? { visualization: options.visualization } : {}),
   };
 }

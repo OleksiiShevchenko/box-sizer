@@ -6,7 +6,7 @@ import { BoxVisualization3D } from "@/components/calculator/box-visualization-3d
 import type { PackingResult, UnitSystem } from "@/types";
 import { cmToInches, kgToLbs } from "@/types";
 
-interface ShipmentResultPanelProps {
+interface PackingPlanResultPanelProps {
   results: PackingResult[] | null;
   idealResult: PackingResult | null;
   unitSystem: UnitSystem;
@@ -35,7 +35,7 @@ function ResultCards({
 
       {results.length > 1 ? (
         <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-700">
-          The shipment requires {results.length} boxes.
+          The packing plan requires {results.length} boxes.
         </div>
       ) : null}
 
@@ -70,11 +70,11 @@ function ResultCards({
   );
 }
 
-export function ShipmentResultPanel({
+export function PackingPlanResultPanel({
   results,
   idealResult,
   unitSystem,
-}: ShipmentResultPanelProps) {
+}: PackingPlanResultPanelProps) {
   const [activeTab, setActiveTab] = useState<"best" | "ideal">("best");
 
   if ((!results || results.length === 0) && !idealResult) {
@@ -150,7 +150,7 @@ export function ShipmentResultPanel({
           results={[idealResult]}
           unitSystem={unitSystem}
           title="Ideal Custom Box"
-          banner="Adding a box with these dimensions to your packaging options could reduce shipping costs."
+          banner="Adding a box with these dimensions to your box options could reduce shipping costs."
         />
       )}
     </div>

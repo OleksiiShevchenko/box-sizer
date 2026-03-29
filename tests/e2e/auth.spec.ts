@@ -39,7 +39,7 @@ test.describe("Authentication", () => {
   test("settings page redirects to login when not authenticated", async ({
     page,
   }) => {
-    await page.goto("/settings/packaging");
+    await page.goto("/settings/boxes");
     await expect(page).toHaveURL(/\/login/);
   });
 

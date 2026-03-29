@@ -18,7 +18,7 @@ export interface IProduct {
   orientation?: Orientation;
 }
 
-export interface IShipmentItem extends IProduct {
+export interface IPackingPlanItem extends IProduct {
   id: string;
 }
 
@@ -32,24 +32,24 @@ export interface IBox {
   maxWeight?: number | null;
 }
 
-export interface IShipment {
+export interface IPackingPlan {
   id: string;
   name: string;
   spacingOverride: number | null;
   box: IBox | null;
   dimensionalWeight: number | null;
-  items: IShipmentItem[];
+  items: IPackingPlanItem[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface IShipmentListItem {
+export interface IPackingPlanListItem {
   id: string;
   name: string;
   spacingOverride: number | null;
   dimensionalWeight: number | null;
   box: IBox | null;
-  items: IShipmentItem[];
+  items: IPackingPlanItem[];
   itemCount: number;
   createdAt: Date;
   updatedAt: Date;

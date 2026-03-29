@@ -51,6 +51,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
+For deployed environments, keep `DATABASE_URL` pointed at the runtime
+connection string and set `DIRECT_DATABASE_URL` to the direct Postgres
+connection used for Prisma schema management. The build now bootstraps a fresh
+database schema if needed, but it will fail the deployment if Prisma cannot
+apply or baseline the schema safely.
+
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

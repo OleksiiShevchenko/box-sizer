@@ -2,26 +2,26 @@
 
 import { useState } from "react";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
-import { ShipmentDetailForm } from "@/components/shipments/shipment-detail-form";
-import { ShipmentResultPanel } from "@/components/shipments/shipment-result-panel";
-import type { IShipment, PackingResult, UnitSystem } from "@/types";
+import { PackingPlanDetailForm } from "@/components/packing-plans/packing-plan-detail-form";
+import { PackingPlanResultPanel } from "@/components/packing-plans/packing-plan-result-panel";
+import type { IPackingPlan, PackingResult, UnitSystem } from "@/types";
 
-interface ShipmentDetailClientProps {
-  shipment: IShipment;
+interface PackingPlanDetailClientProps {
+  packingPlan: IPackingPlan;
   initialResults: PackingResult[] | null;
   initialIdealResult: PackingResult | null;
   hasBoxes: boolean;
   unitSystem: UnitSystem;
 }
 
-export function ShipmentDetailClient({
-  shipment,
+export function PackingPlanDetailClient({
+  packingPlan,
   initialResults,
   initialIdealResult,
   hasBoxes,
   unitSystem,
-}: ShipmentDetailClientProps) {
-  const [shipmentName, setShipmentName] = useState(shipment.name);
+}: PackingPlanDetailClientProps) {
+  const [packingPlanName, setPackingPlanName] = useState(packingPlan.name);
   const [results, setResults] = useState<PackingResult[] | null>(initialResults);
   const [idealResult, setIdealResult] = useState<PackingResult | null>(initialIdealResult);
 
@@ -29,24 +29,24 @@ export function ShipmentDetailClient({
     <div className="space-y-6">
       <Breadcrumbs
         items={[
-          { label: "Shipments", href: "/dashboard" },
-          { label: shipmentName || "Untitled Shipment" },
+          { label: "Packing plans", href: "/dashboard" },
+          { label: packingPlanName || "Untitled Packing Plan" },
         ]}
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <ShipmentDetailForm
-          shipment={shipment}
+        <PackingPlanDetailForm
+          packingPlan={packingPlan}
           hasBoxes={hasBoxes}
           unitSystem={unitSystem}
-          onNameChange={setShipmentName}
+          onNameChange={setPackingPlanName}
           onCalculated={(nextName, nextResults, nextIdealResult) => {
-            setShipmentName(nextName);
+            setPackingPlanName(nextName);
             setResults(nextResults);
             setIdealResult(nextIdealResult);
           }}
         />
-        <ShipmentResultPanel
+        <PackingPlanResultPanel
           results={results}
           idealResult={idealResult}
           unitSystem={unitSystem}

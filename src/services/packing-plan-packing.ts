@@ -15,7 +15,7 @@ export function applySpacingOverride(
   }));
 }
 
-export function calculateShipmentPacking(
+export function calculatePackingPlanPacking(
   boxes: IBox[],
   products: IProduct[],
   spacingOverride: number | null | undefined

@@ -1,7 +1,11 @@
 import { revalidatePath } from "next/cache";
 import type { NextRequest } from "next/server";
 import { withApi } from "@/lib/api-middleware";
-import { convertBoxInputToStorage, getMeasurementUnits } from "@/lib/api-units";
+import {
+  convertBoxInputToStorage,
+  getMeasurementSystem,
+  getUnitSystemFromMeasurementSystem,
+} from "@/lib/api-units";
 import { badRequest, apiErrorResponse } from "@/lib/api-errors";
 import { mapBoxToApi } from "@/lib/api-mappers";
 import { apiJson } from "@/lib/api-response";
@@ -46,7 +50,7 @@ export const GET = withApi(async (request, { api }) => {
       pageSize,
       totalPages: Math.max(1, Math.ceil(total / pageSize)),
     },
-    units: getMeasurementUnits(api.unitSystem),
+    measurementUnits: getMeasurementSystem(api.unitSystem),
   });
 });
 
@@ -55,10 +59,12 @@ export const POST = withApi(async (request, { api }) => {
     const body = await request.json();
     const parsed = boxBodySchema.safeParse(body);
     if (!parsed.success) {
-      throw badRequest(parsed.error.issues[0]?.message ?? "Invalid packaging body");
+      throw badRequest(parsed.error.issues[0]?.message ?? "Invalid box body");
     }
 
-    const requestUnitSystem = parsed.data.unitSystem;
+    const requestUnitSystem = getUnitSystemFromMeasurementSystem(
+      parsed.data.measurementUnits
+    );
     const normalized = convertBoxInputToStorage(parsed.data, requestUnitSystem);
     const box = await prisma.box.create({
       data: {
@@ -72,13 +78,13 @@ export const POST = withApi(async (request, { api }) => {
       },
     });
 
-    revalidatePath("/settings/packaging");
+    revalidatePath("/settings/boxes");
     revalidatePath("/dashboard");
 
     return apiJson(
       {
         ...mapBoxToApi(box, requestUnitSystem),
-        units: getMeasurementUnits(requestUnitSystem),
+        measurementUnits: getMeasurementSystem(requestUnitSystem),
       },
       201
     );

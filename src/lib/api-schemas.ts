@@ -30,6 +30,13 @@ export const unitSystemSchema = z.enum(["cm", "in"]).meta({
   example: "cm",
 });
 
+export const measurementSystemSchema = z.enum(["metric", "imperial"]).meta({
+  id: "MeasurementUnits",
+  description:
+    "Measurement system for request and response values. 'metric' uses centimeters and grams. 'imperial' uses inches and ounces.",
+  example: "metric",
+});
+
 export const measurementUnitsSchema = z.object({
   unitSystem: unitSystemSchema,
   dimension: z.enum(["cm", "in"]).meta({
@@ -46,10 +53,6 @@ export const measurementUnitsSchema = z.object({
   }),
 });
 
-export const boxMeasurementUnitsSchema = measurementUnitsSchema.omit({
-  dimensionalWeight: true,
-});
-
 const boxValueSchema = z.object({
   name: z.string().trim().min(1).max(120),
   width: z.number().positive(),
@@ -60,9 +63,9 @@ const boxValueSchema = z.object({
 });
 
 export const boxBodySchema = boxValueSchema.extend({
-  unitSystem: unitSystemSchema.meta({
+  measurementUnits: measurementSystemSchema.meta({
     description: "Required input unit system for all measurement values in this request.",
-    example: "in",
+    example: "imperial",
   }),
 });
 
@@ -73,10 +76,10 @@ export const boxApiSchema = boxValueSchema.extend({
 });
 
 export const boxResponseSchema = boxApiSchema.extend({
-  units: boxMeasurementUnitsSchema,
+  measurementUnits: measurementSystemSchema,
 });
 
-const shipmentItemValueSchema = z.object({
+const packingPlanItemValueSchema = z.object({
   name: z.string().trim().min(1).max(120),
   quantity: z.number().int().min(1).default(1).meta({
     description: "Number of identical units for this item definition",
@@ -91,9 +94,9 @@ const shipmentItemValueSchema = z.object({
   orientation: z.enum(["any", "horizontal", "vertical"]).default("any"),
 });
 
-export const shipmentItemBodySchema = shipmentItemValueSchema;
+export const packingPlanItemBodySchema = packingPlanItemValueSchema;
 
-export const shipmentItemResponseSchema = shipmentItemValueSchema.extend({
+export const packingPlanItemResponseSchema = packingPlanItemValueSchema.extend({
   id: publicIdSchema,
 });
 
@@ -129,39 +132,39 @@ export const visualizationSchema = z.object({
   topUrl: z.string().url(),
 });
 
-export const shipmentApiSchema = z.object({
+export const packingPlanApiSchema = z.object({
   id: publicIdSchema,
   name: z.string(),
   spacingOverride: z.number().nullable(),
   dimensionalWeight: z.number().nullable(),
   box: boxApiSchema.nullable(),
-  items: z.array(shipmentItemResponseSchema),
+  items: z.array(packingPlanItemResponseSchema),
   createdAt: isoDateSchema,
   updatedAt: isoDateSchema,
   visualization: visualizationSchema.optional(),
 });
 
-export const shipmentResponseSchema = shipmentApiSchema.extend({
+export const packingPlanResponseSchema = packingPlanApiSchema.extend({
   units: measurementUnitsSchema,
 });
 
-export const shipmentUpdateBodySchema = z.object({
+export const packingPlanUpdateBodySchema = z.object({
   unitSystem: unitSystemSchema.meta({
     description: "Required input unit system for all measurement values in this request.",
     example: "in",
   }),
   name: z.string().trim().min(1).max(120),
   spacingOverride: z.number().nonnegative().nullable().optional(),
-  items: z.array(shipmentItemBodySchema).min(1),
+  items: z.array(packingPlanItemBodySchema).min(1),
   renderVisualization: z.boolean().default(false),
 });
 
-export const calculateShipmentBodySchema = z.object({
+export const calculatePackingPlanBodySchema = z.object({
   unitSystem: unitSystemSchema.meta({
     description: "Required input unit system for all measurement values in this request.",
     example: "in",
   }),
-  items: z.array(shipmentItemBodySchema).min(1),
+  items: z.array(packingPlanItemBodySchema).min(1),
   spacingOverride: z.number().nonnegative().nullable().optional(),
   includeIdealBox: z.boolean().default(false),
   renderVisualization: z.boolean().default(false),
@@ -195,11 +198,11 @@ export const paginationResponseSchema = z.object({
 export const boxListResponseSchema = z.object({
   data: z.array(boxApiSchema),
   pagination: paginationResponseSchema,
-  units: boxMeasurementUnitsSchema,
+  measurementUnits: measurementSystemSchema,
 });
 
-export const shipmentListResponseSchema = z.object({
-  data: z.array(shipmentApiSchema),
+export const packingPlanListResponseSchema = z.object({
+  data: z.array(packingPlanApiSchema),
   pagination: paginationResponseSchema,
   units: measurementUnitsSchema,
 });
@@ -208,7 +211,8 @@ export const deleteResponseSchema = z.object({
   id: publicIdSchema,
 });
 
-export const shipmentCalculationResponseSchema = z.object({
+export const packingPlanCalculationResponseSchema = z.object({
+  id: publicIdSchema,
   units: measurementUnitsSchema,
   result: z.object({
     boxes: z.array(packingResultSchema),
@@ -217,9 +221,9 @@ export const shipmentCalculationResponseSchema = z.object({
   visualization: visualizationSchema.optional(),
 });
 
-export const shipmentUpdateResponseSchema = z.object({
+export const packingPlanUpdateResponseSchema = z.object({
   units: measurementUnitsSchema,
-  shipment: shipmentApiSchema,
+  packingPlan: packingPlanApiSchema,
   result: z.object({
     boxes: z.array(packingResultSchema),
     idealBox: packingResultSchema.nullable().optional(),

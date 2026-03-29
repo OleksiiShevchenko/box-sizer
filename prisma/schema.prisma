@@ -20,8 +20,8 @@ model User {
 
   accounts Account[]
   sessions Session[]
-  boxes    Box[]
-  shipments Shipment[]
+  boxes        Box[]
+  packingPlans PackingPlan[]
   subscription Subscription?
   calculationUsage CalculationUsage[]
   apiApps  ApiApp[]
@@ -74,14 +74,14 @@ model Box {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shipments Shipment[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packingPlans PackingPlan[]
 
   @@index([userId])
   @@index([publicId])
 }
 
-model Shipment {
+model PackingPlan {
   id                String         @id @default(cuid())
   publicId          String         @unique @default(uuid())
   userId            String
@@ -94,29 +94,29 @@ model Shipment {
 
   user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   box   Box?           @relation(fields: [boxId], references: [id], onDelete: SetNull)
-  items ShipmentItem[]
+  items PackingPlanItem[]
 
   @@index([userId])
   @@index([publicId])
 }
 
-model ShipmentItem {
-  id               String  @id @default(cuid())
-  publicId         String  @unique @default(uuid())
-  shipmentId       String
+model PackingPlanItem {
+  id               String      @id @default(cuid())
+  publicId         String      @unique @default(uuid())
+  packingPlanId    String
   name             String
-  quantity         Int     @default(1)
+  quantity         Int         @default(1)
   width            Float
   height           Float
   depth            Float
   weight           Float?
-  canStackOnTop    Boolean @default(true)
-  canBePlacedOnTop Boolean @default(true)
-  orientation      String  @default("any")
+  canStackOnTop    Boolean     @default(true)
+  canBePlacedOnTop Boolean     @default(true)
+  orientation      String      @default("any")
 
-  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  packingPlan PackingPlan @relation(fields: [packingPlanId], references: [id], onDelete: Cascade)
 
-  @@index([shipmentId])
+  @@index([packingPlanId])
   @@index([publicId])
 }
 

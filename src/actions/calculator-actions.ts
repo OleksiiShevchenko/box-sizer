@@ -27,7 +27,7 @@ export async function calculatePackingAction(
   });
 
   if (boxes.length === 0) {
-    return { error: "No boxes configured. Add packaging options first." };
+    return { error: "No boxes configured. Add box options first." };
   }
 
   try {
