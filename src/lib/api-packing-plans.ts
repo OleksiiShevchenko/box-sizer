@@ -134,12 +134,23 @@ export async function calculatePackingPlanForUser(
     };
   }
 
-  const results = calculatePackingPlanPacking(boxes, input.items, input.spacingOverride);
+  try {
+    const results = calculatePackingPlanPacking(boxes, input.items, input.spacingOverride);
 
-  return {
-    results,
-    idealResult,
-  };
+    return {
+      results,
+      idealResult,
+    };
+  } catch (error) {
+    if (includeIdealBox && idealResult) {
+      return {
+        results: [],
+        idealResult,
+      };
+    }
+
+    throw error;
+  }
 }
 
 export async function savePackingPlanCalculation(
