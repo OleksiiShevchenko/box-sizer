@@ -125,7 +125,7 @@ export function PricingClient({
               </div>
 
               <ul className="mt-8 space-y-3 text-sm text-slate-600">
-                <li>Saved boxes and shipments</li>
+                <li>Saved boxes and packing plans</li>
                 <li>
                   {plan.hasApiAccess ? "API access included" : "No API access on this plan"}
                 </li>

@@ -14,7 +14,7 @@ describe("BoxCard", () => {
     deleteBox.mockResolvedValue({ success: true });
   });
 
-  it("asks for confirmation before deleting packaging", async () => {
+  it("asks for confirmation before deleting box", async () => {
     const user = userEvent.setup();
 
     render(
@@ -33,7 +33,7 @@ describe("BoxCard", () => {
     await user.click(screen.getByRole("button", { name: "Delete" }));
 
     expect(deleteBox).not.toHaveBeenCalled();
-    expect(screen.getByRole("heading", { name: "Delete packaging" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Delete box" })).toBeInTheDocument();
     expect(screen.getByText('This will permanently delete "Mailer".')).toBeInTheDocument();
 
     await user.click(screen.getAllByRole("button", { name: "Delete" })[1]);

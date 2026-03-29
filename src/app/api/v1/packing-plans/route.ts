@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { withApi } from "@/lib/api-middleware";
 import { getMeasurementUnits } from "@/lib/api-units";
 import { badRequest } from "@/lib/api-errors";
-import { mapShipmentToApi } from "@/lib/api-mappers";
+import { mapPackingPlanToApi } from "@/lib/api-mappers";
 import { apiJson } from "@/lib/api-response";
 import { paginationQuerySchema } from "@/lib/api-schemas";
 import { prisma } from "@/lib/prisma";
@@ -25,8 +25,8 @@ function parsePagination(request: NextRequest) {
 export const GET = withApi(async (request, { api }) => {
   const { page, pageSize } = parsePagination(request);
   const skip = (page - 1) * pageSize;
-  const [shipments, total] = await Promise.all([
-    prisma.shipment.findMany({
+  const [packingPlans, total] = await Promise.all([
+    prisma.packingPlan.findMany({
       where: { userId: api.userId },
       include: {
         box: true,
@@ -38,13 +38,13 @@ export const GET = withApi(async (request, { api }) => {
       skip,
       take: pageSize,
     }),
-    prisma.shipment.count({
+    prisma.packingPlan.count({
       where: { userId: api.userId },
     }),
   ]);
 
   return apiJson({
-    data: shipments.map((shipment) => mapShipmentToApi(shipment, api.unitSystem)),
+    data: packingPlans.map((packingPlan) => mapPackingPlanToApi(packingPlan, api.unitSystem)),
     pagination: {
       total,
       page,

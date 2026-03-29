@@ -16,7 +16,7 @@ export default async function PricingPage() {
             Pricing
           </p>
           <h1 className="text-4xl font-semibold text-slate-950 sm:text-5xl">
-            Subscription plans for packaging teams of different sizes.
+            Subscription plans for box teams of different sizes.
           </h1>
           <p className="mx-auto max-w-2xl text-base leading-7 text-slate-600">
             Start free, move to Pro for consistent volume, or unlock Business for

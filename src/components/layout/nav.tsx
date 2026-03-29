@@ -6,8 +6,8 @@ import { PackwellLogo } from "@/components/layout/packwell-logo";
 import { UserMenu } from "@/components/layout/user-menu";
 
 const links = [
-  { href: "/dashboard", label: "Shipments" },
-  { href: "/settings/packaging", label: "Packaging" },
+  { href: "/dashboard", label: "Packing plans" },
+  { href: "/settings/boxes", label: "Boxes" },
   { href: "/settings/api", label: "API" },
 ];
 

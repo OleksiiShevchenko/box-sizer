@@ -2,8 +2,10 @@ import { describe, expect, it } from "@jest/globals";
 import {
   convertBoxInputToStorage,
   convertDimensionalWeightToApi,
-  convertShipmentItemInputToStorage,
+  convertPackingPlanItemInputToStorage,
+  getMeasurementSystem,
   getMeasurementUnits,
+  getUnitSystemFromMeasurementSystem,
   normalizeUnitSystem,
 } from "@/lib/api-units";
 
@@ -15,7 +17,7 @@ describe("api unit helpers", () => {
     expect(normalizeUnitSystem("other")).toBe("cm");
   });
 
-  it("converts packaging input from imperial to stored metric units", () => {
+  it("converts box input from imperial to stored metric units", () => {
     const box = convertBoxInputToStorage(
       {
         name: "Mailer",
@@ -35,8 +37,8 @@ describe("api unit helpers", () => {
     expect(box.maxWeight).toBeCloseTo(453.592);
   });
 
-  it("converts shipment item input from imperial to stored metric units", () => {
-    const item = convertShipmentItemInputToStorage(
+  it("converts packingPlan item input from imperial to stored metric units", () => {
+    const item = convertPackingPlanItemInputToStorage(
       {
         name: "Widget",
         quantity: 3,
@@ -57,7 +59,14 @@ describe("api unit helpers", () => {
     expect(item.quantity).toBe(3);
   });
 
-  it("returns explicit response unit metadata", () => {
+  it("maps box measurement systems", () => {
+    expect(getMeasurementSystem("cm")).toBe("metric");
+    expect(getMeasurementSystem("in")).toBe("imperial");
+    expect(getUnitSystemFromMeasurementSystem("metric")).toBe("cm");
+    expect(getUnitSystemFromMeasurementSystem("imperial")).toBe("in");
+  });
+
+  it("returns explicit packingPlan response unit metadata", () => {
     expect(getMeasurementUnits("cm")).toEqual({
       unitSystem: "cm",
       dimension: "cm",

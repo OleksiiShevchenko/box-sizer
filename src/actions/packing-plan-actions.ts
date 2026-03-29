@@ -7,16 +7,16 @@ import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 import {
   calculateIdealBoxPacking,
-  calculateShipmentPacking,
-} from "@/services/shipment-packing";
+  calculatePackingPlanPacking,
+} from "@/services/packing-plan-packing";
 import {
   canPerformCalculation,
   getSubscriptionInfoForUser,
   recordCalculationUsage,
 } from "@/services/subscription";
-import type { IProduct, IShipment, IShipmentListItem, Orientation, PackingResult } from "@/types";
+import type { IProduct, IPackingPlan, IPackingPlanListItem, Orientation, PackingResult } from "@/types";
 
-const shipmentItemSchema = z.object({
+const packingPlanItemSchema = z.object({
   name: z.string().trim().min(1, "Item name is required"),
   quantity: z.number().int().min(1, "Quantity must be at least 1").optional().default(1),
   width: z.number().positive("Width must be positive"),
@@ -28,33 +28,33 @@ const shipmentItemSchema = z.object({
   orientation: z.enum(["any", "horizontal", "vertical"]).optional().default("any"),
 });
 
-const calculateShipmentSchema = z.object({
-  name: z.string().trim().min(1, "Shipment name is required"),
+const calculatePackingPlanSchema = z.object({
+  name: z.string().trim().min(1, "Packing plan name is required"),
   spacingOverride: z.number().nonnegative("Spacing override must be non-negative").nullable(),
-  items: z.array(shipmentItemSchema).min(1, "Add at least one item"),
+  items: z.array(packingPlanItemSchema).min(1, "Add at least one item"),
 });
 
-function isMissingShipmentSchemaError(error: unknown): boolean {
+function isMissingPackingPlanSchemaError(error: unknown): boolean {
   return (
     error instanceof Prisma.PrismaClientKnownRequestError &&
     error.code === "P2021" &&
     typeof error.meta?.table === "string" &&
-    (error.meta.table.includes("Shipment") || error.meta.table.includes("ShipmentItem"))
+    (error.meta.table.includes("PackingPlan") || error.meta.table.includes("PackingPlanItem"))
   );
 }
 
-export async function getShipments(
+export async function getPackingPlans(
   page = 1,
   pageSize = 10
-): Promise<{ shipments: IShipmentListItem[]; totalCount: number; schemaReady: boolean }> {
+): Promise<{ packingPlans: IPackingPlanListItem[]; totalCount: number; schemaReady: boolean }> {
   const userId = await getCurrentUserId();
   const normalizedPage = Math.max(1, Math.floor(page));
   const normalizedPageSize = Math.max(1, Math.floor(pageSize));
   const skip = (normalizedPage - 1) * normalizedPageSize;
 
   try {
-    const [shipments, totalCount] = await Promise.all([
-      prisma.shipment.findMany({
+    const [packingPlans, totalCount] = await Promise.all([
+      prisma.packingPlan.findMany({
         where: { userId },
         include: {
           box: true,
@@ -66,33 +66,33 @@ export async function getShipments(
         skip,
         take: normalizedPageSize,
       }),
-      prisma.shipment.count({
+      prisma.packingPlan.count({
         where: { userId },
       }),
     ]);
 
     return {
-      shipments: shipments.map((shipment) => ({
-        id: shipment.id,
-        name: shipment.name,
-        spacingOverride: shipment.spacingOverride,
-        dimensionalWeight: shipment.dimensionalWeight,
-        box: shipment.box,
-        items: shipment.items.map((item) => ({
+      packingPlans: packingPlans.map((packingPlan) => ({
+        id: packingPlan.id,
+        name: packingPlan.name,
+        spacingOverride: packingPlan.spacingOverride,
+        dimensionalWeight: packingPlan.dimensionalWeight,
+        box: packingPlan.box,
+        items: packingPlan.items.map((item) => ({
           ...item,
           orientation: item.orientation as Orientation,
         })),
-        itemCount: shipment.items.reduce((total, item) => total + item.quantity, 0),
-        createdAt: shipment.createdAt,
-        updatedAt: shipment.updatedAt,
+        itemCount: packingPlan.items.reduce((total, item) => total + item.quantity, 0),
+        createdAt: packingPlan.createdAt,
+        updatedAt: packingPlan.updatedAt,
       })),
       totalCount,
       schemaReady: true,
     };
   } catch (error) {
-    if (isMissingShipmentSchemaError(error)) {
+    if (isMissingPackingPlanSchemaError(error)) {
       return {
-        shipments: [],
+        packingPlans: [],
         totalCount: 0,
         schemaReady: false,
       };
@@ -102,10 +102,10 @@ export async function getShipments(
   }
 }
 
-export async function getShipment(id: string): Promise<IShipment | null> {
+export async function getPackingPlan(id: string): Promise<IPackingPlan | null> {
   const userId = await getCurrentUserId();
   try {
-    const shipment = await prisma.shipment.findFirst({
+    const packingPlan = await prisma.packingPlan.findFirst({
       where: {
         id,
         userId,
@@ -118,25 +118,25 @@ export async function getShipment(id: string): Promise<IShipment | null> {
       },
     });
 
-    if (!shipment) {
+    if (!packingPlan) {
       return null;
     }
 
     return {
-      id: shipment.id,
-      name: shipment.name,
-      spacingOverride: shipment.spacingOverride,
-      box: shipment.box,
-      dimensionalWeight: shipment.dimensionalWeight,
-      items: shipment.items.map((item) => ({
+      id: packingPlan.id,
+      name: packingPlan.name,
+      spacingOverride: packingPlan.spacingOverride,
+      box: packingPlan.box,
+      dimensionalWeight: packingPlan.dimensionalWeight,
+      items: packingPlan.items.map((item) => ({
         ...item,
         orientation: item.orientation as Orientation,
       })),
-      createdAt: shipment.createdAt,
-      updatedAt: shipment.updatedAt,
+      createdAt: packingPlan.createdAt,
+      updatedAt: packingPlan.updatedAt,
     };
   } catch (error) {
-    if (isMissingShipmentSchemaError(error)) {
+    if (isMissingPackingPlanSchemaError(error)) {
       return null;
     }
 
@@ -144,9 +144,9 @@ export async function getShipment(id: string): Promise<IShipment | null> {
   }
 }
 
-export async function createShipment(name = "Untitled Shipment"): Promise<{ id: string }> {
+export async function createPackingPlan(name = "Untitled Packing Plan"): Promise<{ id: string }> {
   const userId = await getCurrentUserId();
-  const shipment = await prisma.shipment.create({
+  const packingPlan = await prisma.packingPlan.create({
     data: {
       userId,
       name,
@@ -154,10 +154,10 @@ export async function createShipment(name = "Untitled Shipment"): Promise<{ id: 
   });
 
   revalidatePath("/dashboard");
-  return { id: shipment.id };
+  return { id: packingPlan.id };
 }
 
-export async function calculateAndSaveShipment(
+export async function calculateAndSavePackingPlan(
   id: string,
   input: {
     name: string;
@@ -170,25 +170,25 @@ export async function calculateAndSaveShipment(
   error?: string;
 }> {
   const userId = await getCurrentUserId();
-  const shipment = await prisma.shipment.findFirst({
+  const packingPlan = await prisma.packingPlan.findFirst({
     where: {
       id,
       userId,
     },
   });
 
-  if (!shipment) {
-    return { error: "Shipment not found" };
+  if (!packingPlan) {
+    return { error: "Packing plan not found" };
   }
 
-  const parsed = calculateShipmentSchema.safeParse({
+  const parsed = calculatePackingPlanSchema.safeParse({
     name: input.name,
     spacingOverride: input.spacingOverride ?? null,
     items: input.items,
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid shipment data" };
+    return { error: parsed.error.issues[0]?.message ?? "Invalid packing plan data" };
   }
 
   const canCalculate = await canPerformCalculation(userId);
@@ -218,11 +218,11 @@ export async function calculateAndSaveShipment(
 
     try {
       await prisma.$transaction(async (tx) => {
-        await tx.shipmentItem.deleteMany({
-          where: { shipmentId: id },
+        await tx.packingPlanItem.deleteMany({
+          where: { packingPlanId: id },
         });
 
-        await tx.shipment.update({
+        await tx.packingPlan.update({
           where: { id },
           data: {
             name: parsed.data.name,
@@ -248,17 +248,17 @@ export async function calculateAndSaveShipment(
 
       await recordCalculationUsage(userId);
       revalidatePath("/dashboard");
-      revalidatePath(`/dashboard/shipments/${id}`);
+      revalidatePath(`/dashboard/packing-plans/${id}`);
       return { idealResult };
     } catch (error) {
       return {
-        error: error instanceof Error ? error.message : "Failed to calculate shipment",
+        error: error instanceof Error ? error.message : "Failed to calculate packing plan",
       };
     }
   }
 
   try {
-    const results = calculateShipmentPacking(
+    const results = calculatePackingPlanPacking(
       boxes,
       parsed.data.items,
       parsed.data.spacingOverride
@@ -275,11 +275,11 @@ export async function calculateAndSaveShipment(
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.shipmentItem.deleteMany({
-        where: { shipmentId: id },
+      await tx.packingPlanItem.deleteMany({
+        where: { packingPlanId: id },
       });
 
-      await tx.shipment.update({
+      await tx.packingPlan.update({
         where: { id },
         data: {
           name: parsed.data.name,
@@ -308,29 +308,29 @@ export async function calculateAndSaveShipment(
 
     await recordCalculationUsage(userId);
     revalidatePath("/dashboard");
-    revalidatePath(`/dashboard/shipments/${id}`);
+    revalidatePath(`/dashboard/packing-plans/${id}`);
     return { results, idealResult };
   } catch (error) {
     return {
-      error: error instanceof Error ? error.message : "Failed to calculate shipment",
+      error: error instanceof Error ? error.message : "Failed to calculate packing plan",
     };
   }
 }
 
-export async function deleteShipment(id: string): Promise<{ success?: true; error?: string }> {
+export async function deletePackingPlan(id: string): Promise<{ success?: true; error?: string }> {
   const userId = await getCurrentUserId();
-  const shipment = await prisma.shipment.findFirst({
+  const packingPlan = await prisma.packingPlan.findFirst({
     where: {
       id,
       userId,
     },
   });
 
-  if (!shipment) {
-    return { error: "Shipment not found" };
+  if (!packingPlan) {
+    return { error: "Packing plan not found" };
   }
 
-  await prisma.shipment.delete({
+  await prisma.packingPlan.delete({
     where: { id },
   });
 

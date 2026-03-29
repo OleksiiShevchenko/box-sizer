@@ -37,12 +37,12 @@
       "type": "string"
     },
     {
-      "key": "packagingId",
+      "key": "boxId",
       "value": "",
       "type": "string"
     },
     {
-      "key": "shipmentId",
+      "key": "packingPlanId",
       "value": "",
       "type": "string"
     }
@@ -111,22 +111,22 @@
       ]
     },
     {
-      "name": "Packaging",
+      "name": "Box",
       "item": [
         {
-          "name": "List Packaging",
+          "name": "List Box",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/packaging?page=1&pageSize=20",
+              "raw": "{{baseUrl}}/api/v1/boxes?page=1&pageSize=20",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "packaging"
+                "boxes"
               ],
               "query": [
                 {
@@ -139,12 +139,12 @@
                 }
               ]
             },
-            "description": "Returns the authenticated account's packaging list."
+            "description": "Returns the authenticated account's box list."
           },
           "response": []
         },
         {
-          "name": "Create Packaging",
+          "name": "Create Box",
           "event": [
             {
               "listen": "test",
@@ -154,7 +154,7 @@
                   "if (pm.response.code === 201) {",
                   "  var body = pm.response.json();",
                   "  if (body && body.id) {",
-                  "    pm.collectionVariables.set('packagingId', body.id);",
+                  "    pm.collectionVariables.set('boxId', body.id);",
                   "  }",
                   "}"
                 ]
@@ -172,7 +172,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Medium Carton\",\n  \"width\": 16,\n  \"height\": 12,\n  \"depth\": 10,\n  \"spacing\": 0.25,\n  \"maxWeight\": 25\n}",
+              "raw": "{\n  \"measurementUnits\": \"metric\",\n  \"name\": \"Medium Carton\",\n  \"width\": 16,\n  \"height\": 12,\n  \"depth\": 10,\n  \"spacing\": 0.25,\n  \"maxWeight\": 25\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -180,43 +180,43 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/packaging",
+              "raw": "{{baseUrl}}/api/v1/boxes",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "packaging"
+                "boxes"
               ]
             },
-            "description": "Creates a packaging record. `unitSystem` is required. On success, the returned id is saved to packagingId."
+            "description": "Creates a box record. `measurementUnits` is required and must be `metric` or `imperial`. On success, the returned id is saved to boxId."
           },
           "response": []
         },
         {
-          "name": "Get Packaging",
+          "name": "Get Box",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/packaging/{{packagingId}}",
+              "raw": "{{baseUrl}}/api/v1/boxes/{{boxId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "packaging",
-                "{{packagingId}}"
+                "boxes",
+                "{{boxId}}"
               ]
             },
-            "description": "Fetches a single packaging record by public id."
+            "description": "Fetches a single box record by public id."
           },
           "response": []
         },
         {
-          "name": "Update Packaging",
+          "name": "Update Box",
           "request": {
             "method": "PUT",
             "header": [
@@ -228,7 +228,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Medium Carton - Updated\",\n  \"width\": 16,\n  \"height\": 12,\n  \"depth\": 10,\n  \"spacing\": 0.5,\n  \"maxWeight\": 30\n}",
+              "raw": "{\n  \"measurementUnits\": \"metric\",\n  \"name\": \"Medium Carton - Updated\",\n  \"width\": 16,\n  \"height\": 12,\n  \"depth\": 10,\n  \"spacing\": 0.5,\n  \"maxWeight\": 30\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -236,61 +236,61 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/packaging/{{packagingId}}",
+              "raw": "{{baseUrl}}/api/v1/boxes/{{boxId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "packaging",
-                "{{packagingId}}"
+                "boxes",
+                "{{boxId}}"
               ]
             },
-            "description": "Updates an existing packaging record. `unitSystem` is required."
+            "description": "Updates an existing box record. `measurementUnits` is required and must be `metric` or `imperial`."
           },
           "response": []
         },
         {
-          "name": "Delete Packaging",
+          "name": "Delete Box",
           "request": {
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/packaging/{{packagingId}}",
+              "raw": "{{baseUrl}}/api/v1/boxes/{{boxId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "packaging",
-                "{{packagingId}}"
+                "boxes",
+                "{{boxId}}"
               ]
             },
-            "description": "Deletes a packaging record by public id."
+            "description": "Deletes a box record by public id."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "Shipments",
+      "name": "Packing Plans",
       "item": [
         {
-          "name": "List Shipments",
+          "name": "List Packing Plans",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/shipments?page=1&pageSize=20",
+              "raw": "{{baseUrl}}/api/v1/packing-plans?page=1&pageSize=20",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "shipments"
+                "packing-plans"
               ],
               "query": [
                 {
@@ -303,33 +303,33 @@
                 }
               ]
             },
-            "description": "Returns the authenticated account's shipments."
+            "description": "Returns the authenticated account's packing plans."
           },
           "response": []
         },
         {
-          "name": "Get Shipment",
+          "name": "Get Packing Plan",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/shipments/{{shipmentId}}",
+              "raw": "{{baseUrl}}/api/v1/packing-plans/{{packingPlanId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "shipments",
-                "{{shipmentId}}"
+                "packing-plans",
+                "{{packingPlanId}}"
               ]
             },
-            "description": "Fetches a shipment by public id."
+            "description": "Fetches a packing plan by public id."
           },
           "response": []
         },
         {
-          "name": "Update Shipment And Recalculate",
+          "name": "Update Packing Plan And Recalculate",
           "request": {
             "method": "PUT",
             "header": [
@@ -341,7 +341,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Demo Shipment\",\n  \"spacingOverride\": 0.25,\n  \"renderVisualization\": false,\n  \"items\": [\n    {\n      \"name\": \"Item A\",\n      \"quantity\": 3,\n      \"width\": 8,\n      \"height\": 4,\n      \"depth\": 6,\n      \"weight\": 250,\n      \"canStackOnTop\": true,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"any\"\n    },\n    {\n      \"name\": \"Item B\",\n      \"quantity\": 1,\n      \"width\": 5,\n      \"height\": 5,\n      \"depth\": 5,\n      \"weight\": 120,\n      \"canStackOnTop\": false,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"vertical\"\n    }\n  ]\n}",
+              "raw": "{\n  \"unitSystem\": \"cm\",\n  \"name\": \"Demo Packing Plan\",\n  \"spacingOverride\": 0.25,\n  \"renderVisualization\": false,\n  \"items\": [\n    {\n      \"name\": \"Item A\",\n      \"quantity\": 3,\n      \"width\": 8,\n      \"height\": 4,\n      \"depth\": 6,\n      \"weight\": 250,\n      \"canStackOnTop\": true,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"any\"\n    },\n    {\n      \"name\": \"Item B\",\n      \"quantity\": 1,\n      \"width\": 5,\n      \"height\": 5,\n      \"depth\": 5,\n      \"weight\": 120,\n      \"canStackOnTop\": false,\n      \"canBePlacedOnTop\": true,\n      \"orientation\": \"vertical\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -349,23 +349,23 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/shipments/{{shipmentId}}",
+              "raw": "{{baseUrl}}/api/v1/packing-plans/{{packingPlanId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "shipments",
-                "{{shipmentId}}"
+                "packing-plans",
+                "{{packingPlanId}}"
               ]
             },
-            "description": "Updates an existing shipment and recalculates its packing result. Use `quantity` to represent multiple identical units in one item entry. `unitSystem` is required."
+            "description": "Updates an existing packing plan and recalculates its packing result. Use `quantity` to represent multiple identical units in one item entry. `unitSystem` is required."
           },
           "response": []
         },
         {
-          "name": "Calculate Shipment",
+          "name": "Calculate Packing Plan",
           "request": {
             "method": "POST",
             "header": [
@@ -385,18 +385,18 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/shipments/calculate",
+              "raw": "{{baseUrl}}/api/v1/packing-plans/calculate",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "shipments",
+                "packing-plans",
                 "calculate"
               ]
             },
-            "description": "Calculates the best packaging for a shipment without saving anything. Use `quantity` to represent multiple identical units in one item entry. `unitSystem` is required."
+            "description": "Creates a packing plan record, saves the submitted items, and calculates the best box. The response includes the created packing plan id. Use `quantity` to represent multiple identical units in one item entry. `unitSystem` is required."
           },
           "response": []
         }

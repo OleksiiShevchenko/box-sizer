@@ -145,7 +145,7 @@ export async function updateUnitSystem(
   });
 
   revalidatePath("/settings/profile");
-  revalidatePath("/settings/packaging");
+  revalidatePath("/settings/boxes");
   revalidatePath("/dashboard");
   return { success: true };
 }

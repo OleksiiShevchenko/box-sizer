@@ -5,17 +5,17 @@ import {
   boxBodySchema,
   boxListResponseSchema,
   boxResponseSchema,
-  calculateShipmentBodySchema,
+  calculatePackingPlanBodySchema,
   deleteResponseSchema,
   oauthTokenRequestSchema,
   oauthTokenResponseSchema,
   paginationQuerySchema,
   publicIdSchema,
-  shipmentListResponseSchema,
-  shipmentResponseSchema,
-  shipmentCalculationResponseSchema,
-  shipmentUpdateBodySchema,
-  shipmentUpdateResponseSchema,
+  packingPlanListResponseSchema,
+  packingPlanResponseSchema,
+  packingPlanCalculationResponseSchema,
+  packingPlanUpdateBodySchema,
+  packingPlanUpdateResponseSchema,
 } from "@/lib/api-schemas";
 
 const idPathSchema = publicIdSchema.meta({
@@ -28,7 +28,7 @@ export function buildOpenApiDocument() {
     info: {
       title: "Packwell.io Public API",
       version: "1.0.0",
-      description: "OAuth-protected API for packaging, shipments, and packing calculations.",
+      description: "OAuth-protected API for boxes, packing plans, and packing calculations.",
     },
     components: {
       securitySchemes: {
@@ -79,16 +79,16 @@ export function buildOpenApiDocument() {
           },
         },
       },
-      "/api/v1/packaging": {
+      "/api/v1/boxes": {
         get: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "List packaging",
+          summary: "List boxes",
           requestParams: {
             query: paginationQuerySchema,
           },
           responses: {
             "200": {
-              description: "Paginated packaging list",
+              description: "Paginated boxes list",
               content: {
                 "application/json": {
                   schema: boxListResponseSchema,
@@ -99,7 +99,7 @@ export function buildOpenApiDocument() {
         },
         post: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "Create packaging",
+          summary: "Create a box",
           requestBody: {
             required: true,
             content: {
@@ -110,7 +110,7 @@ export function buildOpenApiDocument() {
           },
           responses: {
             "201": {
-              description: "Packaging created",
+              description: "Box created",
               content: {
                 "application/json": {
                   schema: boxResponseSchema,
@@ -120,16 +120,16 @@ export function buildOpenApiDocument() {
           },
         },
       },
-      "/api/v1/packaging/{id}": {
+      "/api/v1/boxes/{id}": {
         get: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "Get packaging",
+          summary: "Get a box",
           requestParams: {
             path: z.object({ id: idPathSchema }),
           },
           responses: {
             "200": {
-              description: "Packaging item",
+              description: "Box detail",
               content: {
                 "application/json": {
                   schema: boxResponseSchema,
@@ -140,7 +140,7 @@ export function buildOpenApiDocument() {
         },
         put: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "Update packaging",
+          summary: "Update a box",
           requestParams: {
             path: z.object({ id: idPathSchema }),
           },
@@ -154,7 +154,7 @@ export function buildOpenApiDocument() {
           },
           responses: {
             "200": {
-              description: "Packaging updated",
+              description: "Box updated",
               content: {
                 "application/json": {
                   schema: boxResponseSchema,
@@ -165,13 +165,13 @@ export function buildOpenApiDocument() {
         },
         delete: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "Delete packaging",
+          summary: "Delete a box",
           requestParams: {
             path: z.object({ id: idPathSchema }),
           },
           responses: {
             "200": {
-              description: "Deleted packaging id",
+              description: "Deleted box id",
               content: {
                 "application/json": {
                   schema: deleteResponseSchema,
@@ -181,38 +181,38 @@ export function buildOpenApiDocument() {
           },
         },
       },
-      "/api/v1/shipments": {
+      "/api/v1/packing-plans": {
         get: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "List shipments",
+          summary: "List packing plans",
           requestParams: {
             query: paginationQuerySchema,
           },
           responses: {
             "200": {
-              description: "Paginated shipments list",
+              description: "Paginated packing plans list",
               content: {
                 "application/json": {
-                  schema: shipmentListResponseSchema,
+                  schema: packingPlanListResponseSchema,
                 },
               },
             },
           },
         },
       },
-      "/api/v1/shipments/{id}": {
+      "/api/v1/packing-plans/{id}": {
         get: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "Get shipment",
+          summary: "Get a packing plan",
           requestParams: {
             path: z.object({ id: idPathSchema }),
           },
           responses: {
             "200": {
-              description: "Shipment detail",
+              description: "Packing plan detail",
               content: {
                 "application/json": {
-                  schema: shipmentResponseSchema,
+                  schema: packingPlanResponseSchema,
                 },
               },
             },
@@ -220,7 +220,7 @@ export function buildOpenApiDocument() {
         },
         put: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "Update shipment and recalculate packing",
+          summary: "Update a packing plan and recalculate packing",
           requestParams: {
             path: z.object({ id: idPathSchema }),
           },
@@ -228,40 +228,40 @@ export function buildOpenApiDocument() {
             required: true,
             content: {
               "application/json": {
-                schema: shipmentUpdateBodySchema,
+                schema: packingPlanUpdateBodySchema,
               },
             },
           },
           responses: {
             "200": {
-              description: "Updated shipment with packing results",
+              description: "Updated packing plan with packing results",
               content: {
                 "application/json": {
-                  schema: shipmentUpdateResponseSchema,
+                  schema: packingPlanUpdateResponseSchema,
                 },
               },
             },
           },
         },
       },
-      "/api/v1/shipments/calculate": {
+      "/api/v1/packing-plans/calculate": {
         post: {
           security: [{ OAuth2ClientCredentials: [] }],
-          summary: "Calculate best shipment packaging without saving",
+          summary: "Create a packing plan and calculate its box",
           requestBody: {
             required: true,
             content: {
               "application/json": {
-                schema: calculateShipmentBodySchema,
+                schema: calculatePackingPlanBodySchema,
               },
             },
           },
           responses: {
             "200": {
-              description: "Calculated shipment result",
+              description: "Created packing plan with calculated box result",
               content: {
                 "application/json": {
-                  schema: shipmentCalculationResponseSchema,
+                  schema: packingPlanCalculationResponseSchema,
                 },
               },
             },

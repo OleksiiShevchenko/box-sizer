@@ -3,21 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { createShipment } from "@/actions/shipment-actions";
+import { createPackingPlan } from "@/actions/packing-plan-actions";
 
-interface NewShipmentButtonProps {
+interface NewPackingPlanButtonProps {
   className?: string;
 }
 
-export function NewShipmentButton({ className }: NewShipmentButtonProps) {
+export function NewPackingPlanButton({ className }: NewPackingPlanButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
     setLoading(true);
     try {
-      const { id } = await createShipment();
-      router.push(`/dashboard/shipments/${id}`);
+      const { id } = await createPackingPlan();
+      router.push(`/dashboard/packing-plans/${id}`);
     } catch {
       setLoading(false);
     }
@@ -25,7 +25,7 @@ export function NewShipmentButton({ className }: NewShipmentButtonProps) {
 
   return (
     <Button className={className} disabled={loading} onClick={handleClick}>
-      {loading ? "Creating..." : "New Shipment"}
+      {loading ? "Creating..." : "New Packing Plan"}
     </Button>
   );
 }

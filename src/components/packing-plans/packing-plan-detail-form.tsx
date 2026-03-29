@@ -2,20 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { calculateAndSaveShipment } from "@/actions/shipment-actions";
+import { calculateAndSavePackingPlan } from "@/actions/packing-plan-actions";
 import { ProductForm } from "@/components/calculator/product-form";
 import { ProductList } from "@/components/calculator/product-list";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { IProduct, IShipment, PackingResult, UnitSystem } from "@/types";
+import type { IProduct, IPackingPlan, PackingResult, UnitSystem } from "@/types";
 import { cmToInches, getTotalProductUnits, inchesToCm } from "@/types";
 
 const QUOTA_UPGRADE_SUFFIX = "Upgrade your plan to continue.";
 
-interface ShipmentDetailFormProps {
-  shipment: IShipment;
+interface PackingPlanDetailFormProps {
+  packingPlan: IPackingPlan;
   hasBoxes: boolean;
   unitSystem: UnitSystem;
   onCalculated: (
@@ -26,20 +26,20 @@ interface ShipmentDetailFormProps {
   onNameChange: (name: string) => void;
 }
 
-export function ShipmentDetailForm({
-  shipment,
+export function PackingPlanDetailForm({
+  packingPlan,
   hasBoxes,
   unitSystem,
   onCalculated,
   onNameChange,
-}: ShipmentDetailFormProps) {
-  const [name, setName] = useState(shipment.name);
+}: PackingPlanDetailFormProps) {
+  const [name, setName] = useState(packingPlan.name);
   const [spacingOverride, setSpacingOverride] = useState(
-    shipment.spacingOverride != null
-      ? (unitSystem === "in" ? cmToInches(shipment.spacingOverride) : shipment.spacingOverride).toFixed(1)
+    packingPlan.spacingOverride != null
+      ? (unitSystem === "in" ? cmToInches(packingPlan.spacingOverride) : packingPlan.spacingOverride).toFixed(1)
       : ""
   );
-  const [items, setItems] = useState<IProduct[]>(shipment.items);
+  const [items, setItems] = useState<IProduct[]>(packingPlan.items);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -73,7 +73,7 @@ export function ShipmentDetailForm({
   async function handleCalculate() {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError("Shipment name is required");
+      setError("Packing plan name is required");
       return;
     }
 
@@ -95,7 +95,7 @@ export function ShipmentDetailForm({
 
     setLoading(true);
     setError("");
-    const result = await calculateAndSaveShipment(shipment.id, {
+    const result = await calculateAndSavePackingPlan(packingPlan.id, {
       name: trimmedName,
       items,
       spacingOverride: parsedSpacing,
@@ -120,23 +120,23 @@ export function ShipmentDetailForm({
   return (
     <Card className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-gray-900">Shipment Details</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Packing plan details</h1>
         <p className="text-sm text-gray-500">
           Measurements are displayed in {unitSystem === "in" ? "inches" : "centimeters"}. All values are stored in cm.
         </p>
       </div>
 
       <Input
-        id="shipment-name"
-        label="Shipment Name"
+        id="packing-plan-name"
+        label="Packing Plan Name"
         value={name}
         onChange={(event) => handleNameChange(event.target.value)}
       />
 
       <Input
-        id="shipment-spacing"
+        id="packing-plan-spacing"
         label={`Spacing Override (${unitSystem}, optional)`}
-        tooltip="Each packaging can have a custom item spacing configured, but you can override it on the shipment level."
+        tooltip="Each box can have a custom item spacing configured, but you can override it on the packing plan level."
         type="number"
         step="0.1"
         value={spacingOverride}
