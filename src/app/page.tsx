@@ -904,10 +904,10 @@ export default async function Home() {
         >
           <p>&copy; 2024 Packwell Inc. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="#" className="hover:text-slate-900">
+            <Link href="/privacy-policy" className="hover:text-slate-900">
               Privacy Policy
             </Link>
-            <Link href="#" className="hover:text-slate-900">
+            <Link href="/terms-of-service" className="hover:text-slate-900">
               Terms of Service
             </Link>
             <Link href="#" className="hover:text-slate-900">
