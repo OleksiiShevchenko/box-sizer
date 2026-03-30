@@ -7,6 +7,7 @@ import {
   type SubscriptionTier,
 } from "@/lib/subscription-plans";
 import { stripe } from "@/lib/stripe";
+import { notifyQuotaReached } from "@/services/email-notifications";
 
 export interface UserSubscription {
   userId: string;
@@ -81,6 +82,13 @@ function getCurrentMonthRange(now = new Date()): { start: Date; end: Date } {
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
   return { start, end };
+}
+
+export function formatUsagePeriodKey(now = new Date()): string {
+  const year = now.getFullYear();
+  const month = `${now.getMonth() + 1}`.padStart(2, "0");
+
+  return `${year}-${month}`;
 }
 
 export async function getUserSubscription(userId: string): Promise<UserSubscription> {
@@ -198,4 +206,37 @@ export async function getSubscriptionInfoForUser(userId: string): Promise<Subscr
     monthlyPriceCents: plan.monthlyPriceCents,
     annualPriceCents: plan.annualPriceCents,
   };
+}
+
+export async function notifyQuotaReachedIfNeeded(
+  userId: string,
+  now = new Date()
+): Promise<void> {
+  const subscriptionInfo = await getSubscriptionInfoForUser(userId);
+
+  if (subscriptionInfo.usageLimit === null || subscriptionInfo.usageCount < subscriptionInfo.usageLimit) {
+    return;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+
+  if (!user?.email) {
+    return;
+  }
+
+  try {
+    await notifyQuotaReached({
+      userId,
+      email: user.email,
+      planName: subscriptionInfo.planName,
+      usageCount: subscriptionInfo.usageCount,
+      usageLimit: subscriptionInfo.usageLimit,
+      periodKey: formatUsagePeriodKey(now),
+    });
+  } catch (error) {
+    console.error(error);
+  }
 }

@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
-import { getPlanFromPriceId, type SubscriptionStatus } from "@/lib/subscription-plans";
+import {
+  getPlanForTier,
+  getPlanFromPriceId,
+  type BillingInterval,
+  type SubscriptionStatus,
+  type SubscriptionTier,
+} from "@/lib/subscription-plans";
 import { stripe } from "@/lib/stripe";
+import {
+  notifySubscriptionPurchaseSuccess,
+  notifySubscriptionRenewalFailure,
+  notifySubscriptionRenewalSuccess,
+} from "@/services/email-notifications";
 
 export const runtime = "nodejs";
 
@@ -15,6 +26,14 @@ type StripeInvoiceWithSubscription = Stripe.Invoice & {
   subscription?: string | Stripe.Subscription | null;
 };
 
+type NotificationContext = {
+  userId: string;
+  email: string;
+  planName: string;
+  billingInterval: BillingInterval | null;
+  currentPeriodEnd: Date | null;
+};
+
 function unixSecondsToDate(value: number | null | undefined): Date | null {
   return typeof value === "number" ? new Date(value * 1000) : null;
 }
@@ -25,6 +44,22 @@ function normalizeStatus(value: string): SubscriptionStatus {
   }
 
   return "active";
+}
+
+function normalizeSubscriptionTier(value: string | null | undefined): SubscriptionTier | null {
+  if (value === "starter" || value === "pro" || value === "business") {
+    return value;
+  }
+
+  return null;
+}
+
+function normalizeBillingInterval(value: string | null | undefined): BillingInterval | null {
+  if (value === "monthly" || value === "annual") {
+    return value;
+  }
+
+  return null;
 }
 
 async function upsertSubscriptionFromStripe(subscription: StripeSubscriptionWithPeriods) {
@@ -127,6 +162,216 @@ async function markInvoiceAsPastDue(invoice: StripeInvoiceWithSubscription) {
   });
 }
 
+async function findStoredSubscriptionContext(args: {
+  userId?: string;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+}): Promise<NotificationContext | null> {
+  if (args.userId) {
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: args.userId },
+      select: {
+        userId: true,
+        billingInterval: true,
+        currentPeriodEnd: true,
+        tier: true,
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (subscription?.user.email) {
+      return {
+        userId: subscription.userId,
+        email: subscription.user.email,
+        planName: getPlanForTier(subscription.tier).name,
+        billingInterval: normalizeBillingInterval(subscription.billingInterval),
+        currentPeriodEnd: subscription.currentPeriodEnd,
+      };
+    }
+  }
+
+  const filters = [];
+
+  if (args.stripeCustomerId) {
+    filters.push({ stripeCustomerId: args.stripeCustomerId });
+  }
+
+  if (args.stripeSubscriptionId) {
+    filters.push({ stripeSubscriptionId: args.stripeSubscriptionId });
+  }
+
+  if (filters.length === 0) {
+    return null;
+  }
+
+  const subscription = await prisma.subscription.findFirst({
+    where: { OR: filters },
+    select: {
+      userId: true,
+      billingInterval: true,
+      currentPeriodEnd: true,
+      tier: true,
+      user: {
+        select: {
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!subscription?.user.email) {
+    return null;
+  }
+
+  return {
+    userId: subscription.userId,
+    email: subscription.user.email,
+    planName: getPlanForTier(subscription.tier).name,
+    billingInterval: normalizeBillingInterval(subscription.billingInterval),
+    currentPeriodEnd: subscription.currentPeriodEnd,
+  };
+}
+
+async function getCheckoutSessionNotificationContext(
+  session: Stripe.Checkout.Session
+): Promise<NotificationContext | null> {
+  const metadataUserId = session.metadata?.userId;
+  const stripeCustomerId =
+    typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
+  const stripeSubscriptionId =
+    typeof session.subscription === "string"
+      ? session.subscription
+      : session.subscription?.id ?? null;
+
+  const storedContext = await findStoredSubscriptionContext({
+    userId: metadataUserId,
+    stripeCustomerId,
+    stripeSubscriptionId,
+  });
+
+  const metadataTier = session.metadata?.tier ?? null;
+  const metadataInterval = session.metadata?.billingInterval ?? null;
+  const lineItemPriceId =
+    "line_items" in session ? session.line_items?.data[0]?.price?.id ?? null : null;
+  const mappedPlan = getPlanFromPriceId(lineItemPriceId);
+
+  const fallbackTier: SubscriptionTier =
+    normalizeSubscriptionTier(metadataTier) ?? mappedPlan?.tier ?? "starter";
+  const fallbackInterval: BillingInterval | null =
+    normalizeBillingInterval(metadataInterval) ?? mappedPlan?.interval ?? null;
+
+  if (storedContext) {
+    return {
+      ...storedContext,
+      planName:
+        storedContext.planName === getPlanForTier("starter").name && fallbackTier !== "starter"
+          ? getPlanForTier(fallbackTier).name
+          : storedContext.planName,
+      billingInterval: storedContext.billingInterval ?? fallbackInterval,
+    };
+  }
+
+  if (!metadataUserId) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: metadataUserId },
+    select: { email: true },
+  });
+
+  if (!user?.email) {
+    return null;
+  }
+
+  return {
+    userId: metadataUserId,
+    email: user.email,
+    planName: getPlanForTier(fallbackTier).name,
+    billingInterval: fallbackInterval,
+    currentPeriodEnd: null,
+  };
+}
+
+async function getInvoiceNotificationContext(
+  invoice: StripeInvoiceWithSubscription
+): Promise<NotificationContext | null> {
+  const stripeCustomerId =
+    typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id ?? null;
+  const stripeSubscriptionId =
+    typeof invoice.subscription === "string"
+      ? invoice.subscription
+      : invoice.subscription?.id ?? null;
+
+  return findStoredSubscriptionContext({
+    stripeCustomerId,
+    stripeSubscriptionId,
+  });
+}
+
+async function handleCheckoutSessionCompleted(event: Stripe.Event) {
+  const session = event.data.object as Stripe.Checkout.Session;
+
+  if (session.mode !== "subscription") {
+    return;
+  }
+
+  const context = await getCheckoutSessionNotificationContext(session);
+
+  if (!context) {
+    return;
+  }
+
+  await notifySubscriptionPurchaseSuccess({
+    ...context,
+    eventId: event.id,
+  });
+}
+
+async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
+  const invoice = event.data.object as StripeInvoiceWithSubscription;
+
+  if (!invoice.subscription || invoice.billing_reason !== "subscription_cycle") {
+    return;
+  }
+
+  const context = await getInvoiceNotificationContext(invoice);
+
+  if (!context) {
+    return;
+  }
+
+  await notifySubscriptionRenewalSuccess({
+    ...context,
+    eventId: event.id,
+  });
+}
+
+async function handleInvoicePaymentFailed(event: Stripe.Event) {
+  const invoice = event.data.object as StripeInvoiceWithSubscription;
+
+  await markInvoiceAsPastDue(invoice);
+
+  if (!invoice.subscription) {
+    return;
+  }
+
+  const context = await getInvoiceNotificationContext(invoice);
+
+  if (!context) {
+    return;
+  }
+
+  await notifySubscriptionRenewalFailure({
+    ...context,
+    eventId: event.id,
+  });
+}
+
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -148,6 +393,9 @@ export async function POST(request: Request) {
   }
 
   switch (event.type) {
+    case "checkout.session.completed":
+      await handleCheckoutSessionCompleted(event);
+      break;
     case "customer.subscription.created":
     case "customer.subscription.updated":
       await upsertSubscriptionFromStripe(event.data.object as Stripe.Subscription);
@@ -155,8 +403,11 @@ export async function POST(request: Request) {
     case "customer.subscription.deleted":
       await resetSubscriptionToStarter(event.data.object as StripeSubscriptionWithPeriods);
       break;
+    case "invoice.payment_succeeded":
+      await handleInvoicePaymentSucceeded(event);
+      break;
     case "invoice.payment_failed":
-      await markInvoiceAsPastDue(event.data.object as StripeInvoiceWithSubscription);
+      await handleInvoicePaymentFailed(event);
       break;
     default:
       break;

@@ -2,12 +2,15 @@ import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import {
   canPerformCalculation,
+  formatUsagePeriodKey,
   getCalculationUsageCount,
   getOrCreateStripeCustomer,
   getSubscriptionInfoForUser,
   getUserSubscription,
+  notifyQuotaReachedIfNeeded,
   recordCalculationUsage,
 } from "./subscription";
+import { notifyQuotaReached } from "@/services/email-notifications";
 
 jest.mock("@/lib/prisma", () => ({
   prisma: {
@@ -22,6 +25,7 @@ jest.mock("@/lib/prisma", () => ({
     },
     user: {
       findUniqueOrThrow: jest.fn(),
+      findUnique: jest.fn(),
     },
   },
 }));
@@ -34,12 +38,18 @@ jest.mock("@/lib/stripe", () => ({
   },
 }));
 
+jest.mock("@/services/email-notifications", () => ({
+  notifyQuotaReached: jest.fn(),
+}));
+
 const subscriptionFindUnique = prisma.subscription.findUnique as unknown as jest.Mock;
 const subscriptionCreate = prisma.subscription.create as unknown as jest.Mock;
 const calculationUsageCount = prisma.calculationUsage.count as unknown as jest.Mock;
 const calculationUsageCreate = prisma.calculationUsage.create as unknown as jest.Mock;
 const userFindUniqueOrThrow = prisma.user.findUniqueOrThrow as unknown as jest.Mock;
+const userFindUnique = prisma.user.findUnique as unknown as jest.Mock;
 const stripeCustomerCreate = stripe.customers.create as unknown as jest.Mock;
+const mockedNotifyQuotaReached = jest.mocked(notifyQuotaReached);
 
 describe("subscription service", () => {
   beforeEach(() => {
@@ -234,5 +244,63 @@ describe("subscription service", () => {
       hasApiAccess: true,
       planName: "Pro",
     });
+  });
+
+  it("formats usage period keys by calendar month", () => {
+    expect(formatUsagePeriodKey(new Date("2026-03-19T12:00:00.000Z"))).toBe("2026-03");
+  });
+
+  it("sends the quota email once usage is exhausted for the month", async () => {
+    subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "user-1",
+      stripeCustomerId: "cus_123",
+      stripeSubscriptionId: "sub_123",
+      stripePriceId: "price_pro_monthly",
+      tier: "pro",
+      billingInterval: "monthly",
+      status: "active",
+      currentPeriodStart: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    calculationUsageCount.mockResolvedValue(300);
+    userFindUnique.mockResolvedValue({ email: "alex@example.com" });
+
+    await notifyQuotaReachedIfNeeded("user-1", new Date("2026-03-19T12:00:00.000Z"));
+
+    expect(mockedNotifyQuotaReached).toHaveBeenCalledWith({
+      userId: "user-1",
+      email: "alex@example.com",
+      planName: "Pro",
+      usageCount: 300,
+      usageLimit: 300,
+      periodKey: "2026-03",
+    });
+  });
+
+  it("skips quota emails for unlimited plans", async () => {
+    subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "user-1",
+      stripeCustomerId: "cus_123",
+      stripeSubscriptionId: "sub_123",
+      stripePriceId: "price_business_monthly",
+      tier: "business",
+      billingInterval: "monthly",
+      status: "active",
+      currentPeriodStart: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    calculationUsageCount.mockResolvedValue(999);
+
+    await notifyQuotaReachedIfNeeded("user-1", new Date("2026-03-19T12:00:00.000Z"));
+
+    expect(mockedNotifyQuotaReached).not.toHaveBeenCalled();
   });
 });
