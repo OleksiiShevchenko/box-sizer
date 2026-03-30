@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { normalizeAppUrl } from "@/lib/app-url";
 import { getCurrentUserId } from "@/lib/current-user";
 import {
   getPriceIdForSelection,
@@ -27,20 +28,6 @@ type StripeSubscriptionSnapshot = {
   current_period_start?: number;
   current_period_end?: number;
 };
-
-function normalizeAppUrl(value: string | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
-
-  try {
-    return new URL(candidate).origin;
-  } catch {
-    return null;
-  }
-}
 
 async function getAppUrl(): Promise<string> {
   const configuredUrl =
