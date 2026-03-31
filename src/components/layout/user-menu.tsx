@@ -52,28 +52,26 @@ export function UserMenu() {
         aria-haspopup="menu"
         aria-label="User menu"
         onClick={() => setOpen((current) => !current)}
-        className="flex items-center gap-3 rounded-full border border-gray-200 bg-white px-2 py-1 transition-colors hover:bg-gray-50"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-green-600 text-sm font-semibold text-white transition-colors hover:bg-green-700"
       >
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-          {getInitial(displayName)}
-        </span>
+        <span aria-hidden="true">{getInitial(displayName)}</span>
       </button>
 
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-2 shadow-lg"
+          className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-lg shadow-slate-900/10"
         >
-          <div className="border-b border-gray-100 px-3 py-2">
-            <p className="text-sm font-medium text-gray-900">{displayName}</p>
+          <div className="border-b border-slate-100 px-3 py-2">
+            <p className="text-sm font-medium text-slate-900">{displayName}</p>
             {data?.user?.email ? (
-              <p className="text-xs text-gray-500">{data.user.email}</p>
+              <p className="text-xs text-slate-500">{data.user.email}</p>
             ) : null}
           </div>
           <Link
             href="/settings/profile"
             role="menuitem"
-            className="mt-2 block rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+            className="mt-2 block rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50"
             onClick={() => setOpen(false)}
           >
             Profile Settings
@@ -81,7 +79,7 @@ export function UserMenu() {
           <Link
             href="/settings/billing"
             role="menuitem"
-            className="block rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+            className="block rounded-lg px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50"
             onClick={() => setOpen(false)}
           >
             Subscription & Billing
@@ -89,7 +87,7 @@ export function UserMenu() {
           <button
             type="button"
             role="menuitem"
-            className="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+            className="block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
             onClick={() => signOut({ callbackUrl: "/login" })}
           >
             Logout

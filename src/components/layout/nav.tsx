@@ -15,36 +15,36 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="border-b border-gray-200 bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="flex items-center text-slate-950">
-              <PackwellLogo className="h-7 w-auto" />
-            </Link>
-            <div className="flex gap-1">
-              {links.map((link) => {
-                const isActive =
-                  link.href === "/dashboard"
-                    ? pathname.startsWith("/dashboard")
-                    : pathname.startsWith(link.href);
+    <nav className="border-b border-slate-200 bg-white">
+      <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between gap-6 px-4 sm:px-8">
+        <div className="flex min-w-0 items-center gap-6">
+          <Link href="/dashboard" className="shrink-0 text-slate-950">
+            <PackwellLogo className="h-4 w-auto" />
+          </Link>
+          <div className="flex min-w-0 items-center gap-5 overflow-x-auto">
+            {links.map((link) => {
+              const isActive =
+                link.href === "/dashboard"
+                  ? pathname.startsWith("/dashboard")
+                  : pathname.startsWith(link.href);
 
-                return (
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`border-b-2 px-0 py-4 text-[13px] font-medium whitespace-nowrap transition-colors ${
                     isActive
-                      ? "bg-gray-100 text-gray-900"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "border-blue-600 text-slate-900"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   {link.label}
                 </Link>
-                );
-              })}
-            </div>
+              );
+            })}
           </div>
+        </div>
+        <div className="shrink-0">
           <UserMenu />
         </div>
       </div>
