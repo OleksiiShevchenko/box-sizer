@@ -5,14 +5,13 @@ import {
   sendSubscriptionRenewalFailureEmail,
   sendSubscriptionRenewalSuccessEmail,
 } from "@/lib/resend";
+import type { BillingInterval, SubscriptionTier } from "@/lib/subscription-plans";
 
 type EmailNotificationType =
   | "subscription_purchase_success"
   | "subscription_renewal_success"
   | "subscription_renewal_failure"
   | "quota_reached";
-
-type BillingInterval = "monthly" | "annual" | null;
 
 type NotificationSendFn = () => Promise<unknown>;
 
@@ -27,18 +26,26 @@ interface SendDedupedEmailNotificationArgs {
 interface SubscriptionNotificationArgs {
   userId: string;
   email: string;
-  planName: string;
-  billingInterval: BillingInterval;
+  tier: SubscriptionTier;
+  billingInterval: BillingInterval | null;
   currentPeriodEnd?: Date | null;
   eventId: string;
+  amountPaidCents?: number | null;
+  amountDueCents?: number | null;
+  paymentMethodLabel?: string | null;
+  nextRetryAt?: Date | null;
+  hostedInvoiceUrl?: string | null;
+  invoicePdfUrl?: string | null;
 }
 
 interface QuotaNotificationArgs {
   userId: string;
   email: string;
-  planName: string;
+  tier: SubscriptionTier;
   usageCount: number;
   usageLimit: number;
+  quotaResetDate: Date;
+  recommendedUpgradeTier: SubscriptionTier | null;
   periodKey: string;
 }
 
@@ -98,7 +105,7 @@ export async function sendDedupedEmailNotification({
 export async function notifySubscriptionPurchaseSuccess({
   userId,
   email,
-  planName,
+  tier,
   billingInterval,
   currentPeriodEnd,
   eventId,
@@ -107,11 +114,11 @@ export async function notifySubscriptionPurchaseSuccess({
     userId,
     type: "subscription_purchase_success",
     dedupeKey: `stripe:event:${eventId}`,
-    subject: "Your Box Sizer subscription is active",
+    subject: "Your Packwell subscription is active",
     send: () =>
       sendSubscriptionPurchaseSuccessEmail({
         email,
-        planName,
+        tier,
         billingInterval,
         currentPeriodEnd,
       }),
@@ -121,22 +128,30 @@ export async function notifySubscriptionPurchaseSuccess({
 export async function notifySubscriptionRenewalSuccess({
   userId,
   email,
-  planName,
+  tier,
   billingInterval,
   currentPeriodEnd,
   eventId,
+  amountPaidCents,
+  paymentMethodLabel,
+  hostedInvoiceUrl,
+  invoicePdfUrl,
 }: SubscriptionNotificationArgs) {
   return sendDedupedEmailNotification({
     userId,
     type: "subscription_renewal_success",
     dedupeKey: `stripe:event:${eventId}`,
-    subject: "Your Box Sizer subscription renewed successfully",
+    subject: "Your Packwell subscription renewed successfully",
     send: () =>
       sendSubscriptionRenewalSuccessEmail({
         email,
-        planName,
+        tier,
         billingInterval,
         currentPeriodEnd,
+        amountPaidCents,
+        paymentMethodLabel,
+        hostedInvoiceUrl,
+        invoicePdfUrl,
       }),
   });
 }
@@ -144,22 +159,26 @@ export async function notifySubscriptionRenewalSuccess({
 export async function notifySubscriptionRenewalFailure({
   userId,
   email,
-  planName,
+  tier,
   billingInterval,
-  currentPeriodEnd,
   eventId,
+  amountDueCents,
+  paymentMethodLabel,
+  nextRetryAt,
 }: SubscriptionNotificationArgs) {
   return sendDedupedEmailNotification({
     userId,
     type: "subscription_renewal_failure",
     dedupeKey: `stripe:event:${eventId}`,
-    subject: "Your Box Sizer renewal payment failed",
+    subject: "Your Packwell renewal payment failed",
     send: () =>
       sendSubscriptionRenewalFailureEmail({
         email,
-        planName,
+        tier,
         billingInterval,
-        currentPeriodEnd,
+        amountDueCents,
+        paymentMethodLabel,
+        nextRetryAt,
       }),
   });
 }
@@ -167,22 +186,26 @@ export async function notifySubscriptionRenewalFailure({
 export async function notifyQuotaReached({
   userId,
   email,
-  planName,
+  tier,
   usageCount,
   usageLimit,
+  quotaResetDate,
+  recommendedUpgradeTier,
   periodKey,
 }: QuotaNotificationArgs) {
   return sendDedupedEmailNotification({
     userId,
     type: "quota_reached",
     dedupeKey: `quota:${userId}:${periodKey}`,
-    subject: "You've reached your Box Sizer monthly calculation limit",
+    subject: "You've reached your Packwell monthly request limit",
     send: () =>
       sendQuotaReachedEmail({
         email,
-        planName,
+        tier,
         usageCount,
         usageLimit,
+        quotaResetDate,
+        recommendedUpgradeTier,
       }),
   });
 }

@@ -23,13 +23,15 @@ type StripeSubscriptionWithPeriods = Stripe.Subscription & {
 };
 
 type StripeInvoiceWithSubscription = Stripe.Invoice & {
+  charge?: string | Stripe.Charge | null;
+  payment_intent?: string | Stripe.PaymentIntent | null;
   subscription?: string | Stripe.Subscription | null;
 };
 
 type NotificationContext = {
   userId: string;
   email: string;
-  planName: string;
+  tier: SubscriptionTier;
   billingInterval: BillingInterval | null;
   currentPeriodEnd: Date | null;
 };
@@ -187,7 +189,7 @@ async function findStoredSubscriptionContext(args: {
       return {
         userId: subscription.userId,
         email: subscription.user.email,
-        planName: getPlanForTier(subscription.tier).name,
+        tier: getPlanForTier(subscription.tier).tier,
         billingInterval: normalizeBillingInterval(subscription.billingInterval),
         currentPeriodEnd: subscription.currentPeriodEnd,
       };
@@ -230,7 +232,7 @@ async function findStoredSubscriptionContext(args: {
   return {
     userId: subscription.userId,
     email: subscription.user.email,
-    planName: getPlanForTier(subscription.tier).name,
+    tier: getPlanForTier(subscription.tier).tier,
     billingInterval: normalizeBillingInterval(subscription.billingInterval),
     currentPeriodEnd: subscription.currentPeriodEnd,
   };
@@ -267,10 +269,7 @@ async function getCheckoutSessionNotificationContext(
   if (storedContext) {
     return {
       ...storedContext,
-      planName:
-        storedContext.planName === getPlanForTier("starter").name && fallbackTier !== "starter"
-          ? getPlanForTier(fallbackTier).name
-          : storedContext.planName,
+      tier: storedContext.tier === "starter" && fallbackTier !== "starter" ? fallbackTier : storedContext.tier,
       billingInterval: storedContext.billingInterval ?? fallbackInterval,
     };
   }
@@ -291,7 +290,7 @@ async function getCheckoutSessionNotificationContext(
   return {
     userId: metadataUserId,
     email: user.email,
-    planName: getPlanForTier(fallbackTier).name,
+    tier: fallbackTier,
     billingInterval: fallbackInterval,
     currentPeriodEnd: null,
   };
@@ -311,6 +310,80 @@ async function getInvoiceNotificationContext(
     stripeCustomerId,
     stripeSubscriptionId,
   });
+}
+
+function getInvoiceAmountPaidCents(invoice: StripeInvoiceWithSubscription): number | null {
+  return typeof invoice.amount_paid === "number" ? invoice.amount_paid : null;
+}
+
+function getInvoiceAmountDueCents(invoice: StripeInvoiceWithSubscription): number | null {
+  return typeof invoice.amount_due === "number" ? invoice.amount_due : null;
+}
+
+function getInvoiceNextRetryAt(invoice: StripeInvoiceWithSubscription): Date | null {
+  return unixSecondsToDate(invoice.next_payment_attempt ?? null);
+}
+
+function formatCardLabel(brand: string | null | undefined, last4: string | null | undefined): string | null {
+  if (!brand || !last4) {
+    return null;
+  }
+
+  return `${brand.charAt(0).toUpperCase()}${brand.slice(1)} •••• ${last4}`;
+}
+
+function getCardLabelFromCharge(charge: Stripe.Charge): string | null {
+  const card = charge.payment_method_details?.card;
+  return formatCardLabel(card?.brand, card?.last4);
+}
+
+function getCardLabelFromPaymentIntent(paymentIntent: Stripe.PaymentIntent): string | null {
+  if (
+    paymentIntent.payment_method &&
+    typeof paymentIntent.payment_method !== "string" &&
+    paymentIntent.payment_method.card
+  ) {
+    return formatCardLabel(
+      paymentIntent.payment_method.card.brand,
+      paymentIntent.payment_method.card.last4
+    );
+  }
+
+  if (
+    paymentIntent.latest_charge &&
+    typeof paymentIntent.latest_charge !== "string"
+  ) {
+    return getCardLabelFromCharge(paymentIntent.latest_charge);
+  }
+
+  return null;
+}
+
+async function getInvoicePaymentMethodLabel(
+  invoice: StripeInvoiceWithSubscription
+): Promise<string | null> {
+  if (invoice.payment_intent && typeof invoice.payment_intent !== "string") {
+    return getCardLabelFromPaymentIntent(invoice.payment_intent);
+  }
+
+  if (typeof invoice.payment_intent === "string") {
+    const paymentIntent = await stripe.paymentIntents.retrieve(invoice.payment_intent, {
+      expand: ["payment_method", "latest_charge"],
+    });
+
+    return getCardLabelFromPaymentIntent(paymentIntent);
+  }
+
+  if (invoice.charge && typeof invoice.charge !== "string") {
+    return getCardLabelFromCharge(invoice.charge);
+  }
+
+  if (typeof invoice.charge === "string") {
+    const charge = await stripe.charges.retrieve(invoice.charge);
+    return getCardLabelFromCharge(charge);
+  }
+
+  return null;
 }
 
 async function handleCheckoutSessionCompleted(event: Stripe.Event) {
@@ -345,9 +418,15 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
     return;
   }
 
+  const paymentMethodLabel = await getInvoicePaymentMethodLabel(invoice);
+
   await notifySubscriptionRenewalSuccess({
     ...context,
     eventId: event.id,
+    amountPaidCents: getInvoiceAmountPaidCents(invoice),
+    paymentMethodLabel,
+    hostedInvoiceUrl: invoice.hosted_invoice_url ?? null,
+    invoicePdfUrl: invoice.invoice_pdf ?? null,
   });
 }
 
@@ -366,9 +445,14 @@ async function handleInvoicePaymentFailed(event: Stripe.Event) {
     return;
   }
 
+  const paymentMethodLabel = await getInvoicePaymentMethodLabel(invoice);
+
   await notifySubscriptionRenewalFailure({
     ...context,
     eventId: event.id,
+    amountDueCents: getInvoiceAmountDueCents(invoice),
+    paymentMethodLabel,
+    nextRetryAt: getInvoiceNextRetryAt(invoice),
   });
 }
 
