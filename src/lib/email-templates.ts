@@ -46,7 +46,7 @@ interface RenderVerificationEmailArgs {
   confirmUrl: string;
 }
 
-interface RenderSubscriptionPurchaseEmailArgs extends SubscriptionBaseTemplateArgs {}
+type RenderSubscriptionPurchaseEmailArgs = SubscriptionBaseTemplateArgs;
 
 interface RenderSubscriptionRenewalSuccessEmailArgs extends SubscriptionBaseTemplateArgs {
   amountPaidCents?: number | null;

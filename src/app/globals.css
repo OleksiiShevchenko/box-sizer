@@ -1,8 +1,9 @@
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: "Inter", var(--font-geist-sans);
-  --font-mono: "Geist Mono", var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 
   --color-primary: #004bc3;
   --color-primary-container: #1e63ec;
