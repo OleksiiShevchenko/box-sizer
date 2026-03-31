@@ -17,20 +17,20 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
   );
 
   return (
-    <Card className="space-y-5 border-blue-100 bg-gradient-to-br from-white to-blue-50/40">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <Card className="space-y-4 border-slate-200 bg-white p-5 shadow-none">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
             Monthly Usage
           </p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-950">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
             {subscriptionInfo.usageCount} / {subscriptionInfo.usageLimit} calculations used
           </h2>
         </div>
         {subscriptionInfo.tier === "starter" ? (
           <Link
             href="/pricing"
-            className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+            className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-white px-3 py-2 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-50"
           >
             Upgrade Plan
           </Link>
@@ -38,12 +38,12 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="text-slate-600">Usage this month</span>
-          <span className="font-medium text-slate-900">{progress}%</span>
+        <div className="flex items-center justify-between gap-3 text-xs">
+          <span className="text-slate-500">Usage this month</span>
+          <span className="font-medium text-slate-700">{progress}%</span>
         </div>
         <div
-          className="h-3 overflow-hidden rounded-full bg-slate-200"
+          className="h-1.5 overflow-hidden rounded-full bg-slate-200"
           role="progressbar"
           aria-label="Monthly usage"
           aria-valuenow={progress}
@@ -57,7 +57,7 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
         </div>
       </div>
 
-      <p className="text-sm text-slate-600">
+      <p className="text-xs text-slate-400">
         {subscriptionInfo.tier === "starter"
           ? "Starter includes 15 calculations per month."
           : "Upgrade to Business for unlimited calculations and API access."}
