@@ -3,6 +3,7 @@ import {
   getPackingPlanForUser,
   savePackingPlanCalculation,
 } from "@/lib/api-packing-plans";
+import { inchesToCm, ozToGrams } from "@/types";
 import { PUT } from "./route";
 
 jest.mock("next/server", () => {
@@ -190,6 +191,163 @@ describe("PUT /api/v1/packing-plans/[id]", () => {
               name: "Ideal Box",
             }),
           }),
+        }),
+      })
+    );
+  });
+
+  it("normalizes imperial item values and persists flags when saving an updated plan", async () => {
+    getPackingPlanForUserMock
+      .mockResolvedValueOnce({
+        id: "packing-plan-db-id",
+        publicId: "packing-plan-public-id",
+        userId: "user-1",
+        name: "Imperial Plan",
+        spacingOverride: null,
+        dimensionalWeight: 3,
+        boxId: "box-1",
+        box: {
+          id: "box-1",
+          publicId: "box-public-id",
+          userId: "user-1",
+          name: "QA-04 Mailer 24x12x18",
+          width: 24,
+          height: 12,
+          depth: 18,
+          spacing: 0,
+          maxWeight: 2000,
+          createdAt: new Date("2026-03-01T00:00:00.000Z"),
+          updatedAt: new Date("2026-03-01T00:00:00.000Z"),
+        },
+        items: [],
+        createdAt: new Date("2026-03-01T00:00:00.000Z"),
+        updatedAt: new Date("2026-03-01T00:00:00.000Z"),
+      })
+      .mockResolvedValueOnce({
+        id: "packing-plan-db-id",
+        publicId: "packing-plan-public-id",
+        userId: "user-1",
+        name: "Imperial Plan",
+        spacingOverride: inchesToCm(0.5),
+        dimensionalWeight: 3,
+        boxId: "box-1",
+        box: {
+          id: "box-1",
+          publicId: "box-public-id",
+          userId: "user-1",
+          name: "QA-04 Mailer 24x12x18",
+          width: 24,
+          height: 12,
+          depth: 18,
+          spacing: 0,
+          maxWeight: 2000,
+          createdAt: new Date("2026-03-01T00:00:00.000Z"),
+          updatedAt: new Date("2026-03-01T00:00:00.000Z"),
+        },
+        items: [],
+        createdAt: new Date("2026-03-01T00:00:00.000Z"),
+        updatedAt: new Date("2026-03-01T00:00:00.000Z"),
+      });
+
+    calculatePackingPlanForUserMock.mockResolvedValue({
+      results: [
+        {
+          box: {
+            id: "box-1",
+            name: "QA-04 Mailer 24x12x18",
+            width: 24,
+            height: 12,
+            depth: 18,
+            spacing: 0,
+            maxWeight: 2000,
+          },
+          items: [],
+          dimensionalWeight: 3,
+        },
+      ],
+      idealResult: null,
+    });
+
+    const request = new Request("http://localhost/api/v1/packing-plans/packing-plan-public-id", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        unitSystem: "in",
+        name: "Imperial Plan",
+        spacingOverride: 0.5,
+        renderVisualization: false,
+        items: [
+          {
+            name: "ImperialCube",
+            quantity: 2,
+            width: 4,
+            height: 4,
+            depth: 4,
+            weight: 8,
+            canStackOnTop: false,
+            canBePlacedOnTop: false,
+            orientation: "vertical",
+          },
+        ],
+      }),
+    }) as Request & { nextUrl: URL };
+    Object.defineProperty(request, "nextUrl", {
+      value: new URL("http://localhost/api/v1/packing-plans/packing-plan-public-id"),
+    });
+
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: "packing-plan-public-id" }),
+    });
+
+    expect(calculatePackingPlanForUserMock).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        name: "Imperial Plan",
+        spacingOverride: inchesToCm(0.5),
+        includeIdealBox: true,
+        items: [
+          expect.objectContaining({
+            name: "ImperialCube",
+            quantity: 2,
+            width: inchesToCm(4),
+            height: inchesToCm(4),
+            depth: inchesToCm(4),
+            weight: ozToGrams(8),
+            canStackOnTop: false,
+            canBePlacedOnTop: false,
+            orientation: "vertical",
+          }),
+        ],
+      })
+    );
+    expect(savePackingPlanCalculationMock).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "packing-plan-db-id" }),
+      expect.objectContaining({
+        name: "Imperial Plan",
+        spacingOverride: inchesToCm(0.5),
+        items: [
+          expect.objectContaining({
+            name: "ImperialCube",
+            quantity: 2,
+            width: inchesToCm(4),
+            height: inchesToCm(4),
+            depth: inchesToCm(4),
+            weight: ozToGrams(8),
+            canStackOnTop: false,
+            canBePlacedOnTop: false,
+            orientation: "vertical",
+          }),
+        ],
+      }),
+      expect.any(Array)
+    );
+
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        units: expect.objectContaining({
+          unitSystem: "in",
+          dimension: "in",
+          weight: "oz",
         }),
       })
     );

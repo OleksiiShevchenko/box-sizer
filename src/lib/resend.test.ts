@@ -40,6 +40,8 @@ describe("resend mailers", () => {
       expect.objectContaining({
         from: "noreply@packwell.io",
         to: "user@example.com",
+        subject: "Confirm your Packwell account",
+        html: expect.stringContaining("Confirm Email Address"),
       })
     );
   });
@@ -76,23 +78,107 @@ describe("resend mailers", () => {
     );
   });
 
-  it("uses the shared app URL helper for subscription emails", async () => {
-    process.env.NEXTAUTH_URL = "billing.packwell.io";
+  it("renders the purchase email with Packwell branding, dashboard CTA, and footer links", async () => {
+    process.env.NEXTAUTH_URL = "dashboard.packwell.io";
     mockSendEmail.mockResolvedValue({ data: { id: "email_123" }, error: null });
     const { sendSubscriptionPurchaseSuccessEmail } = await import("./resend");
 
     await sendSubscriptionPurchaseSuccessEmail({
       email: "user@example.com",
-      planName: "Pro",
+      tier: "pro",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
     });
 
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
-        subject: "Your Box Sizer subscription is active",
-        html: expect.stringContaining("https://billing.packwell.io/settings/billing"),
+        subject: "Your Packwell subscription is active",
+        html: expect.stringContaining("Subscription Confirmed!"),
       })
     );
+
+    const html = mockSendEmail.mock.calls[0][0].html as string;
+    expect(html).toContain("https://dashboard.packwell.io/dashboard");
+    expect(html).toContain("Privacy Policy");
+    expect(html).toContain("Terms of Service");
+    expect(html).toContain("mailto:hello@packwell.io");
+    expect(html).toContain("10089 Willow Creek Road, Floor 1, San Diego, CA US");
+  });
+
+  it("renders the renewal success email with a receipt CTA and payment details", async () => {
+    mockSendEmail.mockResolvedValue({ data: { id: "email_123" }, error: null });
+    const { sendSubscriptionRenewalSuccessEmail } = await import("./resend");
+
+    await sendSubscriptionRenewalSuccessEmail({
+      email: "user@example.com",
+      tier: "pro",
+      billingInterval: "monthly",
+      currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
+      amountPaidCents: 2900,
+      paymentMethodLabel: "Visa •••• 4242",
+      hostedInvoiceUrl: "https://pay.stripe.com/invoice/acct_123",
+      invoicePdfUrl: "https://stripe.com/invoice.pdf",
+    });
+
+    const html = mockSendEmail.mock.calls[0][0].html as string;
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: "Your Packwell subscription renewed successfully",
+        html: expect.stringContaining("Subscription Renewed"),
+      })
+    );
+    expect(html).toContain("https://pay.stripe.com/invoice/acct_123");
+    expect(html).toContain("View Receipt");
+    expect(html).toContain("Visa •••• 4242");
+    expect(html).toContain("Download invoice PDF");
+  });
+
+  it("renders the renewal failure email with retry information", async () => {
+    mockSendEmail.mockResolvedValue({ data: { id: "email_123" }, error: null });
+    const { sendSubscriptionRenewalFailureEmail } = await import("./resend");
+
+    await sendSubscriptionRenewalFailureEmail({
+      email: "user@example.com",
+      tier: "pro",
+      billingInterval: "monthly",
+      amountDueCents: 2900,
+      paymentMethodLabel: "Visa •••• 4242",
+      nextRetryAt: new Date("2026-04-02T12:00:00.000Z"),
+    });
+
+    const html = mockSendEmail.mock.calls[0][0].html as string;
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: "Your Packwell renewal payment failed",
+        html: expect.stringContaining("Payment Failed"),
+      })
+    );
+    expect(html).toContain("Apr 2, 2026");
+    expect(html).toContain("Update Payment Method");
+  });
+
+  it("renders the quota email with reset date and upgrade CTA", async () => {
+    mockSendEmail.mockResolvedValue({ data: { id: "email_123" }, error: null });
+    const { sendQuotaReachedEmail } = await import("./resend");
+
+    await sendQuotaReachedEmail({
+      email: "user@example.com",
+      tier: "starter",
+      usageCount: 15,
+      usageLimit: 15,
+      quotaResetDate: new Date(2026, 3, 1),
+      recommendedUpgradeTier: "pro",
+    });
+
+    const html = mockSendEmail.mock.calls[0][0].html as string;
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: "You've reached your Packwell monthly request limit",
+        html: expect.stringContaining("Request Limit Reached"),
+      })
+    );
+    expect(html).toContain("Apr 1, 2026");
+    expect(html).toContain("Upgrade to Pro");
+    expect(html).toContain("15 / 15");
   });
 });

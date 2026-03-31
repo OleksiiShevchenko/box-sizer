@@ -10,6 +10,7 @@ const directDatabaseUrl = process.env.DIRECT_DATABASE_URL ?? "";
 const migrationDatabaseUrl = directDatabaseUrl || databaseUrl;
 const directConnectionPattern =
   /^(postgres|postgresql|mysql|sqlserver|cockroachdb):\/\//i;
+const migrationNames = getMigrationNames();
 
 function getMigrationEnv() {
   return {
@@ -51,7 +52,7 @@ function bootstrapFreshDatabase() {
   console.log("Pushing schema with prisma db push...");
   runPrismaCommand(["db", "push", `--schema=${schemaPath}`, "--skip-generate"]);
 
-  for (const migrationName of getMigrationNames()) {
+  for (const migrationName of migrationNames) {
     runPrismaCommand([
       "migrate",
       "resolve",
@@ -95,6 +96,11 @@ try {
     }
     bootstrapFreshDatabase();
     bootstrapped = true;
+  } else if (migrationNames.length === 0) {
+    console.log(
+      "Skipping prisma migrate deploy: no Prisma migrations are present for this project."
+    );
+    process.exit(0);
   } else if (!migrationsTablePresent) {
     throw new Error(
       "Database contains app tables but has no Prisma migration history. Refusing to guess how to baseline it."

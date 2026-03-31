@@ -234,6 +234,38 @@ describe("calculatePacking", () => {
     expect(results.length).toBe(2);
   });
 
+  it("chooses the multi-box combination with the lowest total dimensional weight", () => {
+    const optimizedBoxes: IBox[] = [
+      {
+        id: "small",
+        name: "Small Multi",
+        width: 22,
+        height: 22,
+        depth: 22,
+        maxWeight: 1000,
+      },
+      {
+        id: "large",
+        name: "Large Multi",
+        width: 32,
+        height: 32,
+        depth: 32,
+        maxWeight: 12000,
+      },
+    ];
+    const products: IProduct[] = [
+      { name: "A", width: 20, height: 18, depth: 18, weight: 400 },
+      { name: "B", width: 20, height: 18, depth: 18, weight: 400 },
+    ];
+
+    const results = calculatePacking(optimizedBoxes, products);
+
+    expect(results.map((result) => result.box.name)).toEqual([
+      "Small Multi",
+      "Small Multi",
+    ]);
+  });
+
   it("throws when items cannot fit in any box", () => {
     const products: IProduct[] = [
       { name: "Impossible", width: 200, height: 200, depth: 200 },

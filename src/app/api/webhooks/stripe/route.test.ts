@@ -27,6 +27,12 @@ jest.mock("@/lib/stripe", () => ({
     webhooks: {
       constructEvent: jest.fn(),
     },
+    paymentIntents: {
+      retrieve: jest.fn(),
+    },
+    charges: {
+      retrieve: jest.fn(),
+    },
   },
 }));
 
@@ -42,6 +48,8 @@ const subscriptionUpsert = prisma.subscription.upsert as unknown as jest.Mock;
 const subscriptionUpdateMany = prisma.subscription.updateMany as unknown as jest.Mock;
 const userFindUnique = prisma.user.findUnique as unknown as jest.Mock;
 const constructEvent = stripe.webhooks.constructEvent as unknown as jest.Mock;
+const paymentIntentRetrieve = stripe.paymentIntents.retrieve as unknown as jest.Mock;
+const chargeRetrieve = stripe.charges.retrieve as unknown as jest.Mock;
 const mockedNotifyPurchase = jest.mocked(notifySubscriptionPurchaseSuccess);
 const mockedNotifyRenewalFailure = jest.mocked(notifySubscriptionRenewalFailure);
 const mockedNotifyRenewalSuccess = jest.mocked(notifySubscriptionRenewalSuccess);
@@ -120,14 +128,14 @@ describe("Stripe webhook route", () => {
     expect(mockedNotifyPurchase).toHaveBeenCalledWith({
       userId: "user-1",
       email: "alex@example.com",
-      planName: "Pro",
+      tier: "pro",
       billingInterval: "monthly",
       currentPeriodEnd: null,
       eventId: "evt_purchase",
     });
   });
 
-  it("sends a renewal success notification for subscription cycle invoices", async () => {
+  it("sends renewal success notifications with receipt metadata from Stripe", async () => {
     constructEvent.mockReturnValue({
       id: "evt_success",
       type: "invoice.payment_succeeded",
@@ -136,6 +144,10 @@ describe("Stripe webhook route", () => {
           customer: "cus_123",
           subscription: "sub_123",
           billing_reason: "subscription_cycle",
+          amount_paid: 2900,
+          hosted_invoice_url: "https://pay.stripe.com/invoice/123",
+          invoice_pdf: "https://stripe.com/invoice.pdf",
+          payment_intent: "pi_123",
         },
       },
     } as never);
@@ -146,6 +158,14 @@ describe("Stripe webhook route", () => {
       tier: "pro",
       user: {
         email: "alex@example.com",
+      },
+    });
+    paymentIntentRetrieve.mockResolvedValue({
+      payment_method: {
+        card: {
+          brand: "visa",
+          last4: "4242",
+        },
       },
     });
 
@@ -161,10 +181,14 @@ describe("Stripe webhook route", () => {
     expect(mockedNotifyRenewalSuccess).toHaveBeenCalledWith({
       userId: "user-1",
       email: "alex@example.com",
-      planName: "Pro",
+      tier: "pro",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       eventId: "evt_success",
+      amountPaidCents: 2900,
+      paymentMethodLabel: "Visa •••• 4242",
+      hostedInvoiceUrl: "https://pay.stripe.com/invoice/123",
+      invoicePdfUrl: "https://stripe.com/invoice.pdf",
     });
   });
 
@@ -193,7 +217,7 @@ describe("Stripe webhook route", () => {
     expect(mockedNotifyRenewalSuccess).not.toHaveBeenCalled();
   });
 
-  it("marks matching subscriptions as past due on invoice failures", async () => {
+  it("marks matching subscriptions as past due on invoice failures and uses charge fallback", async () => {
     constructEvent.mockReturnValue({
       id: "evt_failed",
       type: "invoice.payment_failed",
@@ -201,6 +225,9 @@ describe("Stripe webhook route", () => {
         object: {
           customer: "cus_123",
           subscription: "sub_123",
+          amount_due: 2900,
+          next_payment_attempt: 1775121600,
+          charge: "ch_123",
         },
       },
     } as never);
@@ -211,6 +238,14 @@ describe("Stripe webhook route", () => {
       tier: "pro",
       user: {
         email: "alex@example.com",
+      },
+    });
+    chargeRetrieve.mockResolvedValue({
+      payment_method_details: {
+        card: {
+          brand: "visa",
+          last4: "4242",
+        },
       },
     });
 
@@ -232,10 +267,13 @@ describe("Stripe webhook route", () => {
     expect(mockedNotifyRenewalFailure).toHaveBeenCalledWith({
       userId: "user-1",
       email: "alex@example.com",
-      planName: "Pro",
+      tier: "pro",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       eventId: "evt_failed",
+      amountDueCents: 2900,
+      paymentMethodLabel: "Visa •••• 4242",
+      nextRetryAt: new Date(1775121600 * 1000),
     });
   });
 });
