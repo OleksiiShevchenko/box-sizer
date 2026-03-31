@@ -4,6 +4,7 @@ import {
   canPerformCalculation,
   formatUsagePeriodKey,
   getCalculationUsageCount,
+  getNextMonthStart,
   getOrCreateStripeCustomer,
   getSubscriptionInfoForUser,
   getUserSubscription,
@@ -250,6 +251,10 @@ describe("subscription service", () => {
     expect(formatUsagePeriodKey(new Date("2026-03-19T12:00:00.000Z"))).toBe("2026-03");
   });
 
+  it("computes the first day of the next calendar month", () => {
+    expect(getNextMonthStart(new Date("2026-03-19T12:00:00.000Z"))).toEqual(new Date(2026, 3, 1));
+  });
+
   it("sends the quota email once usage is exhausted for the month", async () => {
     subscriptionFindUnique.mockResolvedValue({
       id: "sub-1",
@@ -274,9 +279,11 @@ describe("subscription service", () => {
     expect(mockedNotifyQuotaReached).toHaveBeenCalledWith({
       userId: "user-1",
       email: "alex@example.com",
-      planName: "Pro",
+      tier: "pro",
       usageCount: 300,
       usageLimit: 300,
+      quotaResetDate: new Date(2026, 3, 1),
+      recommendedUpgradeTier: "business",
       periodKey: "2026-03",
     });
   });

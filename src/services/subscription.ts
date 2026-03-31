@@ -84,6 +84,10 @@ function getCurrentMonthRange(now = new Date()): { start: Date; end: Date } {
   return { start, end };
 }
 
+export function getNextMonthStart(now = new Date()): Date {
+  return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+}
+
 export function formatUsagePeriodKey(now = new Date()): string {
   const year = now.getFullYear();
   const month = `${now.getMonth() + 1}`.padStart(2, "0");
@@ -228,12 +232,21 @@ export async function notifyQuotaReachedIfNeeded(
   }
 
   try {
+    const recommendedUpgradeTier =
+      subscriptionInfo.tier === "starter"
+        ? "pro"
+        : subscriptionInfo.tier === "pro"
+          ? "business"
+          : null;
+
     await notifyQuotaReached({
       userId,
       email: user.email,
-      planName: subscriptionInfo.planName,
+      tier: subscriptionInfo.tier,
       usageCount: subscriptionInfo.usageCount,
       usageLimit: subscriptionInfo.usageLimit,
+      quotaResetDate: getNextMonthStart(now),
+      recommendedUpgradeTier,
       periodKey: formatUsagePeriodKey(now),
     });
   } catch (error) {
