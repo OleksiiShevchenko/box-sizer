@@ -60,7 +60,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Seed Packwell E2E Data
-        run: pnpm exec ts-node scripts/seed-packwell-e2e.ts
+        run: pnpm seed:e2e
 
       - name: E2E Tests
         run: pnpm test:e2e
