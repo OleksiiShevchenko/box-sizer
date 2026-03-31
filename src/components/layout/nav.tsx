@@ -19,7 +19,7 @@ export function Nav() {
       <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between gap-6 px-4 sm:px-8">
         <div className="flex min-w-0 items-center gap-6">
           <Link href="/dashboard" className="shrink-0 text-slate-950">
-            <PackwellLogo className="h-4 w-auto" />
+            <PackwellLogo />
           </Link>
           <div className="flex min-w-0 items-center gap-5 overflow-x-auto">
             {links.map((link) => {
