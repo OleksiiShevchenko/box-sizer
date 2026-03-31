@@ -2,11 +2,15 @@ import { prisma } from "@/lib/prisma";
 import {
   notifyQuotaReached,
   notifySubscriptionPurchaseSuccess,
+  notifySubscriptionRenewalFailure,
+  notifySubscriptionRenewalSuccess,
   sendDedupedEmailNotification,
 } from "./email-notifications";
 import {
   sendQuotaReachedEmail,
   sendSubscriptionPurchaseSuccessEmail,
+  sendSubscriptionRenewalFailureEmail,
+  sendSubscriptionRenewalSuccessEmail,
 } from "@/lib/resend";
 
 jest.mock("@/lib/prisma", () => ({
@@ -31,6 +35,8 @@ const emailNotificationUpdate = prisma.emailNotification.update as unknown as je
 const emailNotificationDelete = prisma.emailNotification.delete as unknown as jest.Mock;
 const mockedSendQuotaReachedEmail = jest.mocked(sendQuotaReachedEmail);
 const mockedSendSubscriptionPurchaseSuccessEmail = jest.mocked(sendSubscriptionPurchaseSuccessEmail);
+const mockedSendSubscriptionRenewalFailureEmail = jest.mocked(sendSubscriptionRenewalFailureEmail);
+const mockedSendSubscriptionRenewalSuccessEmail = jest.mocked(sendSubscriptionRenewalSuccessEmail);
 
 describe("email notifications service", () => {
   beforeEach(() => {
@@ -114,7 +120,7 @@ describe("email notifications service", () => {
     await notifySubscriptionPurchaseSuccess({
       userId: "user-1",
       email: "alex@example.com",
-      planName: "Pro",
+      tier: "pro",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       eventId: "evt_123",
@@ -122,9 +128,61 @@ describe("email notifications service", () => {
 
     expect(mockedSendSubscriptionPurchaseSuccessEmail).toHaveBeenCalledWith({
       email: "alex@example.com",
-      planName: "Pro",
+      tier: "pro",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
+    });
+  });
+
+  it("passes invoice and receipt metadata to the renewal success mailer", async () => {
+    mockedSendSubscriptionRenewalSuccessEmail.mockResolvedValue(undefined);
+
+    await notifySubscriptionRenewalSuccess({
+      userId: "user-1",
+      email: "alex@example.com",
+      tier: "pro",
+      billingInterval: "monthly",
+      currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
+      eventId: "evt_234",
+      amountPaidCents: 2900,
+      paymentMethodLabel: "Visa •••• 4242",
+      hostedInvoiceUrl: "https://pay.stripe.com/invoice/123",
+      invoicePdfUrl: "https://stripe.com/invoice.pdf",
+    });
+
+    expect(mockedSendSubscriptionRenewalSuccessEmail).toHaveBeenCalledWith({
+      email: "alex@example.com",
+      tier: "pro",
+      billingInterval: "monthly",
+      currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
+      amountPaidCents: 2900,
+      paymentMethodLabel: "Visa •••• 4242",
+      hostedInvoiceUrl: "https://pay.stripe.com/invoice/123",
+      invoicePdfUrl: "https://stripe.com/invoice.pdf",
+    });
+  });
+
+  it("passes invoice failure metadata to the renewal failure mailer", async () => {
+    mockedSendSubscriptionRenewalFailureEmail.mockResolvedValue(undefined);
+
+    await notifySubscriptionRenewalFailure({
+      userId: "user-1",
+      email: "alex@example.com",
+      tier: "pro",
+      billingInterval: "monthly",
+      eventId: "evt_345",
+      amountDueCents: 2900,
+      paymentMethodLabel: "Visa •••• 4242",
+      nextRetryAt: new Date("2026-04-02T00:00:00.000Z"),
+    });
+
+    expect(mockedSendSubscriptionRenewalFailureEmail).toHaveBeenCalledWith({
+      email: "alex@example.com",
+      tier: "pro",
+      billingInterval: "monthly",
+      amountDueCents: 2900,
+      paymentMethodLabel: "Visa •••• 4242",
+      nextRetryAt: new Date("2026-04-02T00:00:00.000Z"),
     });
   });
 
@@ -134,17 +192,21 @@ describe("email notifications service", () => {
     await notifyQuotaReached({
       userId: "user-1",
       email: "alex@example.com",
-      planName: "Starter",
+      tier: "starter",
       usageCount: 15,
       usageLimit: 15,
+      quotaResetDate: new Date("2026-04-01T00:00:00.000Z"),
+      recommendedUpgradeTier: "pro",
       periodKey: "2026-03",
     });
 
     expect(mockedSendQuotaReachedEmail).toHaveBeenCalledWith({
       email: "alex@example.com",
-      planName: "Starter",
+      tier: "starter",
       usageCount: 15,
       usageLimit: 15,
+      quotaResetDate: new Date("2026-04-01T00:00:00.000Z"),
+      recommendedUpgradeTier: "pro",
     });
   });
 });

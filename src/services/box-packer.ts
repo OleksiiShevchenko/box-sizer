@@ -25,6 +25,20 @@ type PackedBinResult = {
   packedItems: PackedItem[];
 };
 
+type BoxSubsetCandidate = {
+  box: IBox;
+  packedItems: PackedItem[];
+  dimensionalWeight: number;
+};
+
+type MultiBoxSolution = {
+  results: PackingResult[];
+  totalDimensionalWeight: number;
+  totalVolume: number;
+};
+
+const EXACT_MULTI_BOX_ITEM_LIMIT = 15;
+
 function getDisplayItemName(name: string): string {
   return name.replace(/_\d+$/, "");
 }
@@ -61,6 +75,10 @@ function formatUnpackedItemNames(products: IProduct[]): string {
 
 function getBoxSpacing(box: IBox): number {
   return Math.max(box.spacing ?? 0, 0);
+}
+
+function getBoxVolume(box: IBox): number {
+  return box.width * box.height * box.depth;
 }
 
 // BP3D rotation types: each maps [w,h,d] → [X,Y,Z]
@@ -234,10 +252,165 @@ export function packMultiBox(
   boxes: IBox[],
   products: IProduct[]
 ): PackingResult[] {
-  const sortedBoxes = [...boxes].sort(
-    (a, b) => b.width * b.height * b.depth - a.width * a.height * a.depth
-  );
+  const sortedBoxes = [...boxes].sort((a, b) => {
+    const dimWeightDiff = getDimensionalWeight(a) - getDimensionalWeight(b);
+    if (dimWeightDiff !== 0) {
+      return dimWeightDiff;
+    }
 
+    const volumeDiff = getBoxVolume(a) - getBoxVolume(b);
+    if (volumeDiff !== 0) {
+      return volumeDiff;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
+
+  if (products.length <= EXACT_MULTI_BOX_ITEM_LIMIT) {
+    const exactResult = packMultiBoxOptimally(sortedBoxes, products);
+    if (exactResult) {
+      return exactResult;
+    }
+  }
+
+  return packMultiBoxHeuristic(sortedBoxes, products);
+}
+
+function buildMaskKey(mask: number): string {
+  return mask.toString(36);
+}
+
+function isBetterSolution(
+  candidate: MultiBoxSolution,
+  currentBest: MultiBoxSolution | null
+): boolean {
+  if (!currentBest) {
+    return true;
+  }
+
+  if (candidate.totalDimensionalWeight !== currentBest.totalDimensionalWeight) {
+    return candidate.totalDimensionalWeight < currentBest.totalDimensionalWeight;
+  }
+
+  if (candidate.totalVolume !== currentBest.totalVolume) {
+    return candidate.totalVolume < currentBest.totalVolume;
+  }
+
+  if (candidate.results.length !== currentBest.results.length) {
+    return candidate.results.length < currentBest.results.length;
+  }
+
+  const candidateSignature = candidate.results.map((result) => result.box.name).join("|");
+  const currentSignature = currentBest.results.map((result) => result.box.name).join("|");
+  return candidateSignature < currentSignature;
+}
+
+function packMultiBoxOptimally(
+  boxes: IBox[],
+  products: IProduct[]
+): PackingResult[] | null {
+  const totalMask = (1 << products.length) - 1;
+  const productsForMask = new Map<number, IProduct[]>();
+  const fitCache = new Map<string, BoxSubsetCandidate | null>();
+  const memo = new Map<number, MultiBoxSolution | null>();
+
+  const getProductsForMask = (mask: number) => {
+    const cachedProducts = productsForMask.get(mask);
+    if (cachedProducts) {
+      return cachedProducts;
+    }
+
+    const subsetProducts = products.filter((_, index) => (mask & (1 << index)) !== 0);
+    productsForMask.set(mask, subsetProducts);
+    return subsetProducts;
+  };
+
+  const getCandidate = (box: IBox, boxIndex: number, mask: number) => {
+    const cacheKey = `${boxIndex}:${buildMaskKey(mask)}`;
+    const cachedCandidate = fitCache.get(cacheKey);
+    if (cachedCandidate !== undefined) {
+      return cachedCandidate;
+    }
+
+    const subsetProducts = getProductsForMask(mask);
+    const result = checkFit(box, subsetProducts);
+    if (!result.fits) {
+      fitCache.set(cacheKey, null);
+      return null;
+    }
+
+    const candidate = {
+      box,
+      packedItems: result.packedItems,
+      dimensionalWeight: getDimensionalWeight(box),
+    };
+    fitCache.set(cacheKey, candidate);
+    return candidate;
+  };
+
+  const search = (remainingMask: number): MultiBoxSolution | null => {
+    if (remainingMask === 0) {
+      return {
+        results: [],
+        totalDimensionalWeight: 0,
+        totalVolume: 0,
+      };
+    }
+
+    const cachedSolution = memo.get(remainingMask);
+    if (cachedSolution !== undefined) {
+      return cachedSolution;
+    }
+
+    let best: MultiBoxSolution | null = null;
+
+    for (let boxIndex = 0; boxIndex < boxes.length; boxIndex += 1) {
+      const box = boxes[boxIndex]!;
+
+      for (
+        let subsetMask = remainingMask;
+        subsetMask > 0;
+        subsetMask = (subsetMask - 1) & remainingMask
+      ) {
+        const candidate = getCandidate(box, boxIndex, subsetMask);
+        if (!candidate) {
+          continue;
+        }
+
+        const remainingSolution = search(remainingMask ^ subsetMask);
+        if (!remainingSolution) {
+          continue;
+        }
+
+        const currentResult: PackingResult = {
+          box: candidate.box,
+          items: candidate.packedItems,
+          dimensionalWeight: candidate.dimensionalWeight,
+        };
+        const nextSolution: MultiBoxSolution = {
+          results: [currentResult, ...remainingSolution.results],
+          totalDimensionalWeight:
+            candidate.dimensionalWeight + remainingSolution.totalDimensionalWeight,
+          totalVolume: getBoxVolume(candidate.box) + remainingSolution.totalVolume,
+        };
+
+        if (isBetterSolution(nextSolution, best)) {
+          best = nextSolution;
+        }
+      }
+    }
+
+    memo.set(remainingMask, best);
+    return best;
+  };
+
+  return search(totalMask)?.results ?? null;
+}
+
+function packMultiBoxHeuristic(
+  boxes: IBox[],
+  products: IProduct[]
+): PackingResult[] {
   const results: PackingResult[] = [];
   let remaining = [...products];
   let iteration = 0;
@@ -248,32 +421,55 @@ export function packMultiBox(
       throw new Error("Too many packing iterations - possible infinite loop");
     }
 
-    let packed = false;
+    let packedCandidate:
+      | {
+          box: IBox;
+          packedItems: PackedItem[];
+          fittedNames: Set<string>;
+          score: number;
+        }
+      | null = null;
 
-    for (const box of sortedBoxes) {
+    for (const box of boxes) {
       const { bin, packedItems } = packItemsIntoBox(box, remaining);
 
-      if (bin && bin.items.length > 0) {
-        const fittedNames = new Set(
-          bin.items.map((i: { name: string }) => i.name)
-        );
-        remaining = remaining.filter((p) => !fittedNames.has(p.name));
+      if (!bin || bin.items.length === 0) {
+        continue;
+      }
 
-        results.push({
+      const fittedNames = new Set(bin.items.map((item: { name: string }) => item.name));
+      const score = getDimensionalWeight(box) / bin.items.length;
+
+      if (
+        !packedCandidate ||
+        score < packedCandidate.score ||
+        (score === packedCandidate.score &&
+          getDimensionalWeight(box) < getDimensionalWeight(packedCandidate.box)) ||
+        (score === packedCandidate.score &&
+          getDimensionalWeight(box) === getDimensionalWeight(packedCandidate.box) &&
+          getBoxVolume(box) < getBoxVolume(packedCandidate.box))
+      ) {
+        packedCandidate = {
           box,
-          items: packedItems,
-          dimensionalWeight: getDimensionalWeight(box),
-        });
-        packed = true;
-        break;
+          packedItems,
+          fittedNames,
+          score,
+        };
       }
     }
 
-    if (!packed) {
+    if (!packedCandidate) {
       throw new Error(
         `Cannot fit item(s) with the current box spacing: ${formatUnpackedItemNames(remaining)}`
       );
     }
+
+    remaining = remaining.filter((product) => !packedCandidate.fittedNames.has(product.name));
+    results.push({
+      box: packedCandidate.box,
+      items: packedCandidate.packedItems,
+      dimensionalWeight: getDimensionalWeight(packedCandidate.box),
+    });
   }
 
   return results;

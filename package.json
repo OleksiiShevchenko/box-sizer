@@ -11,8 +11,9 @@
     "test:e2e": "playwright test",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
-    "db:push": "set -a && . ./.env.local && set +a && prisma db push",
-    "db:studio": "set -a && . ./.env.local && set +a && prisma studio",
+    "db:push": "if [ -f ./.env.local ]; then set -a && . ./.env.local && set +a; fi && prisma db push",
+    "db:studio": "if [ -f ./.env.local ]; then set -a && . ./.env.local && set +a; fi && prisma studio",
+    "seed:e2e": "tsx scripts/seed-packwell-e2e.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -50,6 +51,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.183.1",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "jest": "^30.3.0",
@@ -57,6 +59,7 @@
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "whatwg-fetch": "^3.6.20"
   },
