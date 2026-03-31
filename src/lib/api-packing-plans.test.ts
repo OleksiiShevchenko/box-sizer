@@ -31,6 +31,45 @@ describe("calculatePackingPlanForUser", () => {
     jest.resetAllMocks();
   });
 
+  it("returns ideal-only results when the account has no saved boxes and ideal packing is requested", async () => {
+    prismaMock.box.findMany.mockResolvedValue([]);
+    calculateIdealBoxPackingMock.mockReturnValue({
+      box: {
+        id: "ideal",
+        name: "Ideal Box",
+        width: 34,
+        height: 34,
+        depth: 34,
+        spacing: 0,
+      },
+      items: [],
+      dimensionalWeight: 8,
+    });
+
+    await expect(
+      calculatePackingPlanForUser("user-1", {
+        items: [{ name: "HugeCube", width: 34, height: 34, depth: 34 }],
+        includeIdealBox: true,
+      })
+    ).resolves.toEqual({
+      results: [],
+      idealResult: expect.objectContaining({
+        box: expect.objectContaining({ id: "ideal", name: "Ideal Box" }),
+      }),
+    });
+  });
+
+  it("throws a user-facing error when no boxes are available and ideal packing is not requested", async () => {
+    prismaMock.box.findMany.mockResolvedValue([]);
+
+    await expect(
+      calculatePackingPlanForUser("user-1", {
+        items: [{ name: "Cube10", width: 10, height: 10, depth: 10 }],
+        includeIdealBox: false,
+      })
+    ).rejects.toThrow("No box options available for this account");
+  });
+
   it("falls back to an ideal box when saved boxes do not fit and ideal packing is requested", async () => {
     prismaMock.box.findMany.mockResolvedValue([
       {

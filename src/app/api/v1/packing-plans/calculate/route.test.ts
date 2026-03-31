@@ -1,4 +1,5 @@
 import { calculatePackingPlanForUser, createPackingPlanCalculationForUser } from "@/lib/api-packing-plans";
+import { inchesToCm, ozToGrams } from "@/types";
 import { POST } from "./route";
 
 jest.mock("next/server", () => {
@@ -135,6 +136,96 @@ describe("POST /api/v1/packing-plans/calculate", () => {
     await expect(response.json()).resolves.toEqual(
       expect.objectContaining({
         id: "packingPlan-public-id",
+      })
+    );
+  });
+
+  it("normalizes imperial input before invoking the packing calculation", async () => {
+    calculatePackingPlanForUserMock.mockResolvedValue({
+      results: [],
+      idealResult: {
+        box: {
+          id: "ideal",
+          name: "Ideal Box",
+          width: inchesToCm(16),
+          height: inchesToCm(6),
+          depth: inchesToCm(16),
+          spacing: 0,
+          maxWeight: null,
+        },
+        items: [],
+        dimensionalWeight: 3,
+      },
+    });
+    createPackingPlanCalculationForUserMock.mockResolvedValue({
+      id: "packingPlan-db-id",
+      publicId: "packingPlan-public-id",
+    });
+
+    const request = new Request("http://localhost/api/v1/packing-plans/calculate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        unitSystem: "in",
+        spacingOverride: 0.5,
+        renderVisualization: false,
+        includeIdealBox: true,
+        items: [
+          {
+            name: "ImperialCube",
+            quantity: 2,
+            width: 4,
+            height: 4,
+            depth: 4,
+            weight: 8,
+            canStackOnTop: false,
+            canBePlacedOnTop: true,
+            orientation: "horizontal",
+          },
+        ],
+      }),
+    }) as Request & { nextUrl: URL };
+    Object.defineProperty(request, "nextUrl", {
+      value: new URL("http://localhost/api/v1/packing-plans/calculate"),
+    });
+
+    const response = await POST(request);
+
+    expect(calculatePackingPlanForUserMock).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        spacingOverride: inchesToCm(0.5),
+        includeIdealBox: true,
+        items: [
+          expect.objectContaining({
+            name: "ImperialCube",
+            quantity: 2,
+            width: inchesToCm(4),
+            height: inchesToCm(4),
+            depth: inchesToCm(4),
+            weight: ozToGrams(8),
+            canStackOnTop: false,
+            canBePlacedOnTop: true,
+            orientation: "horizontal",
+          }),
+        ],
+      })
+    );
+
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        units: expect.objectContaining({
+          unitSystem: "in",
+          dimension: "in",
+          weight: "oz",
+        }),
+        result: expect.objectContaining({
+          idealBox: expect.objectContaining({
+            box: expect.objectContaining({
+              name: "Ideal Box",
+            }),
+          }),
+        }),
       })
     );
   });

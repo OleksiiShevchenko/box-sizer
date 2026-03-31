@@ -10,6 +10,29 @@ jobs:
   test:
     name: Lint, Build & Test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: box_sizer
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d box_sizer"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/box_sizer?schema=public"
+      AUTH_SECRET: "ci-test-secret-not-real"
+      GOOGLE_CLIENT_ID: "placeholder"
+      GOOGLE_CLIENT_SECRET: "placeholder"
+      RESEND_API_KEY: "placeholder"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      E2E_EMAIL: "packwell-e2e@example.com"
+      E2E_PASSWORD: "Packwell123!"
 
     steps:
       - uses: actions/checkout@v4
@@ -24,18 +47,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Bootstrap Prisma schema
+        run: pnpm db:push
+
       - name: Lint
         run: pnpm lint
 
       - name: Build
         run: pnpm build
-        env:
-          DATABASE_URL: "prisma+postgres://accelerate.prisma-data.net/?api_key=placeholder"
-          AUTH_SECRET: "ci-test-secret-not-real"
-          GOOGLE_CLIENT_ID: "placeholder"
-          GOOGLE_CLIENT_SECRET: "placeholder"
-          RESEND_API_KEY: "placeholder"
-          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
 
       - name: Unit & Integration Tests
         run: pnpm test
@@ -43,15 +62,11 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Seed Packwell E2E Data
+        run: pnpm exec ts-node scripts/seed-packwell-e2e.ts
+
       - name: E2E Tests
         run: pnpm test:e2e
-        env:
-          DATABASE_URL: "prisma+postgres://accelerate.prisma-data.net/?api_key=placeholder"
-          AUTH_SECRET: "ci-test-secret-not-real"
-          GOOGLE_CLIENT_ID: "placeholder"
-          GOOGLE_CLIENT_SECRET: "placeholder"
-          RESEND_API_KEY: "placeholder"
-          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
