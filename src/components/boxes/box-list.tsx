@@ -18,7 +18,7 @@ function EmptyBoxIcon() {
           <path d="M4 7v10l8 4 8-4V7" />
           <path d="m12 11 8-4" />
           <path d="M12 11 4 7" />
-          <path d="v10" />
+          <path d="M12 11v10" />
         </svg>
       </div>
     </div>
