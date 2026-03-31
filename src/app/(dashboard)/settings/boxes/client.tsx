@@ -13,9 +13,13 @@ export function BoxesSettingsClient({ boxes, unitSystem }: { boxes: BoxFormValue
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Box Settings</h1>
-        <Button type="button" onClick={() => setIsAddDialogOpen(true)}>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">Box Settings</h1>
+      </div>
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-base font-semibold text-slate-800">Your Boxes</h2>
+        <Button type="button" className="shrink-0" onClick={() => setIsAddDialogOpen(true)}>
           Add New Box
         </Button>
       </div>
@@ -23,15 +27,14 @@ export function BoxesSettingsClient({ boxes, unitSystem }: { boxes: BoxFormValue
       <Dialog
         open={isAddDialogOpen}
         title="Add New Box"
+        maxWidthClassName="max-w-[460px]"
+        contentClassName="px-0 pb-0"
         onClose={() => setIsAddDialogOpen(false)}
       >
         <BoxForm unit={unitSystem} onSuccess={() => setIsAddDialogOpen(false)} />
       </Dialog>
 
-      <div>
-        <h2 className="text-lg font-semibold mb-3 text-gray-900">Your Boxes</h2>
-        <BoxList boxes={boxes} unit={unitSystem} />
-      </div>
+      <BoxList boxes={boxes} unit={unitSystem} onAddBox={() => setIsAddDialogOpen(true)} />
     </div>
   );
 }

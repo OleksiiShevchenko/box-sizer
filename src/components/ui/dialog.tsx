@@ -2,16 +2,32 @@
 
 import { useEffect, useId, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Button } from "@/components/ui/button";
 
 interface DialogProps {
   open: boolean;
   title: string;
   children: ReactNode;
   onClose: () => void;
+  maxWidthClassName?: string;
+  contentClassName?: string;
+  headerClassName?: string;
+  titleClassName?: string;
+  headerBorder?: boolean;
+  closeLabel?: string;
 }
 
-export function Dialog({ open, title, children, onClose }: DialogProps) {
+export function Dialog({
+  open,
+  title,
+  children,
+  onClose,
+  maxWidthClassName = "max-w-2xl",
+  contentClassName = "px-6 pb-6",
+  headerClassName = "",
+  titleClassName = "",
+  headerBorder = false,
+  closeLabel = "Close",
+}: DialogProps) {
   const titleId = useId();
 
   useEffect(() => {
@@ -47,7 +63,7 @@ export function Dialog({ open, title, children, onClose }: DialogProps) {
       <button
         type="button"
         aria-label="Close dialog"
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
 
@@ -55,18 +71,24 @@ export function Dialog({ open, title, children, onClose }: DialogProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl transition-all duration-200"
+        className={`relative z-10 w-full ${maxWidthClassName} rounded-xl bg-white shadow-[0_8px_24px_rgba(15,23,42,0.12)] transition-all duration-200`}
       >
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 id={titleId} className="text-xl font-semibold text-gray-900">
+        <div
+          className={`flex items-start justify-between gap-4 px-6 pt-5 pb-4 ${headerBorder ? "border-b border-slate-200" : ""} ${headerClassName}`}
+        >
+          <h2 id={titleId} className={`text-lg font-semibold text-slate-800 ${titleClassName}`}>
             {title}
           </h2>
-          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-            Close
-          </Button>
+          <button
+            type="button"
+            className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
+            onClick={onClose}
+          >
+            {closeLabel}
+          </button>
         </div>
 
-        {children}
+        <div className={contentClassName}>{children}</div>
       </div>
     </div>,
     document.body

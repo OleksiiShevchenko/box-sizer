@@ -23,7 +23,7 @@ describe("BoxList", () => {
     render(<BoxList boxes={[]} unit="cm" />);
     expect(screen.getByText("No boxes added yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Add your first box using the button above.")
+      screen.getByText("Add your first box to enable optimal packing calculations.")
     ).toBeInTheDocument();
   });
 

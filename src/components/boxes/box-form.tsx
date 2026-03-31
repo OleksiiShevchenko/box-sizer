@@ -124,9 +124,9 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5 px-6 pb-6">
       {fieldErrors.form && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+        <div className="rounded-lg bg-red-50 px-3.5 py-3 text-sm text-red-600">
           {fieldErrors.form}
         </div>
       )}

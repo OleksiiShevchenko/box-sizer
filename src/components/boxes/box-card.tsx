@@ -1,7 +1,5 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { deleteBox } from "@/actions/box-actions";
 import { useState } from "react";
 import { BoxForm } from "@/components/boxes/box-form";
@@ -11,6 +9,7 @@ import type { BoxFormValues } from "./types";
 
 interface BoxCardProps extends BoxFormValues {
   unit: "cm" | "in";
+  showDivider?: boolean;
 }
 
 function convert(value: number, unit: "cm" | "in"): string {
@@ -18,7 +17,7 @@ function convert(value: number, unit: "cm" | "in"): string {
   return value.toFixed(1);
 }
 
-export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, unit }: BoxCardProps) {
+export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, unit, showDivider = false }: BoxCardProps) {
   const [deleting, setDeleting] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -40,33 +39,38 @@ export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, un
 
   return (
     <>
-      <Card className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-gray-900">{name}</h3>
-          <p className="text-sm text-gray-500">
+      <div className={`flex flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:justify-between ${showDivider ? "border-b border-slate-200" : ""}`}>
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-slate-800">{name}</h3>
+          <p className="mt-1 text-[13px] text-slate-500">
             {convert(width, unit)} x {convert(height, unit)} x {convert(depth, unit)} {unit}
             {" | "}Spacing: {convert(spacing ?? 0, unit)} {unit}
             {maxWeight != null && ` | Max: ${(unit === "in" ? maxWeight / 28.3495 : maxWeight).toFixed(1)}${unit === "in" ? "oz" : "g"}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="secondary" size="sm" onClick={() => setIsEditDialogOpen(true)}>
-            Edit
-          </Button>
-          <Button
+        <div className="flex items-center gap-4 self-start sm:self-auto">
+          <button
             type="button"
-            variant="danger"
-            size="sm"
+            className="text-[13px] font-medium text-blue-600 transition-colors hover:text-blue-700"
+            onClick={() => setIsEditDialogOpen(true)}
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            className="text-[13px] font-medium text-slate-400 transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
             onClick={() => setIsDeleteDialogOpen(true)}
             disabled={deleting}
           >
             Delete
-          </Button>
+          </button>
         </div>
 
         <Dialog
           open={isEditDialogOpen}
           title={`Edit ${name}`}
+          maxWidthClassName="max-w-[460px]"
+          contentClassName="px-0 pb-0"
           onClose={() => setIsEditDialogOpen(false)}
         >
           <BoxForm
@@ -75,7 +79,7 @@ export function BoxCard({ id, name, width, height, depth, spacing, maxWeight, un
             onSuccess={() => setIsEditDialogOpen(false)}
           />
         </Dialog>
-      </Card>
+      </div>
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}
