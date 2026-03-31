@@ -47,9 +47,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Bootstrap Prisma schema
-        run: pnpm db:push
-
       - name: Lint
         run: pnpm lint
 
