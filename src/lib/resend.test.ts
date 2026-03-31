@@ -8,10 +8,11 @@ jest.mock("resend", () => ({
   })),
 }));
 
-describe("sendVerificationEmail", () => {
+describe("resend mailers", () => {
   const originalConfigEmail = process.env.CONFIG_EMAIL;
   const originalFromEmail = process.env.RESEND_FROM_EMAIL;
   const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const originalNextAuthUrl = process.env.NEXTAUTH_URL;
 
   beforeEach(() => {
     jest.resetModules();
@@ -19,12 +20,14 @@ describe("sendVerificationEmail", () => {
     delete process.env.CONFIG_EMAIL;
     delete process.env.RESEND_FROM_EMAIL;
     process.env.NEXT_PUBLIC_APP_URL = "https://packwell.io";
+    delete process.env.NEXTAUTH_URL;
   });
 
   afterAll(() => {
     process.env.CONFIG_EMAIL = originalConfigEmail;
     process.env.RESEND_FROM_EMAIL = originalFromEmail;
     process.env.NEXT_PUBLIC_APP_URL = originalAppUrl;
+    process.env.NEXTAUTH_URL = originalNextAuthUrl;
   });
 
   it("uses noreply@packwell.io for verification emails by default", async () => {
@@ -69,6 +72,26 @@ describe("sendVerificationEmail", () => {
       2,
       expect.objectContaining({
         to: "ops@packwell.io",
+      })
+    );
+  });
+
+  it("uses the shared app URL helper for subscription emails", async () => {
+    process.env.NEXTAUTH_URL = "billing.packwell.io";
+    mockSendEmail.mockResolvedValue({ data: { id: "email_123" }, error: null });
+    const { sendSubscriptionPurchaseSuccessEmail } = await import("./resend");
+
+    await sendSubscriptionPurchaseSuccessEmail({
+      email: "user@example.com",
+      planName: "Pro",
+      billingInterval: "monthly",
+      currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
+    });
+
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: "Your Box Sizer subscription is active",
+        html: expect.stringContaining("https://billing.packwell.io/settings/billing"),
       })
     );
   });

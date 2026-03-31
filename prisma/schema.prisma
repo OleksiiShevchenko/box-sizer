@@ -24,6 +24,7 @@ model User {
   packingPlans PackingPlan[]
   subscription Subscription?
   calculationUsage CalculationUsage[]
+  emailNotifications EmailNotification[]
   apiApps  ApiApp[]
   apiTokens ApiToken[]
 }
@@ -181,4 +182,19 @@ model CalculationUsage {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+model EmailNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  dedupeKey String   @unique
+  status    String   @default("pending")
+  subject   String
+  createdAt DateTime @default(now())
+  sentAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
 }

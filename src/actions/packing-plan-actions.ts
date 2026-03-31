@@ -12,6 +12,7 @@ import {
 import {
   canPerformCalculation,
   getSubscriptionInfoForUser,
+  notifyQuotaReachedIfNeeded,
   recordCalculationUsage,
 } from "@/services/subscription";
 import type { IProduct, IPackingPlan, IPackingPlanListItem, Orientation, PackingResult } from "@/types";
@@ -194,6 +195,7 @@ export async function calculateAndSavePackingPlan(
   const canCalculate = await canPerformCalculation(userId);
   if (!canCalculate) {
     const subscriptionInfo = await getSubscriptionInfoForUser(userId);
+    await notifyQuotaReachedIfNeeded(userId);
     return {
       error: `You have used all ${subscriptionInfo.usageLimit} calculations for this month. Upgrade your plan to continue.`,
     };
