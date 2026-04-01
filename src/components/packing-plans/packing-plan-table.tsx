@@ -53,84 +53,82 @@ export function PackingPlanTable({ packingPlans, unitSystem, onDeleted }: Packin
 
   return (
     <>
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="overflow-x-clip overflow-y-visible rounded-xl">
-
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-sm font-medium text-gray-600">
-                <th className="px-4 py-3">Packing plan</th>
-                <th className="px-4 py-3">Units</th>
-                <th className="px-4 py-3">Box Size</th>
-                <th className="px-4 py-3">Dimensional Weight</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {packingPlans.map((packingPlan) => (
-                <tr key={packingPlan.id} className="text-sm text-gray-700">
-                  <td className="px-4 py-4">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-slate-200">
+          <thead className="bg-slate-100">
+            <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-500">
+              <th className="px-6 py-3">Packing plan</th>
+              <th className="px-6 py-3">Units</th>
+              <th className="px-6 py-3">Box size</th>
+              <th className="px-6 py-3">Dimensional weight</th>
+              <th className="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {packingPlans.map((packingPlan) => (
+              <tr key={packingPlan.id} className="text-sm text-slate-600">
+                <td className="px-6 py-4">
+                  <Link
+                    href={`/dashboard/packing-plans/${packingPlan.id}`}
+                    prefetch={false}
+                    className="font-medium text-slate-900 underline decoration-transparent transition-colors hover:text-blue-600 hover:decoration-blue-600"
+                  >
+                    {packingPlan.name}
+                  </Link>
+                </td>
+                <td className="px-6 py-4">
+                  <Tooltip
+                    content={
+                      <div className="space-y-1">
+                        {packingPlan.items.map((item) => (
+                          <div key={item.id}>
+                            <p className="font-medium">
+                              {item.name} x{normalizeProductQuantity(item.quantity)}
+                            </p>
+                            <p className="text-gray-300">
+                              {dim(item.width, unitSystem)} x {dim(item.height, unitSystem)} x{" "}
+                              {dim(item.depth, unitSystem)} {unitSystem}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    }
+                  >
+                    <span className="cursor-default underline decoration-dashed decoration-slate-300 underline-offset-2">
+                      {packingPlan.itemCount}
+                    </span>
+                  </Tooltip>
+                </td>
+                <td className="px-6 py-4">{formatDimensions(packingPlan, unitSystem)}</td>
+                <td className="px-6 py-4">
+                  {packingPlan.dimensionalWeight != null
+                    ? `${(unitSystem === "in" ? kgToLbs(packingPlan.dimensionalWeight) : packingPlan.dimensionalWeight).toFixed(1)} ${unitSystem === "in" ? "lbs" : "kg"}`
+                    : "Not calculated yet"}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex justify-end gap-2">
                     <Link
                       href={`/dashboard/packing-plans/${packingPlan.id}`}
                       prefetch={false}
-                      className="font-medium text-gray-900 underline decoration-transparent transition-colors hover:text-blue-600 hover:decoration-blue-600"
+                      className="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50"
                     >
-                      {packingPlan.name}
+                      Edit
                     </Link>
-                  </td>
-                  <td className="px-4 py-4">
-                    <Tooltip
-                      content={
-                        <div className="space-y-1">
-                          {packingPlan.items.map((item) => (
-                            <div key={item.id}>
-                              <p className="font-medium">
-                                {item.name} x{normalizeProductQuantity(item.quantity)}
-                              </p>
-                              <p className="text-gray-300">
-                                {dim(item.width, unitSystem)} x {dim(item.height, unitSystem)} x{" "}
-                                {dim(item.depth, unitSystem)} {unitSystem}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      }
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="px-2 py-1 text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                      onClick={() => setTargetPackingPlan(packingPlan)}
                     >
-                      <span className="cursor-default underline decoration-dashed decoration-gray-300 underline-offset-2">
-                        {packingPlan.itemCount}
-                      </span>
-                    </Tooltip>
-                  </td>
-                  <td className="px-4 py-4">{formatDimensions(packingPlan, unitSystem)}</td>
-                  <td className="px-4 py-4">
-                    {packingPlan.dimensionalWeight != null
-                      ? `${(unitSystem === "in" ? kgToLbs(packingPlan.dimensionalWeight) : packingPlan.dimensionalWeight).toFixed(1)} ${unitSystem === "in" ? "lbs" : "kg"}`
-                      : "Not calculated yet"}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex justify-end gap-2">
-                      <Link
-                        href={`/dashboard/packing-plans/${packingPlan.id}`}
-                        prefetch={false}
-                        className="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
-                      >
-                        Edit
-                      </Link>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setTargetPackingPlan(packingPlan)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      Delete
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <DeleteConfirmDialog
