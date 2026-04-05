@@ -120,11 +120,11 @@ export default async function Home() {
                     <h3 className="text-2xl font-bold">Box Type: Large 4(16X14X8)</h3>
                   </div>
                 </div>
-                <div className="aspect-[4/3] bg-surface-container-low rounded-lg mb-6 flex items-center justify-center relative overflow-hidden">
+                <div className="bg-surface-container-low rounded-lg mb-6 flex items-center justify-center p-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     alt="Packwell box visualization"
-                    className="absolute inset-0 h-full w-full object-cover object-center"
+                    className="w-full h-auto object-contain"
                     src="/hero-box.png"
                   />
                 </div>
@@ -668,7 +668,7 @@ export default async function Home() {
               {/* Starter */}
               <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col border border-outline-variant/20">
                 <h3 className="text-xl font-bold mb-2">Starter</h3>
-                <p className="text-sm text-on-surface-variant mb-6">
+                <p className="text-sm text-on-surface-variant mb-6 min-h-[3.75rem]">
                   For small teams validating pack-rate improvements.
                 </p>
                 <p className="text-4xl font-extrabold mb-1">Free</p>
@@ -697,7 +697,7 @@ export default async function Home() {
               {/* Growth */}
               <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col border border-outline-variant/20">
                 <h3 className="text-xl font-bold mb-2">Growth</h3>
-                <p className="text-sm text-on-surface-variant mb-6">
+                <p className="text-sm text-on-surface-variant mb-6 min-h-[3.75rem]">
                   For teams automating box choice across daily operations.
                 </p>
                 <p className="text-4xl font-extrabold mb-1">$49<span className="text-base font-medium text-on-surface-variant">/mo</span></p>
@@ -728,12 +728,12 @@ export default async function Home() {
                 </Link>
               </div>
               {/* Pro */}
-              <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col border-2 border-primary relative">
+              <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col border-2 border-primary relative mt-0">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-on-primary px-3 py-0.5 rounded-full text-xs font-bold">
                   Most popular
                 </span>
                 <h3 className="text-xl font-bold mb-2">Pro</h3>
-                <p className="text-sm text-on-surface-variant mb-6">
+                <p className="text-sm text-on-surface-variant mb-6 min-h-[3.75rem]">
                   For high-volume ops teams optimizing cost by lane, box type, and SLA.
                 </p>
                 <p className="text-4xl font-extrabold mb-1">$149<span className="text-base font-medium text-on-surface-variant">/mo</span></p>
@@ -766,7 +766,7 @@ export default async function Home() {
               {/* Scale */}
               <div className="bg-surface-container-lowest rounded-xl p-8 flex flex-col border border-outline-variant/20">
                 <h3 className="text-xl font-bold mb-2">Scale</h3>
-                <p className="text-sm text-on-surface-variant mb-6">
+                <p className="text-sm text-on-surface-variant mb-6 min-h-[3.75rem]">
                   For enterprise teams needing tailored rollout, governance, and long-term support.
                 </p>
                 <p className="text-3xl font-extrabold mb-1">Custom pricing</p>
