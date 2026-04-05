@@ -769,7 +769,7 @@ export default async function Home() {
                 <p className="text-sm text-on-surface-variant mb-6 min-h-[3.75rem]">
                   For enterprise teams needing tailored rollout, governance, and long-term support.
                 </p>
-                <p className="text-3xl font-extrabold mb-1">Custom pricing</p>
+                <p className="text-2xl font-extrabold mb-1 whitespace-nowrap">Custom pricing</p>
                 <div className="h-5"></div>
                 <ul className="space-y-3 mt-6 mb-8 flex-1">
                   <li className="flex items-center gap-2 text-sm text-on-surface-variant">
