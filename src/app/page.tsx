@@ -817,10 +817,9 @@ export default async function Home() {
                   </Link>
                   <Link
                     href="#"
-                    className="bg-white/20 text-on-primary-fixed border border-on-primary-fixed/30 px-8 py-4 rounded-lg font-bold hover:bg-white/30 transition-all flex items-center gap-2"
+                    className="bg-white text-on-primary-fixed px-8 py-4 rounded-lg font-bold hover:bg-white/90 transition-all"
                   >
-                    Contact Sales{" "}
-                    <span className="material-symbols-outlined">arrow_forward</span>
+                    Contact Sales
                   </Link>
                 </div>
               </div>
