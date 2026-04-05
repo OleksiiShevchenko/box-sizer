@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import posthog from "posthog-js";
 import { deletePackingPlan } from "@/actions/packing-plan-actions";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
@@ -43,6 +44,7 @@ export function PackingPlanTable({ packingPlans, unitSystem, onDeleted }: Packin
     setDeleting(false);
 
     if (result.success) {
+      posthog.capture("packing_plan_deleted", { packing_plan_id: targetPackingPlan.id });
       onDeleted?.(targetPackingPlan.id);
       return true;
     }

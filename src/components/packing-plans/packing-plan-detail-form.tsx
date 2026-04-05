@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import { calculateAndSavePackingPlan } from "@/actions/packing-plan-actions";
 import { ProductForm } from "@/components/calculator/product-form";
 import { ProductList } from "@/components/calculator/product-list";
@@ -104,9 +105,24 @@ export function PackingPlanDetailForm({
 
     if (result.error) {
       setError(result.error);
+      posthog.capture("packing_plan_calculated", {
+        packing_plan_id: packingPlan.id,
+        item_count: items.length,
+        total_units: getTotalProductUnits(items),
+        has_boxes: hasBoxes,
+        success: false,
+      });
       return;
     }
 
+    posthog.capture("packing_plan_calculated", {
+      packing_plan_id: packingPlan.id,
+      item_count: items.length,
+      total_units: getTotalProductUnits(items),
+      has_boxes: hasBoxes,
+      success: true,
+      results_count: result.results?.length ?? 0,
+    });
     onCalculated(trimmedName, result.results ?? [], result.idealResult ?? null);
   }
 

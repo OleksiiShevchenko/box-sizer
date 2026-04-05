@@ -36,6 +36,12 @@ jest.mock("@/lib/stripe", () => ({
   },
 }));
 
+jest.mock("@/lib/posthog-server", () => ({
+  getPostHogClient: () => ({
+    capture: jest.fn(),
+  }),
+}));
+
 jest.mock("@/services/email-notifications", () => ({
   notifySubscriptionPurchaseSuccess: jest.fn(),
   notifySubscriptionRenewalFailure: jest.fn(),

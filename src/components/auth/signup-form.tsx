@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -21,6 +22,7 @@ export function SignupForm() {
 
     const formData = new FormData(e.currentTarget);
     formData.set("locale", navigator.language ?? "");
+    const email = formData.get("email") as string;
     const result = await signUp(formData);
 
     setLoading(false);
@@ -28,6 +30,8 @@ export function SignupForm() {
     if (result.error) {
       setError(result.error);
     } else {
+      posthog.identify(email, { email });
+      posthog.capture("signup_submitted", { email, method: "email" });
       router.push("/verify-email");
     }
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import posthog from "posthog-js";
 import { createApiApp } from "@/actions/api-app-actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -42,6 +43,7 @@ export function ApiAppCreateDialog({ open, onClose, onCreated }: ApiAppCreateDia
         return;
       }
 
+      posthog.capture("api_app_created", { app_id: result.app.id });
       setCreatedApp(result.app);
       setCreatedSecret(result.clientSecret);
       onCreated(result.app);

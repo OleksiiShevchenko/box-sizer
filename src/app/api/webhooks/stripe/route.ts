@@ -14,6 +14,7 @@ import {
   notifySubscriptionRenewalFailure,
   notifySubscriptionRenewalSuccess,
 } from "@/services/email-notifications";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -399,6 +400,16 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
     return;
   }
 
+  getPostHogClient().capture({
+    distinctId: context.userId,
+    event: "subscription_purchased",
+    properties: {
+      tier: context.tier,
+      billing_interval: context.billingInterval,
+      stripe_event_id: event.id,
+    },
+  });
+
   await notifySubscriptionPurchaseSuccess({
     ...context,
     eventId: event.id,
@@ -419,6 +430,17 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event) {
   }
 
   const paymentMethodLabel = await getInvoicePaymentMethodLabel(invoice);
+
+  getPostHogClient().capture({
+    distinctId: context.userId,
+    event: "subscription_renewed",
+    properties: {
+      tier: context.tier,
+      billing_interval: context.billingInterval,
+      amount_paid_cents: getInvoiceAmountPaidCents(invoice),
+      stripe_event_id: event.id,
+    },
+  });
 
   await notifySubscriptionRenewalSuccess({
     ...context,
@@ -446,6 +468,17 @@ async function handleInvoicePaymentFailed(event: Stripe.Event) {
   }
 
   const paymentMethodLabel = await getInvoicePaymentMethodLabel(invoice);
+
+  getPostHogClient().capture({
+    distinctId: context.userId,
+    event: "subscription_renewal_failed",
+    properties: {
+      tier: context.tier,
+      billing_interval: context.billingInterval,
+      amount_due_cents: getInvoiceAmountDueCents(invoice),
+      stripe_event_id: event.id,
+    },
+  });
 
   await notifySubscriptionRenewalFailure({
     ...context,

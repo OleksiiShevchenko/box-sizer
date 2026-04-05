@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createBox, updateBox } from "@/actions/box-actions";
@@ -118,6 +119,7 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
 
     setFieldErrors({});
     if (!isEditMode) {
+      posthog.capture("box_created", { unit });
       form.reset();
     }
     onSuccess?.();

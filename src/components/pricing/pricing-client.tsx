@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import posthog from "posthog-js";
 import { createCheckoutSession } from "@/actions/subscription-actions";
 import {
   BILLING_INTERVALS,
@@ -42,6 +43,7 @@ export function PricingClient({
     }
 
     setError(null);
+    posthog.capture("checkout_initiated", { tier, billing_interval: billingInterval });
     startTransition(async () => {
       const result = await createCheckoutSession(tier, billingInterval);
       if (result.error) {
