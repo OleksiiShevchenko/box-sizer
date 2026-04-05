@@ -220,10 +220,10 @@ export default async function Home() {
               <div className="bg-surface-container-lowest p-6 rounded-xl shadow-lg rotate-2">
                 <div className="flex items-center justify-between border-b border-surface-container p-4 mb-4">
                   <div>
-                    <span className="font-mono text-sm font-bold">Carrier Invoice #8291</span>
-                    <p className="text-xs text-on-surface-variant">Bill correction: Reweighed package</p>
+                    <span className="font-mono text-sm">Carrier Invoice #8291</span>
+                    <p className="text-xs text-[#5f6368]">Size correction increased postage</p>
                   </div>
-                  <span className="bg-error-container text-on-error-container px-2 py-0.5 rounded text-xs font-bold">
+                  <span className="bg-error-container text-on-error-container px-2 py-0.5 rounded-lg text-xs font-bold">
                     OVERCHARGE
                   </span>
                 </div>
