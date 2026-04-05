@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import posthog from "posthog-js";
 import {
   cancelSubscription,
   createBillingPortalSession,
@@ -65,6 +66,10 @@ export function BillingClient({ initialSubscription, banner }: BillingClientProp
       }
 
       if (result.subscription) {
+        posthog.capture("subscription_cancelled", {
+          tier: result.subscription.tier,
+          billing_interval: result.subscription.billingInterval,
+        });
         setSubscription(result.subscription);
         router.refresh();
       }
@@ -81,6 +86,10 @@ export function BillingClient({ initialSubscription, banner }: BillingClientProp
       }
 
       if (result.subscription) {
+        posthog.capture("subscription_resumed", {
+          tier: result.subscription.tier,
+          billing_interval: result.subscription.billingInterval,
+        });
         setSubscription(result.subscription);
         router.refresh();
       }

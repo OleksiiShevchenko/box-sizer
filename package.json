@@ -29,6 +29,8 @@
     "jose": "^6.2.2",
     "next": "16.1.6",
     "next-auth": "5.0.0-beta.30",
+    "posthog-js": "^1.364.7",
+    "posthog-node": "^5.28.11",
     "puppeteer-core": "^24.40.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -60,7 +62,7 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "^5",
+    "typescript": "^5.9.3",
     "whatwg-fetch": "^3.6.20"
   },
   "packageManager": "pnpm@9.12.2+sha512.22721b3a11f81661ae1ec68ce1a7b879425a1ca5b991c975b074ac220b187ce56c708fe5db69f4c962c989452eee76c82877f4ee80f474cebd61ee13461b6228"

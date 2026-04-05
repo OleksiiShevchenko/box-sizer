@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { createPackingPlan } from "@/actions/packing-plan-actions";
 
@@ -17,6 +18,7 @@ export function NewPackingPlanButton({ className }: NewPackingPlanButtonProps) {
     setLoading(true);
     try {
       const { id } = await createPackingPlan();
+      posthog.capture("packing_plan_created", { packing_plan_id: id });
       router.push(`/dashboard/packing-plans/${id}`);
     } catch {
       setLoading(false);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -19,9 +20,10 @@ export function LoginForm() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
 
     const result = await signIn("credentials", {
-      email: formData.get("email"),
+      email,
       password: formData.get("password"),
       redirect: false,
     });
@@ -33,6 +35,8 @@ export function LoginForm() {
         ? "Invalid email or password."
         : result.error);
     } else {
+      posthog.identify(email, { email });
+      posthog.capture("login_submitted", { email, method: "email" });
       router.push("/dashboard");
       router.refresh();
     }
