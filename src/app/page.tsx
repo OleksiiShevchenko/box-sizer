@@ -74,7 +74,7 @@ export default async function Home() {
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-on-background mb-6 leading-[1.1]">
                 Stop shipping air.{" "}
                 <br />
-                <span className="text-secondary">Pack smarter.</span>
+                <span className="text-primary">Pack smarter.</span>
               </h1>
               <p className="text-xl text-on-surface-variant max-w-xl mb-10 leading-relaxed">
                 Calculate the exact box for every order before it ships. Charge
