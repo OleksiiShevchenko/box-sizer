@@ -220,7 +220,7 @@ export default async function Home() {
               </ul>
             </div>
             <div className="relative" data-reveal="right">
-              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-lg">
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-lg rotate-2">
                 <div className="flex items-center justify-between border-b border-surface-container p-4 mb-4">
                   <div>
                     <span className="font-mono text-sm font-bold">Carrier Invoice #8291</span>
@@ -815,15 +815,18 @@ export default async function Home() {
                   >
                     Start free
                   </Link>
-                  <span className="text-on-primary-fixed font-bold px-8 py-4 flex items-center gap-2 cursor-pointer">
+                  <Link
+                    href="#"
+                    className="bg-white/20 text-on-primary-fixed border border-on-primary-fixed/30 px-8 py-4 rounded-lg font-bold hover:bg-white/30 transition-all flex items-center gap-2"
+                  >
                     Contact Sales{" "}
                     <span className="material-symbols-outlined">arrow_forward</span>
-                  </span>
+                  </Link>
                 </div>
               </div>
               {/* Recommended Box Card */}
               <div
-                className="relative z-10 bg-white p-6 rounded-2xl shadow-2xl max-w-xs w-full"
+                className="relative z-10 bg-white p-6 rounded-2xl shadow-2xl rotate-3 max-w-xs w-full"
                 data-reveal="right"
               >
                 <span className="text-xs text-on-surface-variant uppercase tracking-widest">Recommended Box</span>
@@ -904,7 +907,7 @@ export default async function Home() {
               <ul className="space-y-3">
                 <li className="flex items-center gap-2 text-slate-500 text-sm">
                   <span className="material-symbols-outlined text-sm">mail</span>
-                  support@packwell.io
+                  hello@packwell.io
                 </li>
                 <li className="pt-1">
                   <span className="text-blue-600 font-bold text-sm cursor-pointer">
@@ -938,7 +941,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="max-w-7xl mx-auto px-8 mt-12 pt-6 border-t border-slate-200 text-xs text-slate-400">
-            <p>&copy; 2025 Packwell. All rights reserved.</p>
+            <p>&copy; 2026 Packwell. All rights reserved.</p>
           </div>
         </footer>
       </div>
