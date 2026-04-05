@@ -68,7 +68,7 @@ export default async function Home() {
         </nav>
 
         {/* Hero Section */}
-        <section className="relative overflow-hidden px-6 pt-32 pb-20 md:pt-48 md:pb-32">
+        <section className="relative overflow-hidden px-6 pt-28 pb-20 md:pt-36 md:pb-32">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7" data-reveal="left">
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-on-background mb-6 leading-[1.1]">
@@ -95,13 +95,13 @@ export default async function Home() {
                   Book a Demo
                 </Link>
               </div>
-              <p className="text-sm text-on-surface-variant flex flex-wrap items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-sm">check</span>
+              <p className="text-xs text-on-surface-variant/80 flex flex-wrap items-center gap-[18px]">
+                <span className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-xs text-on-surface-variant/80">check</span>
                   No credit card required
                 </span>
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-sm">check</span>
+                <span className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-xs text-on-surface-variant/80">bolt</span>
                   API in minutes
                 </span>
               </p>
@@ -111,53 +111,50 @@ export default async function Home() {
             </div>
             <div className="relative lg:col-span-5" data-reveal="right">
               {/* Box Recommendation Card */}
-              <div className="relative bg-surface-container-lowest p-8 rounded-xl shadow-[0_20px_40px_rgba(25,28,29,0.05)]">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-secondary mb-1 block">
-                      Optimal Recommendation
-                    </span>
-                    <h3 className="text-2xl font-bold">Box Type: Large 4(16X14X8)</h3>
-                  </div>
+              <div className="relative bg-white p-8 rounded-xl shadow-[0_20px_35px_rgba(25,28,29,0.05)]" style={{ border: '1px solid rgba(0,0,0,0.04)' }}>
+                <div className="mb-[22px]">
+                  <span className="text-xs font-bold tracking-[1.2px] text-secondary mb-1 block">
+                    Optimal Recommendation
+                  </span>
+                  <h3 className="text-2xl font-bold">Box Type: Large 4(16X14X8)</h3>
                 </div>
-                <div className="bg-surface-container-low rounded-lg mb-6 flex items-center justify-center p-4">
+                <div className="rounded-lg mb-[22px] overflow-hidden h-[320px] relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     alt="Packwell box visualization"
-                    className="w-full h-auto object-contain"
+                    className="w-full h-auto absolute -top-[8%] left-0"
                     src="/hero-box.png"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-surface p-4 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 mb-[22px]">
+                  <div className="bg-surface p-[14px_16px] rounded-lg">
                     <p className="text-xs text-on-surface-variant">
                       Shipping Savings
                     </p>
-                    <p className="text-xl font-bold text-secondary">-$4.22</p>
+                    <p className="text-xl font-bold text-secondary mt-1">-$4.22</p>
                   </div>
-                  <div className="bg-surface p-4 rounded-lg">
+                  <div className="bg-surface p-[14px_16px] rounded-lg">
                     <p className="text-xs text-on-surface-variant">
                       Fill Saved
                     </p>
-                    <p className="text-xl font-bold text-primary">62%</p>
+                    <p className="text-xl font-bold text-primary mt-1">62%</p>
                   </div>
                 </div>
                 {/* JSON Block */}
-                <div className="bg-inverse-surface p-4 rounded-lg font-mono text-[10px] leading-relaxed overflow-hidden">
-                  <div className="flex gap-2 mb-2">
+                <div className="bg-[#2e3132] p-[12px_16px_16px_16px] rounded-lg font-mono text-[10px] leading-[1.625] overflow-hidden">
+                  <div className="flex gap-2 mb-[10px]">
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
                     <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   </div>
-                  <code className="text-inverse-on-surface">
-                    {`{`}<br />
-                    {`  `}<span className="text-secondary-fixed">&quot;id&quot;</span>{`: `}<span className="text-primary-fixed">&quot;f7fdee8-6a06-4f75-b0d8-b818bbb17b4f&quot;</span>{`,`}<br />
-                    {`  `}<span className="text-secondary-fixed">&quot;utilization&quot;</span>{`: `}<span className="text-primary-fixed">0.982</span>{`,`}<br />
-                    {`  `}<span className="text-secondary-fixed">&quot;name&quot;</span>{`: `}<span className="text-primary-fixed">&quot;Small 3&quot;</span>{`,`}<br />
-                    {`  `}<span className="text-secondary-fixed">&quot;items&quot;</span>{`: `}<span className="text-primary-fixed">4</span>{`,`}<br />
-                    {`  `}<span className="text-secondary-fixed">&quot;dimensions&quot;</span>{`: `}<span className="text-primary-fixed">[16, 14, 8]</span><br />
-                    {`}`}
-                  </code>
+                  <code className="text-[#6bff8f] whitespace-pre">{`"result": {
+  "id": "f7599914-5cdb-4f73-9b39-3d81003e7b42",
+  "name": "Large 4",
+  "width": 16,
+  "height": 14,
+  "depth": 8,
+  "dimensionalWeight": 9.7
+}`}</code>
                 </div>
               </div>
             </div>
