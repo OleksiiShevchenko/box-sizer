@@ -263,7 +263,7 @@ export default async function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center" data-reveal="up">
               <div className="bg-surface-container-low rounded-2xl p-8 text-center">
                 <div className="w-14 h-14 bg-surface-container rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="material-symbols-outlined text-on-surface-variant text-2xl">shopping_cart</span>
+                  <span className="material-symbols-outlined text-[#3B82F6] text-2xl">shopping_cart</span>
                 </div>
                 <h4 className="font-bold mb-1">Ecommerce Cart</h4>
                 <p className="text-sm text-on-surface-variant">Customer adds items to their order</p>
@@ -274,7 +274,7 @@ export default async function Home() {
                 </div>
                 <div className="bg-primary rounded-2xl p-8 text-center text-on-primary">
                   <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <span className="material-symbols-outlined text-on-primary text-2xl">inventory_2</span>
+                    <span className="material-symbols-outlined text-on-primary text-2xl">memory</span>
                   </div>
                   <h4 className="font-bold mb-1">Packwell API</h4>
                   <p className="text-sm text-on-primary/80">Calculates optimal box &amp; dimensional weight</p>
@@ -285,7 +285,7 @@ export default async function Home() {
               </div>
               <div className="bg-surface-container-low rounded-2xl p-8 text-center">
                 <div className="w-14 h-14 bg-surface-container rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="material-symbols-outlined text-secondary text-2xl">check_circle</span>
+                  <span className="material-symbols-outlined text-[#16A34A] text-2xl">package_2</span>
                 </div>
                 <h4 className="font-bold mb-1">Output</h4>
                 <p className="text-sm text-on-surface-variant">Box dimensions + accurate shipping cost</p>
