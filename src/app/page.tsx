@@ -860,8 +860,8 @@ export default async function Home() {
 
         {/* Footer */}
         <footer className="bg-slate-50 w-full pt-16 pb-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 max-w-7xl mx-auto px-8">
-            <div className="col-span-2 md:col-span-1">
+          <div className="flex flex-wrap md:flex-nowrap md:justify-between gap-8 max-w-7xl mx-auto px-8">
+            <div className="w-full md:w-[300px] md:shrink-0">
               <div className="mb-4">
                 <PackwellLogo className="h-7 w-auto text-slate-900" />
               </div>
