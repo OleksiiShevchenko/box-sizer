@@ -8,7 +8,7 @@ import {
 const FONT_STACK = "Inter, Arial, sans-serif";
 const COMPANY_NAME = "Packwell Inc.";
 const COMPANY_ADDRESS = "10089 Willow Creek Road, Floor 1, San Diego, CA US";
-const COMPANY_EMAIL = "hello@packwell.io";
+const COMPANY_EMAIL = "support@packwell.io";
 
 type CardRow = {
   label: string;

@@ -194,10 +194,10 @@ export default function PrivacyPolicyPage() {
             <p>
               For questions about this Privacy Policy, contact{" "}
               <a
-                href="mailto:hello@packwell.io"
+                href="mailto:support@packwell.io"
                 className="text-primary hover:underline"
               >
-                hello@packwell.io
+                support@packwell.io
               </a>
               .
             </p>

@@ -101,7 +101,7 @@ describe("resend mailers", () => {
     expect(html).toContain("https://dashboard.packwell.io/dashboard");
     expect(html).toContain("Privacy Policy");
     expect(html).toContain("Terms of Service");
-    expect(html).toContain("mailto:hello@packwell.io");
+    expect(html).toContain("mailto:support@packwell.io");
     expect(html).toContain("10089 Willow Creek Road, Floor 1, San Diego, CA US");
   });
 

@@ -906,7 +906,7 @@ export default async function Home() {
               <ul className="space-y-3">
                 <li className="flex items-center gap-2 text-slate-500 text-sm">
                   <span className="material-symbols-outlined text-sm">mail</span>
-                  hello@packwell.io
+                  support@packwell.io
                 </li>
                 <li className="pt-1">
                   <span className="text-blue-600 font-bold text-sm cursor-pointer">

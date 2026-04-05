@@ -233,10 +233,10 @@ export default function TermsOfServicePage() {
             <p>
               For questions about these Terms, contact{" "}
               <a
-                href="mailto:hello@packwell.io"
+                href="mailto:support@packwell.io"
                 className="text-primary hover:underline"
               >
-                hello@packwell.io
+                support@packwell.io
               </a>
               .
             </p>
