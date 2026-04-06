@@ -19,7 +19,7 @@ export default async function PricingPage() {
             Subscription plans for box teams of different sizes.
           </h1>
           <p className="mx-auto max-w-2xl text-base leading-7 text-slate-600">
-            Start free, move to Pro for consistent volume, or unlock Business for
+            Start free, move to Growth for consistent volume, or unlock Pro for
             unlimited calculations and API access.
           </p>
         </div>

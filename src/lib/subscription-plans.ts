@@ -1,4 +1,4 @@
-export const SUBSCRIPTION_TIERS = ["starter", "pro", "business"] as const;
+export const SUBSCRIPTION_TIERS = ["starter", "growth", "pro"] as const;
 export const BILLING_INTERVALS = ["monthly", "annual"] as const;
 
 export type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number];
@@ -35,9 +35,9 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
     ],
     marketingCtaLabel: "Start Free",
   },
-  pro: {
-    tier: "pro",
-    name: "Pro",
+  growth: {
+    tier: "growth",
+    name: "Growth",
     description: "For growing teams that need frequent optimization.",
     monthlyPriceCents: 2900,
     annualPriceCents: 28884,
@@ -48,13 +48,11 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
       "Saved boxes and packing plans",
       "API access included",
     ],
-    marketingCtaLabel: "Choose Pro",
-    badgeText: "Most popular",
-    isHighlighted: true,
+    marketingCtaLabel: "Choose Growth",
   },
-  business: {
-    tier: "business",
-    name: "Business",
+  pro: {
+    tier: "pro",
+    name: "Pro",
     description: "Unlimited calculations with API access for operations teams.",
     monthlyPriceCents: 9900,
     annualPriceCents: 98604,
@@ -65,7 +63,9 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
       "Saved boxes and packing plans",
       "API access included",
     ],
-    marketingCtaLabel: "Choose Business",
+    marketingCtaLabel: "Choose Pro",
+    badgeText: "Most popular",
+    isHighlighted: true,
   },
 };
 
@@ -73,13 +73,13 @@ const PRICE_ENV_KEYS: Record<
   Exclude<SubscriptionTier, "starter">,
   Record<BillingInterval, string>
 > = {
+  growth: {
+    monthly: "STRIPE_GROWTH_MONTHLY_PRICE_ID",
+    annual: "STRIPE_GROWTH_ANNUAL_PRICE_ID",
+  },
   pro: {
     monthly: "STRIPE_PRO_MONTHLY_PRICE_ID",
     annual: "STRIPE_PRO_ANNUAL_PRICE_ID",
-  },
-  business: {
-    monthly: "STRIPE_BUSINESS_MONTHLY_PRICE_ID",
-    annual: "STRIPE_BUSINESS_ANNUAL_PRICE_ID",
   },
 };
 
@@ -96,6 +96,10 @@ export function getVisiblePlans(): SubscriptionPlan[] {
 }
 
 export function getPlanForTier(tier: string | null | undefined): SubscriptionPlan {
+  if (tier === "business") {
+    return SUBSCRIPTION_PLANS.pro;
+  }
+
   if (tier && isSubscriptionTier(tier)) {
     return SUBSCRIPTION_PLANS[tier];
   }
@@ -122,7 +126,7 @@ export function getPlanFromPriceId(priceId: string | null | undefined): {
     return null;
   }
 
-  for (const tier of ["pro", "business"] as const) {
+  for (const tier of ["growth", "pro"] as const) {
     for (const interval of BILLING_INTERVALS) {
       if (process.env[PRICE_ENV_KEYS[tier][interval]] === priceId) {
         return { tier, interval };

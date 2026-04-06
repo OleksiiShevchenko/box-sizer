@@ -456,9 +456,9 @@ export async function notifyQuotaReachedIfNeeded(
   try {
     const recommendedUpgradeTier =
       subscriptionInfo.tier === "starter"
-        ? "pro"
-        : subscriptionInfo.tier === "pro"
-          ? "business"
+        ? "growth"
+        : subscriptionInfo.tier === "growth"
+          ? "pro"
           : null;
 
     await notifyQuotaReached({

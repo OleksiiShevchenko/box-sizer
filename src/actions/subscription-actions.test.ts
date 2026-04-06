@@ -74,6 +74,7 @@ const mockedSubscriptionService = {
 describe("subscription actions", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    process.env.STRIPE_GROWTH_MONTHLY_PRICE_ID = "price_growth_monthly";
     process.env.STRIPE_PRO_MONTHLY_PRICE_ID = "price_pro_monthly";
     process.env.NEXTAUTH_URL = "";
     process.env.NEXT_PUBLIC_APP_URL = "";
@@ -99,13 +100,13 @@ describe("subscription actions", () => {
       url: "https://checkout.stripe.test/session",
     } as never);
 
-    await expect(createCheckoutSession("pro", "monthly")).resolves.toEqual({
+    await expect(createCheckoutSession("growth", "monthly")).resolves.toEqual({
       url: "https://checkout.stripe.test/session",
     });
     expect(checkoutSessionCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         customer: "cus_123",
-        line_items: [{ price: "price_pro_monthly", quantity: 1 }],
+        line_items: [{ price: "price_growth_monthly", quantity: 1 }],
       })
     );
   });
@@ -120,7 +121,7 @@ describe("subscription actions", () => {
       url: "https://checkout.stripe.test/session",
     } as never);
 
-    await createCheckoutSession("pro", "monthly");
+    await createCheckoutSession("growth", "monthly");
 
     expect(checkoutSessionCreate).toHaveBeenCalledWith(
       expect.objectContaining({
