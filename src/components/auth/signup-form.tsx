@@ -23,16 +23,20 @@ export function SignupForm() {
     const formData = new FormData(e.currentTarget);
     formData.set("locale", navigator.language ?? "");
     const email = formData.get("email") as string;
-    const result = await signUp(formData);
+    try {
+      const result = await signUp(formData);
 
-    setLoading(false);
-
-    if (result.error) {
-      setError(result.error);
-    } else {
-      posthog.identify(email, { email });
-      posthog.capture("signup_submitted", { email, method: "email" });
-      router.push("/verify-email");
+      if (result.error) {
+        setError(result.error);
+      } else {
+        posthog.identify(email, { email });
+        posthog.capture("signup_submitted", { email, method: "email" });
+        router.push("/verify-email");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 

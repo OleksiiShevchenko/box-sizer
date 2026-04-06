@@ -59,7 +59,7 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
 
       <p className="text-xs text-slate-400">
         {subscriptionInfo.tier === "starter"
-          ? "Starter includes 15 calculations per billing period."
+          ? "Starter includes 50 packing plans per billing period."
           : "Upgrade to Pro for unlimited calculations and API access."}
       </p>
     </Card>

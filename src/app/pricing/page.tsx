@@ -9,18 +9,15 @@ export default async function PricingPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-12">
-      <div className="mx-auto max-w-6xl space-y-10">
-        <div className="space-y-4 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-blue-700">
-            Pricing
-          </p>
-          <h1 className="text-4xl font-semibold text-slate-950 sm:text-5xl">
-            Subscription plans for box teams of different sizes.
+    <section className="min-h-screen bg-[#F8F9FA] px-6 py-24 md:py-32">
+      <div className="mx-auto flex max-w-[1232px] flex-col items-center">
+        <div className="mb-16 flex max-w-[760px] flex-col items-center gap-3.5 text-center">
+          <h1 className="text-[48px] font-extrabold leading-[1.05] tracking-[-1.2px] text-[#1E293B]">
+            Simple pricing that scales with your usage
           </h1>
-          <p className="mx-auto max-w-2xl text-base leading-7 text-slate-600">
-            Start free, move to Growth for consistent volume, or unlock Pro for
-            unlimited calculations and API access.
+          <p className="max-w-[720px] text-[18px] leading-[1.55] text-[#64748B]">
+            Choose a plan that fits your packing volume today, then unlock
+            automation and analytics as your operation expands.
           </p>
         </div>
 
@@ -30,6 +27,6 @@ export default async function PricingPage() {
           isAuthenticated={Boolean(session?.user)}
         />
       </div>
-    </div>
+    </section>
   );
 }

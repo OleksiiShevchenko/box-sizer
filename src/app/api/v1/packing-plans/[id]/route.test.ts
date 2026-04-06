@@ -426,7 +426,7 @@ describe("PUT /api/v1/packing-plans/[id]", () => {
       results: [],
       idealResult: null,
     });
-    performMeteredCalculationMock.mockRejectedValue(new CalculationQuotaExceededError(15));
+    performMeteredCalculationMock.mockRejectedValue(new CalculationQuotaExceededError(50));
 
     const request = new Request("http://localhost/api/v1/packing-plans/packing-plan-public-id", {
       method: "PUT",
@@ -459,7 +459,7 @@ describe("PUT /api/v1/packing-plans/[id]", () => {
       error: {
         code: "quota_exceeded",
         message:
-          "You have used all 15 calculations for the current billing period. Upgrade your plan to continue.",
+          "You have used all 50 calculations for the current billing period. Upgrade your plan to continue.",
       },
     });
   });

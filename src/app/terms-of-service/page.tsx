@@ -6,6 +6,17 @@ export const metadata: Metadata = {
   title: "Terms of Service | Packwell",
   description:
     "Read the Packwell Terms of Service and conditions for using the platform.",
+  openGraph: {
+    title: "Terms of Service | Packwell",
+    description:
+      "Read the Packwell Terms of Service and conditions for using the platform.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service | Packwell",
+    description:
+      "Read the Packwell Terms of Service and conditions for using the platform.",
+  },
 };
 
 export default function TermsOfServicePage() {

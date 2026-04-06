@@ -13,11 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Packwell - Find the Perfect Shipping Box",
-  description: "Determine the right box size for your products",
+  title: "Packwell — Find the Right Box for Every Order",
+  description:
+    "Calculate the optimal box size for every shipment, reduce shipping costs, and eliminate wasted space. Use our API or UI to optimize packing for ecommerce, 3PL, and kit workflows.",
   icons: {
     icon: [{ url: "/email/packwell-mark.svg", type: "image/svg+xml" }],
     shortcut: [{ url: "/email/packwell-mark.svg", type: "image/svg+xml" }],
+  },
+  openGraph: {
+    title: "Packwell — Find the Right Box for Every Order",
+    description:
+      "Calculate the optimal box size for every shipment, reduce shipping costs, and eliminate wasted space. Use our API or UI to optimize packing for ecommerce, 3PL, and kit workflows.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Packwell — Find the Right Box for Every Order",
+    description:
+      "Calculate the optimal box size for every shipment, reduce shipping costs, and eliminate wasted space. Use our API or UI to optimize packing for ecommerce, 3PL, and kit workflows.",
   },
 };
 
