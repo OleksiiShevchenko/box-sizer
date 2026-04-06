@@ -289,7 +289,7 @@ describe("POST /api/v1/packing-plans/calculate", () => {
       results: [],
       idealResult: null,
     });
-    performMeteredCalculationMock.mockRejectedValue(new CalculationQuotaExceededError(15));
+    performMeteredCalculationMock.mockRejectedValue(new CalculationQuotaExceededError(50));
 
     const request = new Request("http://localhost/api/v1/packing-plans/calculate", {
       method: "POST",

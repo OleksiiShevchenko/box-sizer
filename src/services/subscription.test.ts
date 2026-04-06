@@ -410,7 +410,7 @@ describe("subscription service", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as never);
-    prismaMock.calculationUsage.count.mockResolvedValue(15);
+    prismaMock.calculationUsage.count.mockResolvedValue(50);
 
     await expect(
       performMeteredCalculation("user-1", async () => ({ ok: true }))

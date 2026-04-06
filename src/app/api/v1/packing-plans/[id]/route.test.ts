@@ -426,7 +426,7 @@ describe("PUT /api/v1/packing-plans/[id]", () => {
       results: [],
       idealResult: null,
     });
-    performMeteredCalculationMock.mockRejectedValue(new CalculationQuotaExceededError(15));
+    performMeteredCalculationMock.mockRejectedValue(new CalculationQuotaExceededError(50));
 
     const request = new Request("http://localhost/api/v1/packing-plans/packing-plan-public-id", {
       method: "PUT",

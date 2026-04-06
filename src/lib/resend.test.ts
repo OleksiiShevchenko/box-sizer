@@ -178,6 +178,6 @@ describe("resend mailers", () => {
     );
     expect(html).toContain("Apr 1, 2026");
     expect(html).toContain("Upgrade to Growth");
-    expect(html).toContain("15 / 15");
+    expect(html).toContain("50 / 50");
   });
 });
