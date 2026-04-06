@@ -13,6 +13,10 @@ export interface SubscriptionPlan {
   annualPriceCents: number;
   calculationLimit: number;
   hasApiAccess: boolean;
+  featureBullets: string[];
+  marketingCtaLabel: string;
+  badgeText?: string | null;
+  isHighlighted?: boolean;
 }
 
 export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
@@ -24,6 +28,12 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
     annualPriceCents: 0,
     calculationLimit: 15,
     hasApiAccess: false,
+    featureBullets: [
+      "15 calculations per month",
+      "Saved boxes and packing plans",
+      "No API access on this plan",
+    ],
+    marketingCtaLabel: "Start Free",
   },
   pro: {
     tier: "pro",
@@ -33,6 +43,14 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
     annualPriceCents: 28884,
     calculationLimit: 300,
     hasApiAccess: true,
+    featureBullets: [
+      "300 calculations per month",
+      "Saved boxes and packing plans",
+      "API access included",
+    ],
+    marketingCtaLabel: "Choose Pro",
+    badgeText: "Most popular",
+    isHighlighted: true,
   },
   business: {
     tier: "business",
@@ -42,6 +60,12 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
     annualPriceCents: 98604,
     calculationLimit: Number.POSITIVE_INFINITY,
     hasApiAccess: true,
+    featureBullets: [
+      "Unlimited calculations",
+      "Saved boxes and packing plans",
+      "API access included",
+    ],
+    marketingCtaLabel: "Choose Business",
   },
 };
 
@@ -65,6 +89,10 @@ export function isSubscriptionTier(value: string): value is SubscriptionTier {
 
 export function isBillingInterval(value: string): value is BillingInterval {
   return BILLING_INTERVALS.includes(value as BillingInterval);
+}
+
+export function getVisiblePlans(): SubscriptionPlan[] {
+  return SUBSCRIPTION_TIERS.map((tier) => SUBSCRIPTION_PLANS[tier]);
 }
 
 export function getPlanForTier(tier: string | null | undefined): SubscriptionPlan {
