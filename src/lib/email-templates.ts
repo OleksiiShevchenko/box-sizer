@@ -115,26 +115,50 @@ function renderLogo(appUrl: string): string {
   const logoUrl = `${appUrl}/email/packwell-mark.svg`;
 
   return `
-    <div style="text-align:center;padding:32px 40px;background:#ffffff;">
-      <div style="display:inline-flex;align-items:center;gap:8px;">
-        <img alt="Packwell" src="${escapeHtml(logoUrl)}" width="28" height="28" style="display:block;border:0;" />
-        <span style="font-family:${FONT_STACK};font-size:20px;font-weight:700;color:#1e293b;line-height:1;">Packwell</span>
-      </div>
-    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#ffffff;">
+      <tr>
+        <td align="center" style="padding:32px 40px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+            <tr>
+              <td style="vertical-align:middle;padding-right:8px;">
+                <img alt="Packwell" src="${escapeHtml(logoUrl)}" width="28" height="28" style="display:block;border:0;" />
+              </td>
+              <td style="vertical-align:middle;font-family:${FONT_STACK};font-size:20px;font-weight:700;color:#1e293b;line-height:1;">
+                Packwell
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   `;
 }
 
 function renderDivider(): string {
-  return `<div style="height:1px;background:#e2e8f0;line-height:1;font-size:0;">&nbsp;</div>`;
+  return `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+      <tr>
+        <td style="height:1px;background:#e2e8f0;line-height:1px;font-size:1px;">&nbsp;</td>
+      </tr>
+    </table>
+  `;
 }
 
 function renderIconCircle(symbol: string, backgroundColor: string, symbolColor: string): string {
   return `
-    <div style="text-align:center;">
-      <div style="width:64px;height:64px;border-radius:32px;background:${backgroundColor};display:inline-flex;align-items:center;justify-content:center;">
-        <span style="font-family:${FONT_STACK};font-size:28px;line-height:1;color:${symbolColor};">${symbol}</span>
-      </div>
-    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+            <tr>
+              <td align="center" style="width:64px;height:64px;border-radius:32px;background:${backgroundColor};font-family:${FONT_STACK};font-size:28px;line-height:1;color:${symbolColor};">
+                ${symbol}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   `;
 }
 
@@ -144,11 +168,21 @@ export function renderPrimaryButton({
   backgroundColor = "#2563eb",
 }: RenderPrimaryButtonArgs): string {
   return `
-    <div style="text-align:center;padding:8px 0 0;">
-      <a href="${escapeHtml(href)}" style="display:inline-block;min-width:184px;padding:14px 24px;border-radius:8px;background:${backgroundColor};font-family:${FONT_STACK};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;">
-        ${escapeHtml(label)}
-      </a>
-    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+      <tr>
+        <td align="center" style="padding:8px 0 0;">
+          <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+            <tr>
+              <td align="center" style="border-radius:8px;background:${backgroundColor};">
+                <a href="${escapeHtml(href)}" style="display:block;padding:14px 32px;font-family:${FONT_STACK};font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;">
+                  ${escapeHtml(label)}
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   `;
 }
 
@@ -169,31 +203,37 @@ export function renderDetailCard({ title, rows }: RenderDetailCardArgs): string 
     .join("");
 
   return `
-    <div style="border:1px solid #e2e8f0;border-radius:12px;background:#f1f5f9;padding:24px;">
-      <div style="font-family:${FONT_STACK};font-size:13px;font-weight:700;color:#1e293b;padding-bottom:16px;">
-        ${escapeHtml(title)}
-      </div>
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
-        ${rowsMarkup}
-      </table>
-    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;border:1px solid #e2e8f0;border-radius:12px;background:#f1f5f9;">
+      <tr>
+        <td style="padding:24px;">
+          <div style="font-family:${FONT_STACK};font-size:13px;font-weight:700;color:#1e293b;padding-bottom:16px;">
+            ${escapeHtml(title)}
+          </div>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+            ${rowsMarkup}
+          </table>
+        </td>
+      </tr>
+    </table>
   `;
 }
 
 function renderFooter(appUrl: string): string {
   return `
     ${renderDivider()}
-    <div style="padding:32px 40px;background:#ffffff;text-align:center;">
-      <div style="font-family:${FONT_STACK};font-size:13px;font-weight:600;color:#94a3b8;">${escapeHtml(COMPANY_NAME)}</div>
-      <div style="margin-top:8px;font-family:${FONT_STACK};font-size:12px;color:#94a3b8;">${escapeHtml(COMPANY_ADDRESS)}</div>
-      <div style="margin-top:8px;font-family:${FONT_STACK};font-size:12px;">
-        <a href="${escapeHtml(`${appUrl}/privacy-policy`)}" style="color:#2563eb;text-decoration:none;">Privacy Policy</a>
-        <span style="color:#94a3b8;"> · </span>
-        <a href="${escapeHtml(`${appUrl}/terms-of-service`)}" style="color:#2563eb;text-decoration:none;">Terms of Service</a>
-        <span style="color:#94a3b8;"> · </span>
-        <a href="mailto:${COMPANY_EMAIL}" style="color:#2563eb;text-decoration:none;">${COMPANY_EMAIL}</a>
-      </div>
-    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#ffffff;">
+      <tr>
+        <td align="center" style="padding:32px 40px;">
+          <div style="font-family:${FONT_STACK};font-size:13px;font-weight:600;color:#94a3b8;">${escapeHtml(COMPANY_NAME)}</div>
+          <div style="margin-top:8px;font-family:${FONT_STACK};font-size:12px;color:#94a3b8;">${escapeHtml(COMPANY_ADDRESS)}</div>
+          <div style="margin-top:8px;font-family:${FONT_STACK};font-size:12px;">
+            <a href="${escapeHtml(`${appUrl}/settings/notifications`)}" style="color:#2563eb;text-decoration:none;">Unsubscribe</a>
+            <span style="color:#94a3b8;"> &middot; </span>
+            <a href="${escapeHtml(`${appUrl}/privacy-policy`)}" style="color:#2563eb;text-decoration:none;">Privacy Policy</a>
+          </div>
+        </td>
+      </tr>
+    </table>
   `;
 }
 
@@ -204,14 +244,27 @@ export function renderEmailShell({
 }: RenderEmailShellArgs): string {
   return `
     <!DOCTYPE html>
-    <html lang="en">
-      <body style="margin:0;padding:24px;background:#f8fafc;">
-        <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:0;overflow:hidden;">
-          ${renderLogo(appUrl)}
-          ${topDivider ? renderDivider() : ""}
-          ${bodyContent}
-          ${renderFooter(appUrl)}
-        </div>
+    <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+        <title>Packwell</title>
+      </head>
+      <body style="margin:0;padding:0;background:#f1f5f9;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#f1f5f9;">
+          <tr>
+            <td align="center" style="padding:24px;">
+              <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#ffffff;max-width:600px;">
+                <tr><td>${renderLogo(appUrl)}</td></tr>
+                ${topDivider ? `<tr><td>${renderDivider()}</td></tr>` : ""}
+                <tr><td>${bodyContent}</td></tr>
+                <tr><td>${renderFooter(appUrl)}</td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
       </body>
     </html>
   `;
@@ -251,21 +304,26 @@ export function renderVerificationEmail({
   return renderEmailShell({
     appUrl,
     bodyContent: `
-      <div style="padding:48px 40px;background:#ffffff;">
-        ${renderCenteredText("Hi there,", { fontSize: 20, fontWeight: 600, color: "#1e293b" }).replace('text-align:center;', 'text-align:left;')}
-        <div style="margin-top:24px;font-family:${FONT_STACK};font-size:15px;line-height:1.6;color:#64748b;">
-          Thanks for signing up for Packwell! Please confirm your email address by clicking the button below.
-        </div>
-        ${renderPrimaryButton({ href: confirmUrl, label: "Confirm Email Address" })}
-        ${renderCenteredText(
-          "This link will expire in 24 hours. If you didn&#39;t create an account, you can safely ignore this email.",
-          { fontSize: 13, color: "#94a3b8", lineHeight: 1.5, marginTop: 24 }
-        )}
-        <div style="margin-top:24px;font-family:${FONT_STACK};font-size:12px;line-height:1.5;color:#94a3b8;">
-          <div>If the button doesn&#39;t work, copy and paste this link into your browser:</div>
-          <div style="margin-top:8px;word-break:break-all;">${fallbackUrl}</div>
-        </div>
-      </div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#ffffff;">
+        <tr>
+          <td style="padding:48px 40px;">
+            <div style="font-family:${FONT_STACK};font-size:20px;font-weight:600;color:#1e293b;">
+              Hi there,
+            </div>
+            <div style="margin-top:24px;font-family:${FONT_STACK};font-size:15px;line-height:1.6;color:#64748b;">
+              Thanks for signing up for Packwell! Please confirm your email address by clicking the button below.
+            </div>
+            ${renderPrimaryButton({ href: confirmUrl, label: "Confirm Email Address" })}
+            <div style="margin-top:24px;font-family:${FONT_STACK};font-size:13px;line-height:1.5;color:#94a3b8;text-align:center;">
+              This link will expire in 24 hours. If you didn&#39;t create an account, you can safely ignore this email.
+            </div>
+            <div style="margin-top:24px;font-family:${FONT_STACK};font-size:12px;line-height:1.5;color:#94a3b8;">
+              If the button doesn&#39;t work, copy and paste this link into your browser:
+              <div style="margin-top:8px;word-break:break-all;">${fallbackUrl}</div>
+            </div>
+          </td>
+        </tr>
+      </table>
     `,
   });
 }
@@ -307,42 +365,46 @@ export function renderSubscriptionPurchaseEmail({
   return renderEmailShell({
     appUrl,
     bodyContent: `
-      <div style="padding:48px 40px;background:#ffffff;">
-        ${renderIconCircle("✓", "#ecfdf5", "#16a34a")}
-        ${renderCenteredText("Subscription Confirmed!", {
-          fontSize: 22,
-          fontWeight: 700,
-          marginTop: 24,
-        })}
-        ${renderCenteredText(
-          "Thank you for your purchase. Your subscription is now active and ready to use.",
-          { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
-        )}
-        <div style="margin-top:24px;">
-          ${renderDetailCard({
-            title: "Subscription Details",
-            rows: [
-              { label: "Plan", value: getPlanForTier(tier).name, emphasize: true },
-              { label: "Price", value: recurringPlanPrice(tier, billingInterval), emphasize: true },
-              {
-                label: "Billing Cycle",
-                value: billingInterval === "annual" ? "Annual" : "Monthly",
-                emphasize: true,
-              },
-              {
-                label: "Next Billing Date",
-                value: formatDate(currentPeriodEnd) ?? "TBD",
-                emphasize: true,
-              },
-            ],
-          })}
-        </div>
-        ${renderPrimaryButton({ href: `${appUrl}/dashboard`, label: "Go to Dashboard" })}
-        ${renderCenteredText(
-          `Need help? Contact us at <a href="mailto:${COMPANY_EMAIL}" style="color:#2563eb;text-decoration:none;">${COMPANY_EMAIL}</a>`,
-          { fontSize: 13, color: "#94a3b8", marginTop: 20 }
-        )}
-      </div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#ffffff;">
+        <tr>
+          <td style="padding:48px 40px;">
+            ${renderIconCircle("✓", "#ecfdf5", "#16a34a")}
+            ${renderCenteredText("Subscription Confirmed!", {
+              fontSize: 22,
+              fontWeight: 700,
+              marginTop: 24,
+            })}
+            ${renderCenteredText(
+              "Thank you for your purchase. Your subscription is now active and ready to use.",
+              { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
+            )}
+            <div style="margin-top:24px;">
+              ${renderDetailCard({
+                title: "Subscription Details",
+                rows: [
+                  { label: "Plan", value: getPlanForTier(tier).name, emphasize: true },
+                  { label: "Price", value: recurringPlanPrice(tier, billingInterval), emphasize: true },
+                  {
+                    label: "Billing Cycle",
+                    value: billingInterval === "annual" ? "Annual" : "Monthly",
+                    emphasize: true,
+                  },
+                  {
+                    label: "Next Billing Date",
+                    value: formatDate(currentPeriodEnd) ?? "TBD",
+                    emphasize: true,
+                  },
+                ],
+              })}
+            </div>
+            ${renderPrimaryButton({ href: `${appUrl}/dashboard`, label: "Go to Dashboard" })}
+            ${renderCenteredText(
+              `Need help? Contact us at <a href="mailto:${COMPANY_EMAIL}" style="color:#2563eb;text-decoration:none;">${COMPANY_EMAIL}</a>`,
+              { fontSize: 13, color: "#94a3b8", marginTop: 20 }
+            )}
+          </td>
+        </tr>
+      </table>
     `,
   });
 }
@@ -373,47 +435,51 @@ export function renderSubscriptionRenewalSuccessEmail({
   return renderEmailShell({
     appUrl,
     bodyContent: `
-      <div style="padding:48px 40px;background:#ffffff;">
-        ${renderIconCircle("↻", "#dbeafe", "#2563eb")}
-        ${renderCenteredText("Subscription Renewed", {
-          fontSize: 22,
-          fontWeight: 700,
-          marginTop: 24,
-        })}
-        ${renderCenteredText(
-          "Your Packwell subscription has been automatically renewed. Here&#39;s a summary of your payment.",
-          { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
-        )}
-        <div style="margin-top:24px;">
-          ${renderDetailCard({
-            title: "Payment Summary",
-            rows: [
-              { label: "Plan", value: plan.name, emphasize: true },
-              {
-                label: "Amount Charged",
-                value: formatMoney(amountPaidCents ?? fallbackAmount) ?? formatPrice(fallbackAmount),
-                emphasize: true,
-              },
-              {
-                label: "Payment Method",
-                value: formatPaymentMethodLabel(paymentMethodLabel),
-                emphasize: true,
-              },
-              {
-                label: "Next Renewal",
-                value: formatDate(currentPeriodEnd) ?? "TBD",
-                emphasize: true,
-              },
-            ],
-          })}
-        </div>
-        ${renderPrimaryButton({ href: ctaHref, label: ctaLabel })}
-        ${pdfLinkMarkup}
-        ${renderCenteredText(
-          "You can manage your subscription settings anytime from your account dashboard.",
-          { fontSize: 13, color: "#94a3b8", lineHeight: 1.5, marginTop: 20 }
-        )}
-      </div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#ffffff;">
+        <tr>
+          <td style="padding:48px 40px;">
+            ${renderIconCircle("↻", "#dbeafe", "#2563eb")}
+            ${renderCenteredText("Subscription Renewed", {
+              fontSize: 22,
+              fontWeight: 700,
+              marginTop: 24,
+            })}
+            ${renderCenteredText(
+              "Your Packwell subscription has been automatically renewed. Here&#39;s a summary of your payment.",
+              { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
+            )}
+            <div style="margin-top:24px;">
+              ${renderDetailCard({
+                title: "Payment Summary",
+                rows: [
+                  { label: "Plan", value: plan.name, emphasize: true },
+                  {
+                    label: "Amount Charged",
+                    value: formatMoney(amountPaidCents ?? fallbackAmount) ?? formatPrice(fallbackAmount),
+                    emphasize: true,
+                  },
+                  {
+                    label: "Payment Method",
+                    value: formatPaymentMethodLabel(paymentMethodLabel),
+                    emphasize: true,
+                  },
+                  {
+                    label: "Next Renewal",
+                    value: formatDate(currentPeriodEnd) ?? "TBD",
+                    emphasize: true,
+                  },
+                ],
+              })}
+            </div>
+            ${renderPrimaryButton({ href: ctaHref, label: ctaLabel })}
+            ${pdfLinkMarkup}
+            ${renderCenteredText(
+              "You can manage your subscription settings anytime from your account dashboard.",
+              { fontSize: 13, color: "#94a3b8", lineHeight: 1.5, marginTop: 20 }
+            )}
+          </td>
+        </tr>
+      </table>
     `,
   });
 }
@@ -438,49 +504,53 @@ export function renderSubscriptionRenewalFailureEmail({
     appUrl,
     topDivider: true,
     bodyContent: `
-      <div style="padding:32px 40px;background:#ffffff;">
-        ${renderIconCircle("△", "#fee2e2", "#dc2626")}
-        ${renderCenteredText("Payment Failed", {
-          fontSize: 28,
-          fontWeight: 700,
-          marginTop: 24,
-        })}
-        ${renderCenteredText(
-          "We were unable to process your subscription renewal payment. Your access may be interrupted if the issue isn&#39;t resolved soon.",
-          { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
-        )}
-        <div style="margin-top:24px;">
-          ${renderDetailCard({
-            title: "Payment Details",
-            rows: [
-              { label: "Plan", value: plan.name, emphasize: true },
-              {
-                label: "Amount Due",
-                value: formatMoney(amountDueCents ?? fallbackAmount) ?? formatPrice(fallbackAmount),
-                emphasize: true,
-              },
-              {
-                label: "Payment Method",
-                value: formatPaymentMethodLabel(paymentMethodLabel),
-                emphasize: true,
-                accentColor: paymentMethodLabel ? "#dc2626" : "#1e293b",
-              },
-              { label: "Next Retry", value: retryLabel, emphasize: true },
-            ],
-          })}
-        </div>
-        ${renderPrimaryButton({
-          href: `${appUrl}/settings/billing`,
-          label: "Update Payment Method",
-          backgroundColor: "#dc2626",
-        })}
-        ${renderCenteredText(helperCopy, {
-          fontSize: 13,
-          color: "#64748b",
-          lineHeight: 1.6,
-          marginTop: 16,
-        })}
-      </div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#ffffff;">
+        <tr>
+          <td style="padding:32px 40px;">
+            ${renderIconCircle("△", "#fee2e2", "#dc2626")}
+            ${renderCenteredText("Payment Failed", {
+              fontSize: 28,
+              fontWeight: 700,
+              marginTop: 24,
+            })}
+            ${renderCenteredText(
+              "We were unable to process your subscription renewal payment. Your access may be interrupted if the issue isn&#39;t resolved soon.",
+              { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
+            )}
+            <div style="margin-top:24px;">
+              ${renderDetailCard({
+                title: "Payment Details",
+                rows: [
+                  { label: "Plan", value: plan.name, emphasize: true },
+                  {
+                    label: "Amount Due",
+                    value: formatMoney(amountDueCents ?? fallbackAmount) ?? formatPrice(fallbackAmount),
+                    emphasize: true,
+                  },
+                  {
+                    label: "Payment Method",
+                    value: formatPaymentMethodLabel(paymentMethodLabel),
+                    emphasize: true,
+                    accentColor: paymentMethodLabel ? "#dc2626" : "#1e293b",
+                  },
+                  { label: "Next Retry", value: retryLabel, emphasize: true },
+                ],
+              })}
+            </div>
+            ${renderPrimaryButton({
+              href: `${appUrl}/settings/billing`,
+              label: "Update Payment Method",
+              backgroundColor: "#dc2626",
+            })}
+            ${renderCenteredText(helperCopy, {
+              fontSize: 13,
+              color: "#64748b",
+              lineHeight: 1.6,
+              marginTop: 16,
+            })}
+          </td>
+        </tr>
+      </table>
     `,
   });
 }
@@ -514,52 +584,66 @@ export function renderQuotaReachedEmail({
     appUrl,
     topDivider: true,
     bodyContent: `
-      <div style="padding:32px 40px;background:#ffffff;">
-        ${renderIconCircle("↯", "#fef3c7", "#d97706")}
-        ${renderCenteredText("Request Limit Reached", {
-          fontSize: 28,
-          fontWeight: 700,
-          marginTop: 24,
-        })}
-        ${renderCenteredText(
-          `You&#39;ve used all ${escapeHtml(usageLimit.toLocaleString("en-US"))} requests included in your current billing period. Your quota will reset on ${escapeHtml(formatDate(quotaResetDate) ?? "the next billing period")}.`,
-          { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
-        )}
-        <div style="margin-top:24px;">
-          ${renderDetailCard({
-            title: "Current Period Usage",
-            rows: [
-              {
-                label: "Current Period Usage",
-                value: `${usageCount.toLocaleString("en-US")} / ${usageLimit.toLocaleString("en-US")}`,
-                emphasize: true,
-                accentColor: "#dc2626",
-              },
-              {
-                label: "Current Plan",
-                value: `${plan.name} (${formatPeriodQuota(usageLimit)})`,
-                emphasize: true,
-              },
-              {
-                label: "Quota Resets",
-                value: formatDate(quotaResetDate) ?? "Next billing period",
-                emphasize: true,
-              },
-            ],
-          })}
-        </div>
-        <div style="margin-top:24px;border-radius:12px;background:#eff6ff;padding:20px 24px;text-align:center;">
-          <div style="font-family:${FONT_STACK};font-size:16px;font-weight:700;color:#1e293b;">${escapeHtml(upgradeTitle)}</div>
-          <div style="margin-top:8px;font-family:${FONT_STACK};font-size:13px;line-height:1.6;color:#64748b;">
-            ${escapeHtml(upgradeDescription)}
-          </div>
-        </div>
-        ${renderPrimaryButton({ href: `${appUrl}/pricing`, label: upgradeLabel })}
-        ${renderCenteredText(
-          "You can still access your account, but new requests will be queued until your quota resets or you upgrade your plan.",
-          { fontSize: 13, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
-        )}
-      </div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#ffffff;">
+        <tr>
+          <td style="padding:32px 40px;">
+            ${renderIconCircle("↯", "#fef3c7", "#d97706")}
+            ${renderCenteredText("Request Limit Reached", {
+              fontSize: 28,
+              fontWeight: 700,
+              marginTop: 24,
+            })}
+            ${renderCenteredText(
+              `You&#39;ve used all ${escapeHtml(usageLimit.toLocaleString("en-US"))} requests included in your current billing period. Your quota will reset on ${escapeHtml(formatDate(quotaResetDate) ?? "the next billing period")}.`,
+              { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
+            )}
+            <div style="margin-top:24px;">
+              ${renderDetailCard({
+                title: "Current Period Usage",
+                rows: [
+                  {
+                    label: "Current Period Usage",
+                    value: `${usageCount.toLocaleString("en-US")} / ${usageLimit.toLocaleString("en-US")}`,
+                    emphasize: true,
+                    accentColor: "#dc2626",
+                  },
+                  {
+                    label: "Current Plan",
+                    value: `${plan.name} (${formatPeriodQuota(usageLimit)})`,
+                    emphasize: true,
+                  },
+                  {
+                    label: "Quota Resets",
+                    value: formatDate(quotaResetDate) ?? "Next billing period",
+                    emphasize: true,
+                  },
+                ],
+              })}
+            </div>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+              <tr>
+                <td style="padding-top:24px;">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;border-radius:12px;background:#eff6ff;">
+                    <tr>
+                      <td style="padding:20px 24px;text-align:center;">
+                        <div style="font-family:${FONT_STACK};font-size:16px;font-weight:700;color:#1e293b;">${escapeHtml(upgradeTitle)}</div>
+                        <div style="margin-top:8px;font-family:${FONT_STACK};font-size:13px;line-height:1.6;color:#64748b;">
+                          ${escapeHtml(upgradeDescription)}
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            ${renderPrimaryButton({ href: `${appUrl}/pricing`, label: upgradeLabel })}
+            ${renderCenteredText(
+              "You can still access your account, but new requests will be queued until your quota resets or you upgrade your plan.",
+              { fontSize: 13, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
+            )}
+          </td>
+        </tr>
+      </table>
     `,
   });
 }
