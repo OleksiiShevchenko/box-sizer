@@ -119,7 +119,7 @@ export default async function Home() {
                   </span>
                   <h3 className="text-2xl font-bold">Box Type: Large 4(16X14X8)</h3>
                 </div>
-                <div className="rounded-lg mb-[22px] overflow-hidden relative" style={{ height: "450px" }}>
+                <div className="rounded-lg mb-[22px] overflow-hidden relative" style={{ paddingTop: "104%" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     alt="Packwell box visualization"
@@ -544,20 +544,20 @@ export default async function Home() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-24 px-14">
-          <div className="max-w-[1280px] mx-auto relative" style={{ minHeight: 720 }}>
+        <section id="features" className="px-5 py-20 sm:px-8 sm:py-24 lg:px-14 lg:py-28">
+          <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,450px)] lg:gap-16 xl:gap-20">
             {/* Left column */}
-            <div className="absolute left-0 top-24 w-[654px] flex flex-col gap-12" data-reveal="left">
-              <div>
-                <h2 className="text-[42px] font-extrabold tracking-[-1px] leading-[1.05] text-[#1E293B] mb-1">
+            <div className="flex flex-col gap-10 lg:gap-12">
+              <div data-reveal="left" className="max-w-[720px]">
+                <h2 className="mb-3 text-[34px] font-extrabold leading-[1.02] tracking-[-0.9px] text-[#1E293B] sm:text-[38px] lg:text-[42px]">
                   Everything you need to ship smarter
                 </h2>
-                <p className="text-[18px] text-[#64748B] leading-[1.55]">
+                <p className="text-[16px] leading-[1.65] text-[#64748B] sm:text-[18px]">
                   From intelligent box matching to real-time 3D verification, Packwell gives
                   your warehouse the tools to cut waste and speed up every order.
                 </p>
               </div>
-              <div className="relative" style={{ height: 304 }}>
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5" data-reveal="left">
                 {[
                   {
                     icon: "bolt",
@@ -565,7 +565,6 @@ export default async function Home() {
                     iconColor: "text-[#2563EB]",
                     title: "Lightning Fast API",
                     desc: "Packing calculations in under 50ms for high-volume checkouts.",
-                    x: 0, y: 0,
                   },
                   {
                     icon: "rule",
@@ -573,7 +572,6 @@ export default async function Home() {
                     iconColor: "text-[#006e2f]",
                     title: "Custom Logic Rules",
                     desc: "Define nesting, stacking, and fragility rules per SKU.",
-                    x: 362, y: 0,
                   },
                   {
                     icon: "3d_rotation",
@@ -581,7 +579,6 @@ export default async function Home() {
                     iconColor: "text-[#4e5566]",
                     title: "3D Visualizer",
                     desc: "Review orientation, void fill, and fragile-item spacing before the order reaches the floor.",
-                    x: 0, y: 168,
                   },
                   {
                     icon: "auto_awesome",
@@ -589,38 +586,38 @@ export default async function Home() {
                     iconColor: "text-[#2563EB]",
                     title: "Smart Selection",
                     desc: "Surface the best box from live inventory so every order lands inside the lowest-cost fit.",
-                    x: 362, y: 168,
                   },
                 ].map((card) => (
                   <div
                     key={card.title}
-                    className="absolute w-[330px] flex flex-col gap-3"
-                    style={{ left: card.x, top: card.y }}
+                    className="flex h-full flex-col gap-4 rounded-[24px] border border-[#E2E8F0] bg-[#F8F9FA] p-5 shadow-[0_18px_30px_-24px_rgba(15,23,42,0.45)] sm:p-6"
                   >
-                    <div className={`w-12 h-12 ${card.iconBg} rounded-lg flex items-center justify-center`}>
-                      <span className={`material-symbols-outlined ${card.iconColor} text-[22px]`}>{card.icon}</span>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${card.iconBg}`}>
+                      <span className={`material-symbols-outlined text-[22px] ${card.iconColor}`}>{card.icon}</span>
                     </div>
-                    <h4 className="text-[16px] font-bold text-[#191c1d]">{card.title}</h4>
-                    <p className="text-[14px] text-[#424655] leading-[1.43]">{card.desc}</p>
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-[16px] font-bold text-[#191c1d] sm:text-[17px]">{card.title}</h4>
+                      <p className="text-[14px] leading-[1.55] text-[#424655]">{card.desc}</p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
             {/* Right column - API response */}
-            <div className="absolute right-0 top-24 w-[450px] flex flex-col justify-center" data-reveal="right">
-              <div className="bg-[#2e3132] rounded-[12px] overflow-hidden shadow-[0_25px_44px_-12px_rgba(0,0,0,0.25)]">
+            <div className="flex flex-col justify-start lg:pt-4" data-reveal="right">
+              <div className="overflow-hidden rounded-[12px] bg-[#2e3132] shadow-[0_25px_44px_-12px_rgba(0,0,0,0.25)] lg:sticky lg:top-24">
                 {/* Header bar */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.01]">
-                  <span className="font-mono text-[12px] text-[#f0f1f2] leading-[1.33]">
+                <div className="flex flex-col gap-2 border-b border-white/[0.01] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                  <span className="overflow-x-auto font-mono text-[11px] leading-[1.5] text-[#f0f1f2] sm:text-[12px] sm:leading-[1.33]">
                     POST /api/v1/packing-plans/calculate
                   </span>
-                  <span className="bg-[#6bff8f] text-[#002109] text-[10px] font-bold px-2 py-0.5 rounded-lg">
+                  <span className="w-fit rounded-lg bg-[#6bff8f] px-2 py-0.5 text-[10px] font-bold text-[#002109]">
                     200 OK
                   </span>
                 </div>
                 {/* JSON body */}
-                <div className="p-6">
-                  <pre className="font-mono text-[12px] text-[#f0f1f2] leading-[1.33] whitespace-pre-wrap">{`{
+                <div className="overflow-x-auto p-4 sm:p-6">
+                  <pre className="min-w-[300px] font-mono text-[11px] leading-[1.5] whitespace-pre-wrap text-[#f0f1f2] sm:text-[12px] sm:leading-[1.33]">{`{
   "id": "fcaf6650-e07f-4768-b5c7-11d6991e73be",
   "units": {
      "unitSystem": "cm",
