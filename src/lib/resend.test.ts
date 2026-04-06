@@ -85,7 +85,7 @@ describe("resend mailers", () => {
 
     await sendSubscriptionPurchaseSuccessEmail({
       email: "user@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
     });
@@ -111,7 +111,7 @@ describe("resend mailers", () => {
 
     await sendSubscriptionRenewalSuccessEmail({
       email: "user@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       amountPaidCents: 2900,
@@ -139,7 +139,7 @@ describe("resend mailers", () => {
 
     await sendSubscriptionRenewalFailureEmail({
       email: "user@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       amountDueCents: 2900,
       paymentMethodLabel: "Visa •••• 4242",
@@ -167,7 +167,7 @@ describe("resend mailers", () => {
       usageCount: 15,
       usageLimit: 15,
       quotaResetDate: new Date(2026, 3, 1),
-      recommendedUpgradeTier: "pro",
+      recommendedUpgradeTier: "growth",
     });
 
     const html = mockSendEmail.mock.calls[0][0].html as string;
@@ -178,7 +178,7 @@ describe("resend mailers", () => {
       })
     );
     expect(html).toContain("Apr 1, 2026");
-    expect(html).toContain("Upgrade to Pro");
+    expect(html).toContain("Upgrade to Growth");
     expect(html).toContain("15 / 15");
   });
 });

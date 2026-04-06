@@ -64,7 +64,7 @@ describe("Stripe webhook route", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
-    process.env.STRIPE_PRO_MONTHLY_PRICE_ID = "price_pro_monthly";
+    process.env.STRIPE_GROWTH_MONTHLY_PRICE_ID = "price_growth_monthly";
   });
 
   it("upserts subscription state from a subscription.updated event", async () => {
@@ -74,7 +74,7 @@ describe("Stripe webhook route", () => {
         object: {
           id: "sub_123",
           customer: "cus_123",
-          items: { data: [{ price: { id: "price_pro_monthly" } }] },
+          items: { data: [{ price: { id: "price_growth_monthly" } }] },
           status: "active",
           current_period_start: 1710000000,
           current_period_end: 1712600000,
@@ -112,7 +112,7 @@ describe("Stripe webhook route", () => {
           subscription: "sub_123",
           metadata: {
             userId: "user-1",
-            tier: "pro",
+            tier: "growth",
             billingInterval: "monthly",
           },
         },
@@ -134,7 +134,7 @@ describe("Stripe webhook route", () => {
     expect(mockedNotifyPurchase).toHaveBeenCalledWith({
       userId: "user-1",
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: null,
       eventId: "evt_purchase",
@@ -161,7 +161,7 @@ describe("Stripe webhook route", () => {
       userId: "user-1",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
-      tier: "pro",
+      tier: "growth",
       user: {
         email: "alex@example.com",
       },
@@ -187,7 +187,7 @@ describe("Stripe webhook route", () => {
     expect(mockedNotifyRenewalSuccess).toHaveBeenCalledWith({
       userId: "user-1",
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       eventId: "evt_success",
@@ -241,7 +241,7 @@ describe("Stripe webhook route", () => {
       userId: "user-1",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
-      tier: "pro",
+      tier: "growth",
       user: {
         email: "alex@example.com",
       },
@@ -273,7 +273,7 @@ describe("Stripe webhook route", () => {
     expect(mockedNotifyRenewalFailure).toHaveBeenCalledWith({
       userId: "user-1",
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       eventId: "evt_failed",

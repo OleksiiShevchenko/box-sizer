@@ -51,8 +51,12 @@ function normalizeStatus(value: string): SubscriptionStatus {
 }
 
 function normalizeSubscriptionTier(value: string | null | undefined): SubscriptionTier | null {
-  if (value === "starter" || value === "pro" || value === "business") {
+  if (value === "starter" || value === "growth" || value === "pro") {
     return value;
+  }
+
+  if (value === "business") {
+    return "pro";
   }
 
   return null;

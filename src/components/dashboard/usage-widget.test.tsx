@@ -37,8 +37,8 @@ describe("UsageWidget", () => {
     const { container } = render(
       <UsageWidget
         subscriptionInfo={{
-          tier: "business",
-          planName: "Business",
+          tier: "pro",
+          planName: "Pro",
           status: "active",
           billingInterval: "annual",
           usageCount: 42,

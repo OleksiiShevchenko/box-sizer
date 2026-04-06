@@ -120,7 +120,7 @@ describe("email notifications service", () => {
     await notifySubscriptionPurchaseSuccess({
       userId: "user-1",
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       eventId: "evt_123",
@@ -128,7 +128,7 @@ describe("email notifications service", () => {
 
     expect(mockedSendSubscriptionPurchaseSuccessEmail).toHaveBeenCalledWith({
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
     });
@@ -140,7 +140,7 @@ describe("email notifications service", () => {
     await notifySubscriptionRenewalSuccess({
       userId: "user-1",
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       eventId: "evt_234",
@@ -152,7 +152,7 @@ describe("email notifications service", () => {
 
     expect(mockedSendSubscriptionRenewalSuccessEmail).toHaveBeenCalledWith({
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
       amountPaidCents: 2900,
@@ -168,7 +168,7 @@ describe("email notifications service", () => {
     await notifySubscriptionRenewalFailure({
       userId: "user-1",
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       eventId: "evt_345",
       amountDueCents: 2900,
@@ -178,7 +178,7 @@ describe("email notifications service", () => {
 
     expect(mockedSendSubscriptionRenewalFailureEmail).toHaveBeenCalledWith({
       email: "alex@example.com",
-      tier: "pro",
+      tier: "growth",
       billingInterval: "monthly",
       amountDueCents: 2900,
       paymentMethodLabel: "Visa •••• 4242",
@@ -196,7 +196,7 @@ describe("email notifications service", () => {
       usageCount: 15,
       usageLimit: 15,
       quotaResetDate: new Date("2026-04-01T00:00:00.000Z"),
-      recommendedUpgradeTier: "pro",
+      recommendedUpgradeTier: "growth",
       periodKey: "2026-03",
     });
 
@@ -206,7 +206,7 @@ describe("email notifications service", () => {
       usageCount: 15,
       usageLimit: 15,
       quotaResetDate: new Date("2026-04-01T00:00:00.000Z"),
-      recommendedUpgradeTier: "pro",
+      recommendedUpgradeTier: "growth",
     });
   });
 });

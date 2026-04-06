@@ -467,10 +467,10 @@ export function renderQuotaReachedEmail({
   const plan = getPlanForTier(tier);
   const upgradePlan = recommendedUpgradeTier ? getPlanForTier(recommendedUpgradeTier) : null;
   const upgradeLabel =
-    recommendedUpgradeTier === "pro"
-      ? "Upgrade to Pro"
-      : recommendedUpgradeTier === "business"
-        ? "Upgrade to Business"
+    recommendedUpgradeTier === "growth"
+      ? "Upgrade to Growth"
+      : recommendedUpgradeTier === "pro"
+        ? "Upgrade to Pro"
         : "View Pricing";
   const upgradeTitle = upgradePlan ? `Need more requests?` : "Keep your team moving";
   const upgradeDescription = upgradePlan

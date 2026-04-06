@@ -53,7 +53,7 @@ describe("PricingClient", () => {
     await user.click(screen.getAllByRole("button", { name: "Select Plan" })[0]);
 
     await waitFor(() => {
-      expect(createCheckoutSession).toHaveBeenCalledWith("pro", "monthly");
+      expect(createCheckoutSession).toHaveBeenCalledWith("growth", "monthly");
       expect(screen.getByText("Stripe unavailable")).toBeInTheDocument();
     });
   });

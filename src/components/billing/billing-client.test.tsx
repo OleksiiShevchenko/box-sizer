@@ -29,8 +29,8 @@ describe("BillingClient", () => {
       <BillingClient
         banner="Checkout completed."
         initialSubscription={{
-          tier: "pro",
-          planName: "Pro",
+          tier: "growth",
+          planName: "Growth",
           status: "active",
           billingInterval: "monthly",
           usageCount: 12,
@@ -46,7 +46,7 @@ describe("BillingClient", () => {
     );
 
     expect(screen.getByText("Checkout completed.")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Pro" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Growth" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Manage Payment Method" })).toBeInTheDocument();
     expect(screen.getByText("Calculations this billing period")).toBeInTheDocument();
   });
@@ -56,8 +56,8 @@ describe("BillingClient", () => {
     cancelSubscription.mockResolvedValue({
       success: true,
       subscription: {
-        tier: "pro",
-        planName: "Pro",
+        tier: "growth",
+        planName: "Growth",
         status: "active",
         billingInterval: "monthly",
         usageCount: 12,
@@ -75,8 +75,8 @@ describe("BillingClient", () => {
       <BillingClient
         banner={null}
         initialSubscription={{
-          tier: "pro",
-          planName: "Pro",
+          tier: "growth",
+          planName: "Growth",
           status: "active",
           billingInterval: "monthly",
           usageCount: 12,
@@ -108,8 +108,8 @@ describe("BillingClient", () => {
       <BillingClient
         banner={null}
         initialSubscription={{
-          tier: "pro",
-          planName: "Pro",
+          tier: "growth",
+          planName: "Growth",
           status: "active",
           billingInterval: "monthly",
           usageCount: 12,
