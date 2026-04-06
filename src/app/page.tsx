@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { PackwellLogo } from "@/components/layout/packwell-logo";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
+import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
 import { MarketingPricingSection } from "@/components/pricing/marketing-pricing-section";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -18,7 +19,9 @@ export default async function Home() {
         {/* Navigation */}
         <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl shadow-sm">
           <div className="flex justify-between items-center max-w-7xl mx-auto px-6 py-4">
-            <PackwellLogo className="h-8 w-auto text-slate-900" />
+            <Link href="/" className="shrink-0">
+              <PackwellLogo className="h-8 w-auto text-slate-900" />
+            </Link>
             <div className="hidden md:flex gap-8 items-center tracking-tight text-sm font-medium">
               <a
                 href="#features"
@@ -89,12 +92,11 @@ export default async function Home() {
                 >
                   Start Free
                 </Link>
-                <Link
-                  href="#"
+                <DemoBookingButton
                   className="bg-surface-container-high text-on-surface px-8 py-4 rounded-lg font-semibold text-lg hover:bg-surface-container-highest transition-all border border-outline-variant/30"
                 >
                   Book a Demo
-                </Link>
+                </DemoBookingButton>
               </div>
               <p className="text-xs text-on-surface-variant/80 flex flex-wrap items-center gap-[18px]">
                 <span className="flex items-center gap-2">
@@ -651,6 +653,166 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Pricing Section */}
+        <section id="pricing" className="py-24 md:py-32 px-6 bg-[#F8F9FA]">
+          <div className="max-w-[1232px] mx-auto flex flex-col items-center">
+            <div className="text-center mb-16 max-w-[760px] flex flex-col items-center gap-3.5" data-reveal="up">
+              <h2 className="text-[48px] font-extrabold tracking-[-1.2px] leading-[1.05] text-[#1E293B]">
+                Simple pricing that scales with your usage
+              </h2>
+              <p className="text-[18px] text-[#64748B] leading-[1.55] max-w-[720px]">
+                Choose a plan that fits your packing volume today, then unlock automation and
+                analytics as your operation expands.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full" data-reveal="up">
+              {/* Starter */}
+              <div className="bg-white rounded-[20px] p-7 flex flex-col gap-[22px] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.03),0_10px_28px_-18px_rgba(0,0,0,0.06)]">
+                <div className="flex flex-col gap-[22px]">
+                  <h3 className="text-[20px] font-bold text-[#1E293B]">Starter</h3>
+                  <p className="text-[14px] text-[#64748B] leading-[1.5]">
+                    For small teams validating pack-rate improvements.
+                  </p>
+                  <div className="flex items-end gap-1.5">
+                    <span className="text-[34px] font-bold text-[#1E293B]">Free</span>
+                  </div>
+                </div>
+                <div className="h-px bg-[#E2E8F0]"></div>
+                <ul className="flex flex-col gap-3 flex-1">
+                  <li className="flex items-center gap-2 text-[14px] text-[#1E293B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    up to 50 packing plans/month
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#1E293B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    REST API access
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#1E293B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    3D visualization
+                  </li>
+                </ul>
+                <Link
+                  href="/signup"
+                  className="w-full py-3.5 px-5 rounded-[10px] border border-[#E2E8F0] text-center text-[15px] font-bold text-[#1E293B] hover:bg-slate-50 transition-colors"
+                >
+                  Start free
+                </Link>
+              </div>
+              {/* Growth */}
+              <div className="bg-white rounded-[20px] p-7 flex flex-col gap-[22px] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.03),0_10px_28px_-18px_rgba(0,0,0,0.06)]">
+                <div className="flex flex-col gap-[22px]">
+                  <h3 className="text-[20px] font-bold text-[#1E293B]">Growth</h3>
+                  <p className="text-[14px] text-[#64748B] leading-[1.5]">
+                    For teams automating box choice across daily operations.
+                  </p>
+                  <div className="flex items-end gap-1.5">
+                    <span className="text-[34px] font-bold text-[#1E293B]">$49</span>
+                    <span className="text-[15px] font-medium text-[#94A3B8] mb-1">/ mo</span>
+                  </div>
+                </div>
+                <div className="h-px bg-[#E2E8F0]"></div>
+                <ul className="flex flex-col gap-3 flex-1">
+                  <li className="flex items-center gap-2 text-[14px] text-[#1E293B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    up to 500 packing plans/month
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#1E293B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    REST API access
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#1E293B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    3D visualization
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#1E293B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    email support
+                  </li>
+                </ul>
+                <Link
+                  href="/signup"
+                  className="w-full py-3.5 px-5 rounded-[10px] border border-[#E2E8F0] text-center text-[15px] font-bold text-[#1E293B] hover:bg-slate-50 transition-colors"
+                >
+                  Choose Growth
+                </Link>
+              </div>
+              {/* Pro */}
+              <div className="bg-[#F7FBFF] rounded-[22px] p-6 flex flex-col gap-[18px] border-2 border-[#2563EB] relative shadow-[0_1px_6px_rgba(37,99,235,0.09),0_18px_40px_-18px_rgba(37,99,235,0.15)]">
+                <span className="absolute top-6 right-6 bg-[#2563EB] text-white px-3 py-1.5 rounded-full text-[12px] font-bold">
+                  Most popular
+                </span>
+                <div className="flex flex-col gap-[18px]">
+                  <h3 className="text-[20px] font-bold text-[#1E293B]">Pro</h3>
+                  <p className="text-[14px] text-[#64748B] leading-[1.5]">
+                    For high-volume ops teams optimizing cost by lane, box type, and SLA.
+                  </p>
+                  <div className="flex items-end gap-1.5">
+                    <span className="text-[36px] font-bold text-[#1E293B]">$149</span>
+                    <span className="text-[15px] font-medium text-[#94A3B8] mb-1">/ mo</span>
+                  </div>
+                </div>
+                <div className="h-px bg-[#D6E8FF]"></div>
+                <ul className="flex flex-col gap-3 flex-1">
+                  <li className="flex items-center gap-2 text-[14px] text-[#64748B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    up to 2,000 packing plans/mo
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#64748B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    REST API access
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#64748B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    3D visualization
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#64748B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    priority support
+                  </li>
+                </ul>
+                <Link
+                  href="/signup"
+                  className="w-full py-3.5 px-5 rounded-[10px] bg-[#2563EB] text-center text-[15px] font-bold text-white hover:bg-[#1d4ed8] transition-colors"
+                >
+                  Choose Pro
+                </Link>
+              </div>
+              {/* Scale */}
+              <div className="bg-white rounded-[20px] p-7 flex flex-col gap-[22px] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.03),0_10px_28px_-18px_rgba(0,0,0,0.06)]">
+                <div className="flex flex-col gap-[22px]">
+                  <h3 className="text-[20px] font-bold text-[#1E293B]">Scale</h3>
+                  <p className="text-[14px] text-[#64748B] leading-[1.5]">
+                    For enterprise teams needing tailored rollout, governance, and long-term support.
+                  </p>
+                  <div className="flex items-end gap-1.5">
+                    <span className="text-[30px] font-bold text-[#1E293B] whitespace-nowrap">Custom pricing</span>
+                  </div>
+                </div>
+                <div className="h-px bg-[#E2E8F0]"></div>
+                <ul className="flex flex-col gap-3 flex-1">
+                  <li className="flex items-center gap-2 text-[14px] text-[#64748B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    Unlimited usage
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#64748B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    SLA
+                  </li>
+                  <li className="flex items-center gap-2 text-[14px] text-[#64748B]">
+                    <span className="material-symbols-outlined text-[16px] text-[#16A34A]">check</span>
+                    Custom integrations
+                  </li>
+                </ul>
+                <DemoBookingButton
+                  className="w-full py-3.5 px-5 rounded-[10px] border border-[#E2E8F0] text-center text-[15px] font-bold text-[#1E293B] hover:bg-slate-50 transition-colors"
+                >
+                  Contact sales
+                </DemoBookingButton>
+              </div>
+            </div>
+          </div>
+        </section>
         <MarketingPricingSection />
 
         {/* CTA Section */}
@@ -673,12 +835,11 @@ export default async function Home() {
                   >
                     Start free
                   </Link>
-                  <Link
-                    href="#"
+                  <DemoBookingButton
                     className="bg-white text-[#1E293B] px-6 py-4 rounded-lg text-[16px] font-bold border border-[#E2E8F0] hover:bg-slate-50 transition-colors flex items-center gap-2"
                   >
                     Contact Sales
-                  </Link>
+                  </DemoBookingButton>
                 </div>
               </div>
               {/* Recommended Box Card */}
@@ -721,7 +882,9 @@ export default async function Home() {
           <div className="flex flex-wrap md:flex-nowrap md:justify-between gap-8 max-w-7xl mx-auto px-8">
             <div className="w-full md:w-[300px] md:shrink-0">
               <div className="mb-4">
-                <PackwellLogo className="h-7 w-auto text-slate-900" />
+                <Link href="/" className="inline-flex">
+                  <PackwellLogo className="h-7 w-auto text-slate-900" />
+                </Link>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed">
                 Smart packing for ecommerce &mdash; reduce shipping costs and eliminate wasted space.
@@ -765,12 +928,14 @@ export default async function Home() {
               <ul className="space-y-3">
                 <li className="flex items-center gap-2 text-slate-500 text-sm">
                   <span className="material-symbols-outlined text-sm">mail</span>
-                  support@packwell.io
+                  <a href="mailto:support@packwell.io" className="hover:text-slate-700">
+                    support@packwell.io
+                  </a>
                 </li>
                 <li className="pt-1">
-                  <span className="text-blue-600 font-bold text-sm cursor-pointer">
+                  <DemoBookingButton className="text-blue-600 font-bold text-sm cursor-pointer">
                     Book a Demo
-                  </span>
+                  </DemoBookingButton>
                 </li>
               </ul>
             </div>
