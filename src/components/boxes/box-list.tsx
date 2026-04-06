@@ -57,14 +57,6 @@ export function BoxList({ boxes, unit, onAddBox }: BoxListProps) {
       {boxes.map((box, index) => (
         <BoxCard key={box.id} {...box} unit={unit} showDivider={index < boxes.length - 1} />
       ))}
-      <div className="flex flex-col gap-3 border-t border-slate-200 px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[13px] text-slate-500">Showing 1-{boxes.length} of {boxes.length} boxes</p>
-        <div className="flex items-center gap-2 text-[13px]">
-          <span className="text-slate-400">Previous</span>
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 font-semibold text-white">1</span>
-          <span className="text-slate-400">Next</span>
-        </div>
-      </div>
     </div>
   );
 }
