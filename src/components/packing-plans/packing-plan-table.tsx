@@ -63,6 +63,7 @@ export function PackingPlanTable({ packingPlans, unitSystem, onDeleted }: Packin
               <th className="px-6 py-3">Units</th>
               <th className="px-6 py-3">Box size</th>
               <th className="px-6 py-3">Dimensional weight</th>
+              <th className="px-6 py-3">Calculations</th>
               <th className="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -107,6 +108,7 @@ export function PackingPlanTable({ packingPlans, unitSystem, onDeleted }: Packin
                     ? `${(unitSystem === "in" ? kgToLbs(packingPlan.dimensionalWeight) : packingPlan.dimensionalWeight).toFixed(1)} ${unitSystem === "in" ? "lbs" : "kg"}`
                     : "Not calculated yet"}
                 </td>
+                <td className="px-6 py-4">{packingPlan.calculationCount}</td>
                 <td className="px-6 py-4">
                   <div className="flex justify-end gap-2">
                     <Link
