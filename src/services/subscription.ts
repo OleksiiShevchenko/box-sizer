@@ -291,7 +291,11 @@ async function resolveUsagePeriod(
   }
 
   if (!subscription.stripeSubscriptionId) {
-    throw new Error("Subscription billing period is unavailable");
+    const fallbackPeriod = getStarterUsagePeriod(user.createdAt, now);
+    return {
+      subscription: normalizeSubscription(userId, subscription),
+      period: fallbackPeriod,
+    };
   }
 
   if (options?.allowStripeRefresh === false) {
