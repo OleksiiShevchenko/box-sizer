@@ -51,6 +51,7 @@ export interface IPackingPlanListItem {
   box: IBox | null;
   items: IPackingPlanItem[];
   itemCount: number;
+  calculationCount: number;
   createdAt: Date;
   updatedAt: Date;
 }

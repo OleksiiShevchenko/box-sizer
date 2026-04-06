@@ -85,6 +85,7 @@ export async function getPackingPlans(
           orientation: item.orientation as Orientation,
         })),
         itemCount: packingPlan.items.reduce((total, item) => total + item.quantity, 0),
+        calculationCount: packingPlan.calculationCount,
         createdAt: packingPlan.createdAt,
         updatedAt: packingPlan.updatedAt,
       })),

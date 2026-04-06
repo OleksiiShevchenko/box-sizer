@@ -58,6 +58,7 @@ export async function createPackingPlanCalculation(
     data: {
       userId,
       ...getPackingPlanCalculationData(input, results),
+      calculationCount: 1,
     },
   });
 }
@@ -176,7 +177,10 @@ export async function savePackingPlanCalculation(
 
   await tx.packingPlan.update({
     where: { id: packingPlanId },
-    data: getPackingPlanCalculationData(input, results),
+    data: {
+      ...getPackingPlanCalculationData(input, results),
+      calculationCount: { increment: 1 },
+    },
   });
 }
 

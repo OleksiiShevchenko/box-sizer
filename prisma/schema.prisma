@@ -90,6 +90,7 @@ model PackingPlan {
   spacingOverride   Float?
   boxId             String?
   dimensionalWeight Float?
+  calculationCount  Int            @default(0)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 

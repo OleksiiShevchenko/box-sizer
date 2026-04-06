@@ -35,6 +35,7 @@ const packingPlans = [
       },
     ],
     itemCount: 3,
+    calculationCount: 2,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
