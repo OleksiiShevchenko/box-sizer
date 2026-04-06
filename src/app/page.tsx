@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { PackwellLogo } from "@/components/layout/packwell-logo";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
+import { MarketingPricingSection } from "@/components/pricing/marketing-pricing-section";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -812,6 +813,7 @@ export default async function Home() {
             </div>
           </div>
         </section>
+        <MarketingPricingSection />
 
         {/* CTA Section */}
         <section className="py-24 md:py-32 px-6">

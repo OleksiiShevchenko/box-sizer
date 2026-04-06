@@ -21,7 +21,7 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Monthly Usage
+            Current Period Usage
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-900">
             {subscriptionInfo.usageCount} / {subscriptionInfo.usageLimit} calculations used
@@ -39,13 +39,13 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3 text-xs">
-          <span className="text-slate-500">Usage this month</span>
+          <span className="text-slate-500">Usage this billing period</span>
           <span className="font-medium text-slate-700">{progress}%</span>
         </div>
         <div
           className="h-1.5 overflow-hidden rounded-full bg-slate-200"
           role="progressbar"
-          aria-label="Monthly usage"
+          aria-label="Current period usage"
           aria-valuenow={progress}
           aria-valuemin={0}
           aria-valuemax={100}
@@ -59,7 +59,7 @@ export function UsageWidget({ subscriptionInfo }: UsageWidgetProps) {
 
       <p className="text-xs text-slate-400">
         {subscriptionInfo.tier === "starter"
-          ? "Starter includes 15 calculations per month."
+          ? "Starter includes 15 calculations per billing period."
           : "Upgrade to Business for unlimited calculations and API access."}
       </p>
     </Card>

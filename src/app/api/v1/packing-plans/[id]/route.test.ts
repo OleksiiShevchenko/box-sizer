@@ -5,6 +5,7 @@ import {
 } from "@/lib/api-packing-plans";
 import { inchesToCm, ozToGrams } from "@/types";
 import { PUT } from "./route";
+import { performMeteredCalculation } from "@/services/subscription";
 
 jest.mock("next/server", () => {
   const actual = jest.requireActual("next/server");
@@ -41,13 +42,60 @@ jest.mock("@/lib/api-response", () => ({
         "Content-Type": "application/json",
         ...(headers ?? {}),
       },
-    }),
+  }),
 }));
+
+jest.mock("@/lib/api-errors", () => {
+  class ApiError extends Error {
+    status: number;
+    code: string;
+
+    constructor(status: number, code: string, message: string) {
+      super(message);
+      this.status = status;
+      this.code = code;
+    }
+  }
+
+  return {
+    badRequest: (message = "Invalid request body", code = "bad_request") =>
+      new ApiError(400, code, message),
+    forbidden: (message = "Forbidden", code = "forbidden") =>
+      new ApiError(403, code, message),
+    apiErrorResponse: (error: { status?: number; code?: string; message?: string }) =>
+      new Response(
+        JSON.stringify({
+          error: {
+            code: error.code ?? "internal_error",
+            message: error.message ?? "Internal server error",
+          },
+        }),
+        {
+          status: error.status ?? 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      ),
+  };
+});
 
 jest.mock("@/lib/api-packing-plans", () => ({
   calculatePackingPlanForUser: jest.fn(),
   getPackingPlanForUser: jest.fn(),
   savePackingPlanCalculation: jest.fn(),
+}));
+
+jest.mock("@/services/subscription", () => ({
+  CalculationQuotaExceededError: class CalculationQuotaExceededError extends Error {
+    usageLimit: number;
+
+    constructor(usageLimit: number) {
+      super(`quota ${usageLimit}`);
+      this.usageLimit = usageLimit;
+    }
+  },
+  formatCalculationQuotaExceededMessage: (usageLimit: number) =>
+    `You have used all ${usageLimit} calculations for the current billing period. Upgrade your plan to continue.`,
+  performMeteredCalculation: jest.fn(),
 }));
 
 jest.mock("@/services/visualization-renderer", () => ({
@@ -62,10 +110,14 @@ jest.mock("@/services/visualization-upload", () => ({
 const calculatePackingPlanForUserMock = calculatePackingPlanForUser as jest.Mock;
 const getPackingPlanForUserMock = getPackingPlanForUser as jest.Mock;
 const savePackingPlanCalculationMock = savePackingPlanCalculation as jest.Mock;
+const performMeteredCalculationMock = performMeteredCalculation as jest.Mock;
 
 describe("PUT /api/v1/packing-plans/[id]", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    performMeteredCalculationMock.mockImplementation(
+      async (_userId: string, run: (tx: unknown) => Promise<unknown>) => run({})
+    );
   });
 
   it("returns an ideal-only response when saved boxes do not fit", async () => {
@@ -169,7 +221,8 @@ describe("PUT /api/v1/packing-plans/[id]", () => {
 
     expect(response.status).toBe(200);
     expect(savePackingPlanCalculationMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "packing-plan-db-id" }),
+      {},
+      "packing-plan-db-id",
       expect.objectContaining({
         name: "Demo Packing Plan",
         spacingOverride: 0.25,
@@ -321,7 +374,8 @@ describe("PUT /api/v1/packing-plans/[id]", () => {
       })
     );
     expect(savePackingPlanCalculationMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "packing-plan-db-id" }),
+      {},
+      "packing-plan-db-id",
       expect.objectContaining({
         name: "Imperial Plan",
         spacingOverride: inchesToCm(0.5),
@@ -351,5 +405,62 @@ describe("PUT /api/v1/packing-plans/[id]", () => {
         }),
       })
     );
+  });
+
+  it("returns quota_exceeded when an update exceeds the billing period limit", async () => {
+    const { CalculationQuotaExceededError } = jest.requireMock("@/services/subscription");
+    getPackingPlanForUserMock.mockResolvedValue({
+      id: "packing-plan-db-id",
+      publicId: "packing-plan-public-id",
+      userId: "user-1",
+      name: "Demo Packing Plan",
+      spacingOverride: 0.25,
+      dimensionalWeight: null,
+      boxId: null,
+      box: null,
+      items: [],
+      createdAt: new Date("2026-03-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-01T00:00:00.000Z"),
+    });
+    calculatePackingPlanForUserMock.mockResolvedValue({
+      results: [],
+      idealResult: null,
+    });
+    performMeteredCalculationMock.mockRejectedValue(new CalculationQuotaExceededError(15));
+
+    const request = new Request("http://localhost/api/v1/packing-plans/packing-plan-public-id", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        unitSystem: "cm",
+        name: "Demo Packing Plan",
+        renderVisualization: false,
+        items: [
+          {
+            name: "Item A",
+            quantity: 1,
+            width: 10,
+            height: 8,
+            depth: 6,
+          },
+        ],
+      }),
+    }) as Request & { nextUrl: URL };
+    Object.defineProperty(request, "nextUrl", {
+      value: new URL("http://localhost/api/v1/packing-plans/packing-plan-public-id"),
+    });
+
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: "packing-plan-public-id" }),
+    });
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "quota_exceeded",
+        message:
+          "You have used all 15 calculations for the current billing period. Upgrade your plan to continue.",
+      },
+    });
   });
 });

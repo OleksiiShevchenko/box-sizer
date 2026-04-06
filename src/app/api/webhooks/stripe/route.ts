@@ -14,6 +14,7 @@ import {
   notifySubscriptionRenewalFailure,
   notifySubscriptionRenewalSuccess,
 } from "@/services/email-notifications";
+import { getStarterUsagePeriod } from "@/services/subscription";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
@@ -120,22 +121,39 @@ async function resetSubscriptionToStarter(subscription: StripeSubscriptionWithPe
     typeof subscription.customer === "string"
       ? subscription.customer
       : subscription.customer.id;
-
-  await prisma.subscription.updateMany({
+  const subscriptions = await prisma.subscription.findMany({
     where: {
       OR: [{ stripeSubscriptionId: subscription.id }, { stripeCustomerId }],
     },
-    data: {
-      stripeSubscriptionId: null,
-      stripePriceId: null,
-      tier: "starter",
-      billingInterval: null,
-      status: "active",
-      currentPeriodStart: null,
-      currentPeriodEnd: null,
-      cancelAtPeriodEnd: false,
+    select: {
+      userId: true,
+      user: {
+        select: {
+          createdAt: true,
+        },
+      },
     },
   });
+
+  await Promise.all(
+    subscriptions.map(({ userId, user }) => {
+      const period = getStarterUsagePeriod(user.createdAt);
+
+      return prisma.subscription.update({
+        where: { userId },
+        data: {
+          stripeSubscriptionId: null,
+          stripePriceId: null,
+          tier: "starter",
+          billingInterval: null,
+          status: "active",
+          currentPeriodStart: period.start,
+          currentPeriodEnd: period.end,
+          cancelAtPeriodEnd: false,
+        },
+      });
+    })
+  );
 }
 
 async function markInvoiceAsPastDue(invoice: StripeInvoiceWithSubscription) {

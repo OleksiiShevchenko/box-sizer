@@ -1,4 +1,4 @@
-import type { PackingPlan } from "@prisma/client";
+import { Prisma, type PackingPlan } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { badRequest, notFound } from "@/lib/api-errors";
 import {
@@ -47,18 +47,28 @@ function getPackingPlanCalculationData(
   };
 }
 
+export async function createPackingPlanCalculation(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  input: Required<Pick<PackingPlanCalculationInput, "name">> &
+    Pick<PackingPlanCalculationInput, "spacingOverride" | "items">,
+  results: PackingResult[]
+) {
+  return tx.packingPlan.create({
+    data: {
+      userId,
+      ...getPackingPlanCalculationData(input, results),
+    },
+  });
+}
+
 export async function createPackingPlanCalculationForUser(
   userId: string,
   input: Required<Pick<PackingPlanCalculationInput, "name">> &
     Pick<PackingPlanCalculationInput, "spacingOverride" | "items">,
   results: PackingResult[]
 ) {
-  return prisma.packingPlan.create({
-    data: {
-      userId,
-      ...getPackingPlanCalculationData(input, results),
-    },
-  });
+  return prisma.$transaction((tx) => createPackingPlanCalculation(tx, userId, input, results));
 }
 
 export async function getBoxesForUser(userId: string) {
@@ -154,19 +164,29 @@ export async function calculatePackingPlanForUser(
 }
 
 export async function savePackingPlanCalculation(
+  tx: Prisma.TransactionClient,
+  packingPlanId: string,
+  input: Required<Pick<PackingPlanCalculationInput, "name">> &
+    Pick<PackingPlanCalculationInput, "spacingOverride" | "items">,
+  results: PackingResult[]
+) {
+  await tx.packingPlanItem.deleteMany({
+    where: { packingPlanId },
+  });
+
+  await tx.packingPlan.update({
+    where: { id: packingPlanId },
+    data: getPackingPlanCalculationData(input, results),
+  });
+}
+
+export async function savePackingPlanCalculationForUser(
   packingPlan: PackingPlan,
   input: Required<Pick<PackingPlanCalculationInput, "name">> &
     Pick<PackingPlanCalculationInput, "spacingOverride" | "items">,
   results: PackingResult[]
 ) {
-  await prisma.$transaction(async (tx) => {
-    await tx.packingPlanItem.deleteMany({
-      where: { packingPlanId: packingPlan.id },
-    });
-
-    await tx.packingPlan.update({
-      where: { id: packingPlan.id },
-      data: getPackingPlanCalculationData(input, results),
-    });
-  });
+  await prisma.$transaction((tx) =>
+    savePackingPlanCalculation(tx, packingPlan.id, input, results)
+  );
 }

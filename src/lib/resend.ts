@@ -168,7 +168,7 @@ export async function sendQuotaReachedEmail({
   await sendEmailOrThrow({
     from: process.env.RESEND_FROM_EMAIL || TRANSACTIONAL_FROM_EMAIL,
     to: email,
-    subject: "You've reached your Packwell monthly request limit",
+    subject: "You've reached your Packwell billing period request limit",
     html: renderQuotaReachedEmail({
       appUrl,
       tier,

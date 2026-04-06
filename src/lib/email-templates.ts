@@ -452,8 +452,8 @@ export function renderSubscriptionRenewalFailureEmail({
   });
 }
 
-function formatMonthlyQuota(limit: number): string {
-  return `${limit.toLocaleString("en-US")} req/mo`;
+function formatPeriodQuota(limit: number): string {
+  return `${limit.toLocaleString("en-US")} req/period`;
 }
 
 export function renderQuotaReachedEmail({
@@ -489,27 +489,27 @@ export function renderQuotaReachedEmail({
           marginTop: 24,
         })}
         ${renderCenteredText(
-          `You&#39;ve used all ${escapeHtml(usageLimit.toLocaleString("en-US"))} requests included in your current plan this month. Your quota will reset on ${escapeHtml(formatDate(quotaResetDate) ?? "the next billing cycle")}.`,
+          `You&#39;ve used all ${escapeHtml(usageLimit.toLocaleString("en-US"))} requests included in your current billing period. Your quota will reset on ${escapeHtml(formatDate(quotaResetDate) ?? "the next billing period")}.`,
           { fontSize: 15, color: "#64748b", lineHeight: 1.6, marginTop: 16 }
         )}
         <div style="margin-top:24px;">
           ${renderDetailCard({
-            title: "Monthly Usage",
+            title: "Current Period Usage",
             rows: [
               {
-                label: "Monthly Usage",
+                label: "Current Period Usage",
                 value: `${usageCount.toLocaleString("en-US")} / ${usageLimit.toLocaleString("en-US")}`,
                 emphasize: true,
                 accentColor: "#dc2626",
               },
               {
                 label: "Current Plan",
-                value: `${plan.name} (${formatMonthlyQuota(usageLimit)})`,
+                value: `${plan.name} (${formatPeriodQuota(usageLimit)})`,
                 emphasize: true,
               },
               {
                 label: "Quota Resets",
-                value: formatDate(quotaResetDate) ?? "Next month",
+                value: formatDate(quotaResetDate) ?? "Next billing period",
                 emphasize: true,
               },
             ],

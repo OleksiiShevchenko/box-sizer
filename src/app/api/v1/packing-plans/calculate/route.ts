@@ -1,6 +1,6 @@
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
-import { apiErrorResponse, badRequest } from "@/lib/api-errors";
+import { apiErrorResponse, badRequest, forbidden } from "@/lib/api-errors";
 import { withApi } from "@/lib/api-middleware";
 import {
   convertDimensionFromApi,
@@ -12,8 +12,13 @@ import { apiJson } from "@/lib/api-response";
 import { calculatePackingPlanBodySchema } from "@/lib/api-schemas";
 import {
   calculatePackingPlanForUser,
-  createPackingPlanCalculationForUser,
+  createPackingPlanCalculation,
 } from "@/lib/api-packing-plans";
+import {
+  CalculationQuotaExceededError,
+  formatCalculationQuotaExceededMessage,
+  performMeteredCalculation,
+} from "@/services/subscription";
 import { generateAndUploadVisualizations } from "@/services/visualization-renderer";
 import { predictVisualizationUrls } from "@/services/visualization-upload";
 
@@ -43,14 +48,17 @@ export const POST = withApi(async (request, { api }) => {
       includeIdealBox: parsed.data.includeIdealBox,
     });
     const packingPlanName = "Untitled Packing Plan";
-    const packingPlan = await createPackingPlanCalculationForUser(
-      api.userId,
-      {
-        name: packingPlanName,
-        items: normalizedItems,
-        spacingOverride: normalizedSpacingOverride,
-      },
-      calculation.results
+    const packingPlan = await performMeteredCalculation(api.userId, (tx) =>
+      createPackingPlanCalculation(
+        tx,
+        api.userId,
+        {
+          name: packingPlanName,
+          items: normalizedItems,
+          spacingOverride: normalizedSpacingOverride,
+        },
+        calculation.results
+      )
     );
     revalidatePath("/dashboard");
     revalidatePath(`/dashboard/packing-plans/${packingPlan.id}`);
@@ -95,6 +103,12 @@ export const POST = withApi(async (request, { api }) => {
       ...(visualization ? { visualization } : {}),
     });
   } catch (error) {
+    if (error instanceof CalculationQuotaExceededError) {
+      return apiErrorResponse(
+        forbidden(formatCalculationQuotaExceededMessage(error.usageLimit), "quota_exceeded")
+      );
+    }
+
     return apiErrorResponse(error);
   }
 });

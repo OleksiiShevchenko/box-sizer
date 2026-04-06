@@ -23,7 +23,7 @@ describe("UsageWidget", () => {
     );
 
     expect(screen.getByText("6 / 15 calculations used")).toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "Monthly usage" })).toHaveAttribute(
+    expect(screen.getByRole("progressbar", { name: "Current period usage" })).toHaveAttribute(
       "aria-valuenow",
       "40"
     );
