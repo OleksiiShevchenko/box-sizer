@@ -278,7 +278,7 @@ describe("subscription service", () => {
     await expect(getSubscriptionInfoForUser("user-1")).resolves.toMatchObject({
       tier: "growth",
       usageCount: 12,
-      usageLimit: 300,
+      usageLimit: 500,
       currentPeriodStart,
       currentPeriodEnd,
     });
@@ -460,7 +460,7 @@ describe("subscription service", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as never);
-    prismaMock.calculationUsage.count.mockResolvedValue(300);
+    prismaMock.calculationUsage.count.mockResolvedValue(500);
     prismaMock.user.findUnique.mockResolvedValue({ email: "alex@example.com" } as never);
 
     await notifyQuotaReachedIfNeeded("user-1", new Date("2026-03-19T12:00:00.000Z"));
@@ -469,8 +469,8 @@ describe("subscription service", () => {
       userId: "user-1",
       email: "alex@example.com",
       tier: "growth",
-      usageCount: 300,
-      usageLimit: 300,
+      usageCount: 500,
+      usageLimit: 500,
       quotaResetDate: currentPeriodEnd,
       recommendedUpgradeTier: "pro",
       periodKey: formatUsagePeriodKey(currentPeriodStart, currentPeriodEnd),
@@ -478,8 +478,8 @@ describe("subscription service", () => {
   });
 
   it("formats the current billing period quota error message", () => {
-    expect(formatCalculationQuotaExceededMessage(15)).toBe(
-      "You have used all 15 calculations for the current billing period. Upgrade your plan to continue."
+    expect(formatCalculationQuotaExceededMessage(50)).toBe(
+      "You have used all 50 calculations for the current billing period. Upgrade your plan to continue."
     );
   });
 });

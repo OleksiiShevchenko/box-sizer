@@ -6,6 +6,17 @@ export const metadata: Metadata = {
   title: "Privacy Policy | Packwell",
   description:
     "Read how Packwell collects, uses, and protects information across the platform.",
+  openGraph: {
+    title: "Privacy Policy | Packwell",
+    description:
+      "Read how Packwell collects, uses, and protects information across the platform.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy | Packwell",
+    description:
+      "Read how Packwell collects, uses, and protects information across the platform.",
+  },
 };
 
 export default function PrivacyPolicyPage() {

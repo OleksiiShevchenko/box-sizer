@@ -11,8 +11,8 @@ describe("UsageWidget", () => {
           status: "active",
           billingInterval: null,
           usageCount: 6,
-          usageLimit: 15,
-          hasApiAccess: false,
+          usageLimit: 50,
+          hasApiAccess: true,
           currentPeriodStart: null,
           currentPeriodEnd: null,
           cancelAtPeriodEnd: false,
@@ -22,10 +22,10 @@ describe("UsageWidget", () => {
       />
     );
 
-    expect(screen.getByText("6 / 15 calculations used")).toBeInTheDocument();
+    expect(screen.getByText("6 / 50 calculations used")).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "Current period usage" })).toHaveAttribute(
       "aria-valuenow",
-      "40"
+      "12"
     );
     expect(screen.getByRole("link", { name: "Upgrade Plan" })).toHaveAttribute(
       "href",

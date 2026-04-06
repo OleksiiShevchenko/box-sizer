@@ -320,7 +320,7 @@ describe("POST /api/v1/packing-plans/calculate", () => {
       error: {
         code: "quota_exceeded",
         message:
-          "You have used all 15 calculations for the current billing period. Upgrade your plan to continue.",
+          "You have used all 50 calculations for the current billing period. Upgrade your plan to continue.",
       },
     });
   });

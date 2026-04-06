@@ -7,11 +7,12 @@ import posthog from "posthog-js";
 import { createCheckoutSession } from "@/actions/subscription-actions";
 import {
   BILLING_INTERVALS,
-  formatPrice,
   getVisiblePlans,
   type BillingInterval,
   type SubscriptionTier,
 } from "@/lib/subscription-plans";
+import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
+import { PricingCard, ScaleCard } from "./pricing-card";
 
 interface PricingClientProps {
   currentTier: SubscriptionTier | null;
@@ -59,90 +60,52 @@ export function PricingClient({
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-center">
-        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 shadow-sm">
-          {BILLING_INTERVALS.map((interval) => (
-            <button
-              key={interval}
-              type="button"
-              onClick={() => setBillingInterval(interval)}
-              className={`rounded-full px-5 py-2 text-sm font-medium capitalize transition-colors ${
-                billingInterval === interval
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              {interval}
-            </button>
-          ))}
-        </div>
+    <div className="flex w-full flex-col items-center gap-8">
+      <div className="inline-flex rounded-full border border-[#E2E8F0] bg-white p-1 shadow-sm">
+        {BILLING_INTERVALS.map((interval) => (
+          <button
+            key={interval}
+            type="button"
+            onClick={() => setBillingInterval(interval)}
+            className={`rounded-full px-5 py-2 text-[14px] font-medium capitalize transition-colors ${
+              billingInterval === interval
+                ? "bg-[#1E293B] text-white"
+                : "text-[#64748B] hover:text-[#1E293B]"
+            }`}
+          >
+            {interval}
+          </button>
+        ))}
       </div>
 
       {error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="w-full rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => {
           const isCurrentPlan = currentTier === plan.tier;
           const priceCents =
             billingInterval === "annual" ? plan.annualPriceCents : plan.monthlyPriceCents;
-          const periodLabel = plan.monthlyPriceCents === 0 ? "" : ` / ${billingInterval === "annual" ? "year" : "month"}`;
+          const periodLabel =
+            priceCents > 0
+              ? `/ ${billingInterval === "annual" ? "year" : "mo"}`
+              : null;
 
           return (
-            <div
+            <PricingCard
               key={plan.tier}
-              className={`rounded-[2rem] border p-8 shadow-sm transition-transform ${
-                isCurrentPlan
-                  ? "border-blue-500 bg-blue-50/70"
-                  : "border-slate-200 bg-white hover:-translate-y-1"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-semibold text-slate-950">{plan.name}</h2>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{plan.description}</p>
-                </div>
-                {isCurrentPlan ? (
-                  <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                    Current
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mt-8">
-                <p className="text-4xl font-semibold text-slate-950">
-                  {formatPrice(priceCents)}
-                  {periodLabel ? (
-                    <span className="text-base font-medium text-slate-500">{periodLabel}</span>
-                  ) : null}
-                </p>
-                <p className="mt-2 text-sm text-slate-500">
-                  {Number.isFinite(plan.calculationLimit)
-                    ? `${plan.calculationLimit} calculations per month`
-                    : "Unlimited calculations"}
-                </p>
-              </div>
-
-              <ul className="mt-8 space-y-3 text-sm text-slate-600">
-                {plan.featureBullets.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-                <li>
-                  {billingInterval === "annual" && plan.monthlyPriceCents > 0
-                    ? "Annual billing includes a 17% discount."
-                    : "Stripe-hosted billing checkout."}
-                </li>
-              </ul>
-
-              <div className="mt-8">
-                {plan.tier === "starter" && currentTier && currentTier !== "starter" ? (
+              plan={plan}
+              priceCents={priceCents}
+              periodLabel={periodLabel}
+              badge={isCurrentPlan ? "Current" : plan.badgeText}
+              action={
+                plan.tier === "starter" && currentTier && currentTier !== "starter" ? (
                   <Link
                     href="/settings/billing"
-                    className="inline-flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
+                    className="block w-full rounded-[10px] border border-[#E2E8F0] px-5 py-3.5 text-center text-[15px] font-bold text-[#1E293B] transition-colors hover:bg-slate-50"
                   >
                     Manage in Billing
                   </Link>
@@ -151,13 +114,13 @@ export function PricingClient({
                     type="button"
                     disabled={isPending || isCurrentPlan}
                     onClick={() => handleSelectPlan(plan.tier)}
-                    className={`inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition-colors ${
+                    className={
                       isCurrentPlan
-                        ? "bg-slate-200 text-slate-500"
-                        : plan.tier === "starter"
-                          ? "border border-slate-300 bg-white text-slate-900 hover:bg-slate-50"
-                          : "bg-slate-900 text-white hover:bg-slate-800"
-                    }`}
+                        ? "w-full rounded-[10px] bg-[#E2E8F0] px-5 py-3.5 text-center text-[15px] font-bold text-[#94A3B8]"
+                        : plan.isHighlighted
+                          ? "w-full rounded-[10px] bg-[#2563EB] px-5 py-3.5 text-center text-[15px] font-bold text-white transition-colors hover:bg-[#1d4ed8]"
+                          : "w-full rounded-[10px] border border-[#E2E8F0] px-5 py-3.5 text-center text-[15px] font-bold text-[#1E293B] transition-colors hover:bg-slate-50"
+                    }
                   >
                     {isCurrentPlan
                       ? "Current Plan"
@@ -167,11 +130,20 @@ export function PricingClient({
                           : "Sign Up"
                         : "Select Plan"}
                   </button>
-                )}
-              </div>
-            </div>
+                )
+              }
+            />
           );
         })}
+        <ScaleCard
+          action={
+            <DemoBookingButton
+              className="w-full rounded-[10px] border border-[#E2E8F0] px-5 py-3.5 text-center text-[15px] font-bold text-[#1E293B] transition-colors hover:bg-slate-50"
+            >
+              Contact sales
+            </DemoBookingButton>
+          }
+        />
       </div>
     </div>
   );

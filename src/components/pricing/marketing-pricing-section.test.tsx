@@ -8,8 +8,10 @@ describe("MarketingPricingSection", () => {
     expect(screen.getByRole("heading", { name: "Starter" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Growth" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Pro" })).toBeInTheDocument();
-    expect(screen.getByText("$29.00")).toBeInTheDocument();
-    expect(screen.getByText("$99.00")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Scale" })).toBeInTheDocument();
+    expect(screen.getByText("$49")).toBeInTheDocument();
+    expect(screen.getByText("$149")).toBeInTheDocument();
     expect(screen.getByText("Most popular")).toBeInTheDocument();
+    expect(screen.getByText("Contact sales")).toBeInTheDocument();
   });
 });

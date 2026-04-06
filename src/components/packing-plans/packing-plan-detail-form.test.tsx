@@ -171,7 +171,7 @@ describe("PackingPlanDetailForm", () => {
     const user = userEvent.setup();
     calculateAndSavePackingPlan.mockResolvedValue({
       error:
-        "You have used all 15 calculations for the current billing period. Upgrade your plan to continue.",
+        "You have used all 50 calculations for the current billing period. Upgrade your plan to continue.",
     });
 
     render(
@@ -190,7 +190,7 @@ describe("PackingPlanDetailForm", () => {
     expect(upgradeLink).toHaveAttribute("href", "/pricing");
     expect(
       screen.getByText(
-        "You have used all 15 calculations for the current billing period.",
+        "You have used all 50 calculations for the current billing period.",
         { exact: false }
       )
     ).toBeInTheDocument();
