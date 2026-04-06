@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { getConfiguredAppUrl } from "@/lib/app-url";
 import {
+  renderPasswordResetEmail,
   renderQuotaReachedEmail,
   renderSubscriptionPurchaseEmail,
   renderSubscriptionRenewalFailureEmail,
@@ -78,6 +79,21 @@ export async function sendVerificationEmail(email: string, token: string) {
       // Admin notifications are best-effort and must not block signup.
     }
   }
+}
+
+export async function sendPasswordResetEmail(email: string, token: string) {
+  const appUrl = getConfiguredAppUrl();
+  const resetUrl = `${appUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+
+  await sendEmailOrThrow({
+    from: process.env.RESEND_FROM_EMAIL || TRANSACTIONAL_FROM_EMAIL,
+    to: email,
+    subject: "Reset your Packwell password",
+    html: renderPasswordResetEmail({
+      appUrl,
+      resetUrl,
+    }),
+  });
 }
 
 export async function sendSubscriptionPurchaseSuccessEmail({
