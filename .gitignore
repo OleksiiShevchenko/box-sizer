@@ -50,3 +50,6 @@ next-env.d.ts
 # screenshots
 *.png
 .env.local
+
+# Playwright MCP artifacts
+.playwright-mcp/
