@@ -7,7 +7,7 @@ export const GET = ApiReference({
   theme: "bluePlanet",
   title: "Packwell.io Public API",
   pageTitle: "Packwell.io Public API",
-  favicon: "/favicon.ico",
+  favicon: "/email/packwell-mark.svg",
   metaData: {
     title: "Packwell.io Public API",
   },
