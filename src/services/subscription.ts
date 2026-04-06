@@ -1,4 +1,5 @@
 import { Prisma, type Subscription } from "@prisma/client";
+import type Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import {
   getPlanForTier,
@@ -10,6 +11,10 @@ import { stripe } from "@/lib/stripe";
 import { notifyQuotaReached } from "@/services/email-notifications";
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
+type StripeSubscriptionWithPeriods = Stripe.Subscription & {
+  current_period_start?: number;
+  current_period_end?: number;
+};
 
 export interface UserSubscription {
   userId: string;
@@ -182,7 +187,9 @@ function buildStarterSubscriptionData(userId: string, createdAt: Date, now: Date
 }
 
 async function fetchStripeBillingPeriod(subscriptionId: string): Promise<UsagePeriod> {
-  const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const stripeSubscription = await stripe.subscriptions.retrieve(
+    subscriptionId
+  ) as StripeSubscriptionWithPeriods;
   const start = typeof stripeSubscription.current_period_start === "number"
     ? new Date(stripeSubscription.current_period_start * 1000)
     : null;
