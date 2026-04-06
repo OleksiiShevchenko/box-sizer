@@ -48,6 +48,7 @@ describe("BillingClient", () => {
     expect(screen.getByText("Checkout completed.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Pro" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Manage Payment Method" })).toBeInTheDocument();
+    expect(screen.getByText("Calculations this billing period")).toBeInTheDocument();
   });
 
   it("updates local state after canceling a subscription", async () => {
@@ -128,5 +129,30 @@ describe("BillingClient", () => {
     await waitFor(() => {
       expect(screen.getByText("Portal unavailable")).toBeInTheDocument();
     });
+  });
+
+  it("shows a usage reset label for starter plans instead of a renewal label", () => {
+    render(
+      <BillingClient
+        banner={null}
+        initialSubscription={{
+          tier: "starter",
+          planName: "Starter",
+          status: "active",
+          billingInterval: null,
+          usageCount: 3,
+          usageLimit: 15,
+          hasApiAccess: false,
+          currentPeriodStart: new Date("2026-03-01T00:00:00.000Z"),
+          currentPeriodEnd: new Date("2026-04-01T12:00:00.000Z"),
+          cancelAtPeriodEnd: false,
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
+        }}
+      />
+    );
+
+    expect(screen.getByText("Usage period resets on Apr 1, 2026")).toBeInTheDocument();
+    expect(screen.queryByText(/Renews on/)).not.toBeInTheDocument();
   });
 });

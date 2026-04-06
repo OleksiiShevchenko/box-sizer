@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { ensurePackwellE2ESeeded } from "../../scripts/seed-packwell-e2e";
 import { AUTH_STATE_PATH } from "./auth-state";
 
 test.use({ storageState: AUTH_STATE_PATH });
@@ -61,6 +62,10 @@ async function calculate(page: Page) {
 }
 
 test.describe("Packwell authenticated flows", () => {
+  test.beforeEach(async () => {
+    await ensurePackwellE2ESeeded();
+  });
+
   test("shows the seeded QA boxes for the dedicated account", async ({ page }) => {
     await page.goto("/settings/boxes");
 
