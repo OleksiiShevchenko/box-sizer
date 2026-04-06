@@ -7,8 +7,8 @@ import posthog from "posthog-js";
 import { createCheckoutSession } from "@/actions/subscription-actions";
 import {
   BILLING_INTERVALS,
-  SUBSCRIPTION_PLANS,
   formatPrice,
+  getVisiblePlans,
   type BillingInterval,
   type SubscriptionTier,
 } from "@/lib/subscription-plans";
@@ -24,6 +24,7 @@ export function PricingClient({
   currentInterval,
   isAuthenticated,
 }: PricingClientProps) {
+  const plans = getVisiblePlans();
   const router = useRouter();
   const [billingInterval, setBillingInterval] = useState<BillingInterval>(
     currentInterval ?? "monthly"
@@ -85,7 +86,7 @@ export function PricingClient({
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {Object.values(SUBSCRIPTION_PLANS).map((plan) => {
+        {plans.map((plan) => {
           const isCurrentPlan = currentTier === plan.tier;
           const priceCents =
             billingInterval === "annual" ? plan.annualPriceCents : plan.monthlyPriceCents;
@@ -127,10 +128,9 @@ export function PricingClient({
               </div>
 
               <ul className="mt-8 space-y-3 text-sm text-slate-600">
-                <li>Saved boxes and packing plans</li>
-                <li>
-                  {plan.hasApiAccess ? "API access included" : "No API access on this plan"}
-                </li>
+                {plan.featureBullets.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
                 <li>
                   {billingInterval === "annual" && plan.monthlyPriceCents > 0
                     ? "Annual billing includes a 17% discount."
