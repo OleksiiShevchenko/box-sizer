@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { PackwellLogo } from "@/components/layout/packwell-logo";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
+import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -17,7 +18,9 @@ export default async function Home() {
         {/* Navigation */}
         <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl shadow-sm">
           <div className="flex justify-between items-center max-w-7xl mx-auto px-6 py-4">
-            <PackwellLogo className="h-8 w-auto text-slate-900" />
+            <Link href="/" className="shrink-0">
+              <PackwellLogo className="h-8 w-auto text-slate-900" />
+            </Link>
             <div className="hidden md:flex gap-8 items-center tracking-tight text-sm font-medium">
               <a
                 href="#features"
@@ -88,12 +91,11 @@ export default async function Home() {
                 >
                   Start Free
                 </Link>
-                <Link
-                  href="#"
+                <DemoBookingButton
                   className="bg-surface-container-high text-on-surface px-8 py-4 rounded-lg font-semibold text-lg hover:bg-surface-container-highest transition-all border border-outline-variant/30"
                 >
                   Book a Demo
-                </Link>
+                </DemoBookingButton>
               </div>
               <p className="text-xs text-on-surface-variant/80 flex flex-wrap items-center gap-[18px]">
                 <span className="flex items-center gap-2">
@@ -801,11 +803,11 @@ export default async function Home() {
                     Custom integrations
                   </li>
                 </ul>
-                <button
+                <DemoBookingButton
                   className="w-full py-3.5 px-5 rounded-[10px] border border-[#E2E8F0] text-center text-[15px] font-bold text-[#1E293B] hover:bg-slate-50 transition-colors"
                 >
                   Contact sales
-                </button>
+                </DemoBookingButton>
               </div>
             </div>
           </div>
@@ -831,12 +833,11 @@ export default async function Home() {
                   >
                     Start free
                   </Link>
-                  <Link
-                    href="#"
+                  <DemoBookingButton
                     className="bg-white text-[#1E293B] px-6 py-4 rounded-lg text-[16px] font-bold border border-[#E2E8F0] hover:bg-slate-50 transition-colors flex items-center gap-2"
                   >
                     Contact Sales
-                  </Link>
+                  </DemoBookingButton>
                 </div>
               </div>
               {/* Recommended Box Card */}
@@ -879,7 +880,9 @@ export default async function Home() {
           <div className="flex flex-wrap md:flex-nowrap md:justify-between gap-8 max-w-7xl mx-auto px-8">
             <div className="w-full md:w-[300px] md:shrink-0">
               <div className="mb-4">
-                <PackwellLogo className="h-7 w-auto text-slate-900" />
+                <Link href="/" className="inline-flex">
+                  <PackwellLogo className="h-7 w-auto text-slate-900" />
+                </Link>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed">
                 Smart packing for ecommerce &mdash; reduce shipping costs and eliminate wasted space.
@@ -923,12 +926,14 @@ export default async function Home() {
               <ul className="space-y-3">
                 <li className="flex items-center gap-2 text-slate-500 text-sm">
                   <span className="material-symbols-outlined text-sm">mail</span>
-                  support@packwell.io
+                  <a href="mailto:support@packwell.io" className="hover:text-slate-700">
+                    support@packwell.io
+                  </a>
                 </li>
                 <li className="pt-1">
-                  <span className="text-blue-600 font-bold text-sm cursor-pointer">
+                  <DemoBookingButton className="text-blue-600 font-bold text-sm cursor-pointer">
                     Book a Demo
-                  </span>
+                  </DemoBookingButton>
                 </li>
               </ul>
             </div>
