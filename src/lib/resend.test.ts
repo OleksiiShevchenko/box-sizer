@@ -173,7 +173,7 @@ describe("resend mailers", () => {
     const html = mockSendEmail.mock.calls[0][0].html as string;
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
-        subject: "You've reached your Packwell monthly request limit",
+        subject: "You've reached your Packwell billing period request limit",
         html: expect.stringContaining("Request Limit Reached"),
       })
     );

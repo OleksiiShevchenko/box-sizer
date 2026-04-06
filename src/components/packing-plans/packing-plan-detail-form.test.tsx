@@ -170,7 +170,8 @@ describe("PackingPlanDetailForm", () => {
   it("renders the quota upgrade error with a link to pricing", async () => {
     const user = userEvent.setup();
     calculateAndSavePackingPlan.mockResolvedValue({
-      error: "You have used all 15 calculations for this month. Upgrade your plan to continue.",
+      error:
+        "You have used all 15 calculations for the current billing period. Upgrade your plan to continue.",
     });
 
     render(
@@ -188,7 +189,10 @@ describe("PackingPlanDetailForm", () => {
     const upgradeLink = await screen.findByRole("link", { name: "Upgrade" });
     expect(upgradeLink).toHaveAttribute("href", "/pricing");
     expect(
-      screen.getByText("You have used all 15 calculations for this month.", { exact: false })
+      screen.getByText(
+        "You have used all 15 calculations for the current billing period.",
+        { exact: false }
+      )
     ).toBeInTheDocument();
     expect(screen.getByText("your plan to continue.", { exact: false })).toBeInTheDocument();
   });

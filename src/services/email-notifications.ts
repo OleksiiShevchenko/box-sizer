@@ -197,7 +197,7 @@ export async function notifyQuotaReached({
     userId,
     type: "quota_reached",
     dedupeKey: `quota:${userId}:${periodKey}`,
-    subject: "You've reached your Packwell monthly request limit",
+    subject: "You've reached your Packwell billing period request limit",
     send: () =>
       sendQuotaReachedEmail({
         email,

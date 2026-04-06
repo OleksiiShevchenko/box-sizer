@@ -36,9 +36,11 @@ export function BillingClient({ initialSubscription, banner }: BillingClientProp
   const [isPending, startTransition] = useTransition();
 
   const renewalLabel = subscription.currentPeriodEnd
-    ? subscription.cancelAtPeriodEnd
-      ? `Access ends on ${formatDate(subscription.currentPeriodEnd)}`
-      : `Renews on ${formatDate(subscription.currentPeriodEnd)}`
+    ? subscription.tier === "starter"
+      ? `Usage period resets on ${formatDate(subscription.currentPeriodEnd)}`
+      : subscription.cancelAtPeriodEnd
+        ? `Access ends on ${formatDate(subscription.currentPeriodEnd)}`
+        : `Renews on ${formatDate(subscription.currentPeriodEnd)}`
     : null;
 
   function handleManageBilling() {
@@ -151,13 +153,13 @@ export function BillingClient({ initialSubscription, banner }: BillingClientProp
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl bg-slate-50 p-5">
-            <p className="text-sm text-slate-500">Calculations this month</p>
+            <p className="text-sm text-slate-500">Calculations this billing period</p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">
               {subscription.usageCount}
             </p>
           </div>
           <div className="rounded-2xl bg-slate-50 p-5">
-            <p className="text-sm text-slate-500">Monthly limit</p>
+            <p className="text-sm text-slate-500">Billing period limit</p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">
               {subscription.usageLimit ?? "Unlimited"}
             </p>

@@ -156,7 +156,7 @@ model ApiToken {
 model Subscription {
   id                   String    @id @default(cuid())
   userId               String    @unique
-  stripeCustomerId     String    @unique
+  stripeCustomerId     String?   @unique
   stripeSubscriptionId String?   @unique
   stripePriceId        String?
   tier                 String    @default("starter")

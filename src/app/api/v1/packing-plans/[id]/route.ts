@@ -6,7 +6,7 @@ import {
   convertPackingPlanItemInputToStorage,
   getMeasurementUnits,
 } from "@/lib/api-units";
-import { apiErrorResponse, badRequest } from "@/lib/api-errors";
+import { apiErrorResponse, badRequest, forbidden } from "@/lib/api-errors";
 import { mapPackingResultToApi, mapPackingPlanToApi } from "@/lib/api-mappers";
 import { apiJson } from "@/lib/api-response";
 import { packingPlanUpdateBodySchema } from "@/lib/api-schemas";
@@ -15,6 +15,11 @@ import {
   getPackingPlanForUser,
   savePackingPlanCalculation,
 } from "@/lib/api-packing-plans";
+import {
+  CalculationQuotaExceededError,
+  formatCalculationQuotaExceededMessage,
+  performMeteredCalculation,
+} from "@/services/subscription";
 import { generateAndUploadVisualizations } from "@/services/visualization-renderer";
 import {
   getUploadedVisualizationUrls,
@@ -67,14 +72,17 @@ export const PUT = withApi(async (request, ctx) => {
       includeIdealBox: true,
     });
 
-    await savePackingPlanCalculation(
-      packingPlan,
-      {
-        name: parsed.data.name,
-        items: normalizedItems,
-        spacingOverride: normalizedSpacingOverride,
-      },
-      calculation.results
+    await performMeteredCalculation(ctx.api.userId, (tx) =>
+      savePackingPlanCalculation(
+        tx,
+        packingPlan.id,
+        {
+          name: parsed.data.name,
+          items: normalizedItems,
+          spacingOverride: normalizedSpacingOverride,
+        },
+        calculation.results
+      )
     );
 
     revalidatePath("/dashboard");
@@ -120,6 +128,12 @@ export const PUT = withApi(async (request, ctx) => {
       ...(visualization ? { visualization } : {}),
     });
   } catch (error) {
+    if (error instanceof CalculationQuotaExceededError) {
+      return apiErrorResponse(
+        forbidden(formatCalculationQuotaExceededMessage(error.usageLimit), "quota_exceeded")
+      );
+    }
+
     return apiErrorResponse(error);
   }
 });

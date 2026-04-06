@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { sendVerificationEmail } from "@/lib/resend";
+import { getStarterUsagePeriod } from "@/services/subscription";
 import { z } from "zod/v4";
 
 const signUpSchema = z.object({
@@ -42,6 +43,8 @@ export async function signUp(formData: FormData) {
   // Detect unit system from browser locale (e.g. "en-US" → "US")
   const countryCode = locale.split("-").pop()?.toUpperCase() ?? "";
   const unitSystem = IMPERIAL_COUNTRIES.has(countryCode) ? "in" : "cm";
+  const createdAt = new Date();
+  const starterPeriod = getStarterUsagePeriod(createdAt, createdAt);
 
   await prisma.user.create({
     data: {
@@ -49,6 +52,15 @@ export async function signUp(formData: FormData) {
       email,
       password: hashedPassword,
       unitSystem,
+      createdAt,
+      subscription: {
+        create: {
+          tier: "starter",
+          status: "active",
+          currentPeriodStart: starterPeriod.start,
+          currentPeriodEnd: starterPeriod.end,
+        },
+      },
     },
   });
 

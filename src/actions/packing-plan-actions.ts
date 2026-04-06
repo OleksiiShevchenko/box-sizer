@@ -5,15 +5,16 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod/v4";
 import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
+import { savePackingPlanCalculation } from "@/lib/api-packing-plans";
 import {
   calculateIdealBoxPacking,
   calculatePackingPlanPacking,
 } from "@/services/packing-plan-packing";
 import {
-  canPerformCalculation,
-  getSubscriptionInfoForUser,
+  CalculationQuotaExceededError,
+  formatCalculationQuotaExceededMessage,
   notifyQuotaReachedIfNeeded,
-  recordCalculationUsage,
+  performMeteredCalculation,
 } from "@/services/subscription";
 import type { IProduct, IPackingPlan, IPackingPlanListItem, Orientation, PackingResult } from "@/types";
 
@@ -192,15 +193,6 @@ export async function calculateAndSavePackingPlan(
     return { error: parsed.error.issues[0]?.message ?? "Invalid packing plan data" };
   }
 
-  const canCalculate = await canPerformCalculation(userId);
-  if (!canCalculate) {
-    const subscriptionInfo = await getSubscriptionInfoForUser(userId);
-    await notifyQuotaReachedIfNeeded(userId);
-    return {
-      error: `You have used all ${subscriptionInfo.usageLimit} calculations for this month. Upgrade your plan to continue.`,
-    };
-  }
-
   const boxes = await prisma.box.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -219,40 +211,30 @@ export async function calculateAndSavePackingPlan(
     }
 
     try {
-      await prisma.$transaction(async (tx) => {
-        await tx.packingPlanItem.deleteMany({
-          where: { packingPlanId: id },
-        });
-
-        await tx.packingPlan.update({
-          where: { id },
-          data: {
+      await performMeteredCalculation(userId, (tx) =>
+        savePackingPlanCalculation(
+          tx,
+          id,
+          {
             name: parsed.data.name,
+            items: parsed.data.items,
             spacingOverride: parsed.data.spacingOverride,
-            boxId: null,
-            dimensionalWeight: null,
-            items: {
-              create: parsed.data.items.map((item) => ({
-                name: item.name,
-                quantity: item.quantity,
-                width: item.width,
-                height: item.height,
-                depth: item.depth,
-                weight: item.weight,
-                canStackOnTop: item.canStackOnTop,
-                canBePlacedOnTop: item.canBePlacedOnTop,
-                orientation: item.orientation,
-              })),
-            },
           },
-        });
-      });
+          []
+        )
+      );
 
-      await recordCalculationUsage(userId);
       revalidatePath("/dashboard");
       revalidatePath(`/dashboard/packing-plans/${id}`);
       return { idealResult };
     } catch (error) {
+      if (error instanceof CalculationQuotaExceededError) {
+        await notifyQuotaReachedIfNeeded(userId);
+        return {
+          error: formatCalculationQuotaExceededMessage(error.usageLimit),
+        };
+      }
+
       return {
         error: error instanceof Error ? error.message : "Failed to calculate packing plan",
       };
@@ -276,43 +258,30 @@ export async function calculateAndSavePackingPlan(
       idealResult = null;
     }
 
-    await prisma.$transaction(async (tx) => {
-      await tx.packingPlanItem.deleteMany({
-        where: { packingPlanId: id },
-      });
-
-      await tx.packingPlan.update({
-        where: { id },
-        data: {
+    await performMeteredCalculation(userId, (tx) =>
+      savePackingPlanCalculation(
+        tx,
+        id,
+        {
           name: parsed.data.name,
+          items: parsed.data.items,
           spacingOverride: parsed.data.spacingOverride,
-          boxId: results[0]?.box.id ?? null,
-          dimensionalWeight:
-            results.length === 1
-              ? results[0]?.dimensionalWeight ?? null
-              : results.reduce((sum, result) => sum + result.dimensionalWeight, 0),
-          items: {
-            create: parsed.data.items.map((item) => ({
-              name: item.name,
-              quantity: item.quantity,
-              width: item.width,
-              height: item.height,
-              depth: item.depth,
-              weight: item.weight,
-              canStackOnTop: item.canStackOnTop,
-              canBePlacedOnTop: item.canBePlacedOnTop,
-              orientation: item.orientation,
-            })),
-          },
         },
-      });
-    });
+        results
+      )
+    );
 
-    await recordCalculationUsage(userId);
     revalidatePath("/dashboard");
     revalidatePath(`/dashboard/packing-plans/${id}`);
     return { results, idealResult };
   } catch (error) {
+    if (error instanceof CalculationQuotaExceededError) {
+      await notifyQuotaReachedIfNeeded(userId);
+      return {
+        error: formatCalculationQuotaExceededMessage(error.usageLimit),
+      };
+    }
+
     return {
       error: error instanceof Error ? error.message : "Failed to calculate packing plan",
     };
