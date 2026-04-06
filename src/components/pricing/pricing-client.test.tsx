@@ -26,6 +26,7 @@ describe("PricingClient", () => {
     );
 
     expect(screen.getByRole("button", { name: "Current Plan" })).toBeDisabled();
+    expect(screen.getAllByText("15 calculations per month")).toHaveLength(2);
   });
 
   it("sends guests to signup for paid tiers", async () => {

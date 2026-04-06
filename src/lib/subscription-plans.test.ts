@@ -1,5 +1,6 @@
 import {
   SUBSCRIPTION_PLANS,
+  getVisiblePlans,
   getPlanForTier,
   getPlanFromPriceId,
   getPriceIdForSelection,
@@ -15,6 +16,7 @@ describe("subscription plans", () => {
 
   it("defines all supported tiers", () => {
     expect(Object.keys(SUBSCRIPTION_PLANS)).toEqual(["starter", "pro", "business"]);
+    expect(getVisiblePlans().map((plan) => plan.tier)).toEqual(["starter", "pro", "business"]);
   });
 
   it("keeps starter free and pro/business annual pricing discounted", () => {
@@ -31,6 +33,12 @@ describe("subscription plans", () => {
     expect(SUBSCRIPTION_PLANS.starter.calculationLimit).toBe(15);
     expect(SUBSCRIPTION_PLANS.pro.calculationLimit).toBe(300);
     expect(SUBSCRIPTION_PLANS.business.calculationLimit).toBe(Number.POSITIVE_INFINITY);
+  });
+
+  it("stores shared marketing metadata alongside billing metadata", () => {
+    expect(SUBSCRIPTION_PLANS.starter.featureBullets).toContain("15 calculations per month");
+    expect(SUBSCRIPTION_PLANS.pro.badgeText).toBe("Most popular");
+    expect(SUBSCRIPTION_PLANS.business.marketingCtaLabel).toBe("Choose Business");
   });
 
   it("maps price IDs to plan selections", () => {
