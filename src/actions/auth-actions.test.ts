@@ -84,7 +84,7 @@ describe("signUp", () => {
     });
     expect(mockSendVerificationEmail).toHaveBeenCalledWith("user@example.com", "verification-token");
     expect(mockPrisma.verificationToken.deleteMany).toHaveBeenCalledWith({
-      where: { identifier: "user@example.com" },
+      where: { identifier: "user@example.com", type: "email_verification" },
     });
     expect(mockPrisma.user.delete).toHaveBeenCalledWith({
       where: { email: "user@example.com" },

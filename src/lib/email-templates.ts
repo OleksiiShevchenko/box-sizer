@@ -46,6 +46,11 @@ interface RenderVerificationEmailArgs {
   confirmUrl: string;
 }
 
+interface RenderPasswordResetEmailArgs {
+  appUrl: string;
+  resetUrl: string;
+}
+
 type RenderSubscriptionPurchaseEmailArgs = SubscriptionBaseTemplateArgs;
 
 interface RenderSubscriptionRenewalSuccessEmailArgs extends SubscriptionBaseTemplateArgs {
@@ -254,6 +259,34 @@ export function renderVerificationEmail({
         ${renderPrimaryButton({ href: confirmUrl, label: "Confirm Email Address" })}
         ${renderCenteredText(
           "This link will expire in 24 hours. If you didn&#39;t create an account, you can safely ignore this email.",
+          { fontSize: 13, color: "#94a3b8", lineHeight: 1.5, marginTop: 24 }
+        )}
+        <div style="margin-top:24px;font-family:${FONT_STACK};font-size:12px;line-height:1.5;color:#94a3b8;">
+          <div>If the button doesn&#39;t work, copy and paste this link into your browser:</div>
+          <div style="margin-top:8px;word-break:break-all;">${fallbackUrl}</div>
+        </div>
+      </div>
+    `,
+  });
+}
+
+export function renderPasswordResetEmail({
+  appUrl,
+  resetUrl,
+}: RenderPasswordResetEmailArgs): string {
+  const fallbackUrl = escapeHtml(resetUrl);
+
+  return renderEmailShell({
+    appUrl,
+    bodyContent: `
+      <div style="padding:48px 40px;background:#ffffff;">
+        ${renderCenteredText("Hi there,", { fontSize: 20, fontWeight: 600, color: "#1e293b" }).replace('text-align:center;', 'text-align:left;')}
+        <div style="margin-top:24px;font-family:${FONT_STACK};font-size:15px;line-height:1.6;color:#64748b;">
+          We received a request to reset the password for your Packwell account. Click the button below to choose a new password.
+        </div>
+        ${renderPrimaryButton({ href: resetUrl, label: "Reset Password" })}
+        ${renderCenteredText(
+          "This link will expire in 1 hour. If you didn&#39;t request a password reset, you can safely ignore this email.",
           { fontSize: 13, color: "#94a3b8", lineHeight: 1.5, marginTop: 24 }
         )}
         <div style="margin-top:24px;font-family:${FONT_STACK};font-size:12px;line-height:1.5;color:#94a3b8;">
