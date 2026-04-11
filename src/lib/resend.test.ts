@@ -113,7 +113,7 @@ describe("resend mailers", () => {
       tier: "growth",
       billingInterval: "monthly",
       currentPeriodEnd: new Date("2026-04-30T00:00:00.000Z"),
-      amountPaidCents: 2900,
+      amountPaidCents: 4900,
       paymentMethodLabel: "Visa •••• 4242",
       hostedInvoiceUrl: "https://pay.stripe.com/invoice/acct_123",
       invoicePdfUrl: "https://stripe.com/invoice.pdf",
@@ -140,7 +140,7 @@ describe("resend mailers", () => {
       email: "user@example.com",
       tier: "growth",
       billingInterval: "monthly",
-      amountDueCents: 2900,
+      amountDueCents: 4900,
       paymentMethodLabel: "Visa •••• 4242",
       nextRetryAt: new Date("2026-04-02T12:00:00.000Z"),
     });
@@ -163,8 +163,8 @@ describe("resend mailers", () => {
     await sendQuotaReachedEmail({
       email: "user@example.com",
       tier: "starter",
-      usageCount: 15,
-      usageLimit: 15,
+      usageCount: 50,
+      usageLimit: 50,
       quotaResetDate: new Date(2026, 3, 1),
       recommendedUpgradeTier: "growth",
     });
@@ -178,6 +178,6 @@ describe("resend mailers", () => {
     );
     expect(html).toContain("Apr 1, 2026");
     expect(html).toContain("Upgrade to Growth");
-    expect(html).toContain("15 / 15");
+    expect(html).toContain("50 / 50");
   });
 });

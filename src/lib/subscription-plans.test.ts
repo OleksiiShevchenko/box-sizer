@@ -19,24 +19,24 @@ describe("subscription plans", () => {
     expect(getVisiblePlans().map((plan) => plan.tier)).toEqual(["starter", "growth", "pro"]);
   });
 
-  it("keeps starter free and growth/pro annual pricing discounted", () => {
+  it("keeps starter free and annual prices at 10x monthly", () => {
     expect(SUBSCRIPTION_PLANS.starter.monthlyPriceCents).toBe(0);
     expect(SUBSCRIPTION_PLANS.starter.annualPriceCents).toBe(0);
-    expect(SUBSCRIPTION_PLANS.growth.annualPriceCents).toBe(28884);
-    expect(SUBSCRIPTION_PLANS.pro.annualPriceCents).toBe(98604);
+    expect(SUBSCRIPTION_PLANS.growth.annualPriceCents).toBe(49000);
+    expect(SUBSCRIPTION_PLANS.pro.annualPriceCents).toBe(149000);
   });
 
-  it("tracks API access and unlimited pro calculations", () => {
-    expect(SUBSCRIPTION_PLANS.starter.hasApiAccess).toBe(false);
+  it("tracks API access and calculation limits", () => {
+    expect(SUBSCRIPTION_PLANS.starter.hasApiAccess).toBe(true);
     expect(SUBSCRIPTION_PLANS.growth.hasApiAccess).toBe(true);
     expect(SUBSCRIPTION_PLANS.pro.hasApiAccess).toBe(true);
-    expect(SUBSCRIPTION_PLANS.starter.calculationLimit).toBe(15);
-    expect(SUBSCRIPTION_PLANS.growth.calculationLimit).toBe(300);
-    expect(SUBSCRIPTION_PLANS.pro.calculationLimit).toBe(Number.POSITIVE_INFINITY);
+    expect(SUBSCRIPTION_PLANS.starter.calculationLimit).toBe(50);
+    expect(SUBSCRIPTION_PLANS.growth.calculationLimit).toBe(500);
+    expect(SUBSCRIPTION_PLANS.pro.calculationLimit).toBe(2000);
   });
 
   it("stores shared marketing metadata alongside billing metadata", () => {
-    expect(SUBSCRIPTION_PLANS.starter.featureBullets).toContain("15 calculations per month");
+    expect(SUBSCRIPTION_PLANS.starter.featureBullets).toContain("up to 50 packing plans/mo");
     expect(SUBSCRIPTION_PLANS.pro.badgeText).toBe("Most popular");
     expect(SUBSCRIPTION_PLANS.growth.marketingCtaLabel).toBe("Choose Growth");
   });

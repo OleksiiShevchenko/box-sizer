@@ -110,7 +110,7 @@ export function DemoBookingButton({
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
-    if (calendlyPopupActive) {
+    if (calendlyPopupActive && document.querySelector(".calendly-overlay")) {
       return;
     }
 

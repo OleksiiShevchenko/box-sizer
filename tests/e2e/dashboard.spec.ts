@@ -74,7 +74,7 @@ test("renders the empty packing plans dashboard state", async ({ page }) => {
 
   await expect(page.locator("h1", { hasText: "Packing plans" })).toBeVisible();
   await expect(page.getByText("Current Period Usage")).toBeVisible();
-  await expect(page.getByText("0 / 15 calculations used")).toBeVisible();
+  await expect(page.getByText("0 / 50 calculations used")).toBeVisible();
   await expect(
     page.getByText(
       "Box options are recommended for best-box matching. You can still create packing plans and calculate an ideal custom box."
@@ -92,7 +92,7 @@ test("renders the populated packing plans dashboard state", async ({ page }) => 
   await page.goto("/dashboard");
 
   await expect(page.getByText("Current Period Usage")).toBeVisible();
-  await expect(page.getByText("1 / 15 calculations used")).toBeVisible();
+  await expect(page.getByText("1 / 50 calculations used")).toBeVisible();
   await expect(page.getByRole("heading", { name: "All packing plans", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "New Packing Plan" })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Packing plan" })).toBeVisible();

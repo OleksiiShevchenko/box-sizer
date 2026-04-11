@@ -278,7 +278,7 @@ describe("subscription service", () => {
     await expect(getSubscriptionInfoForUser("user-1")).resolves.toMatchObject({
       tier: "growth",
       usageCount: 12,
-      usageLimit: 300,
+      usageLimit: 500,
       currentPeriodStart,
       currentPeriodEnd,
     });
@@ -410,7 +410,7 @@ describe("subscription service", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as never);
-    prismaMock.calculationUsage.count.mockResolvedValue(15);
+    prismaMock.calculationUsage.count.mockResolvedValue(50);
 
     await expect(
       performMeteredCalculation("user-1", async () => ({ ok: true }))
@@ -460,7 +460,7 @@ describe("subscription service", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as never);
-    prismaMock.calculationUsage.count.mockResolvedValue(300);
+    prismaMock.calculationUsage.count.mockResolvedValue(500);
     prismaMock.user.findUnique.mockResolvedValue({ email: "alex@example.com" } as never);
 
     await notifyQuotaReachedIfNeeded("user-1", new Date("2026-03-19T12:00:00.000Z"));
@@ -469,8 +469,8 @@ describe("subscription service", () => {
       userId: "user-1",
       email: "alex@example.com",
       tier: "growth",
-      usageCount: 300,
-      usageLimit: 300,
+      usageCount: 500,
+      usageLimit: 500,
       quotaResetDate: currentPeriodEnd,
       recommendedUpgradeTier: "pro",
       periodKey: formatUsagePeriodKey(currentPeriodStart, currentPeriodEnd),
@@ -478,8 +478,37 @@ describe("subscription service", () => {
   });
 
   it("formats the current billing period quota error message", () => {
-    expect(formatCalculationQuotaExceededMessage(15)).toBe(
-      "You have used all 15 calculations for the current billing period. Upgrade your plan to continue."
+    expect(formatCalculationQuotaExceededMessage(50)).toBe(
+      "You have used all 50 calculations for the current billing period. Upgrade your plan to continue."
     );
+  });
+
+  it("falls back to starter period when paid tier has no stripeSubscriptionId yet", async () => {
+    const createdAt = new Date("2026-03-19T12:00:00.000Z");
+    prismaMock.user.findUniqueOrThrow.mockResolvedValue({
+      createdAt,
+    } as never);
+    prismaMock.subscription.findUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "user-1",
+      stripeCustomerId: "cus_123",
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+      tier: "growth",
+      billingInterval: "monthly",
+      status: "active",
+      currentPeriodStart: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as never);
+    prismaMock.calculationUsage.count.mockResolvedValue(0);
+
+    const now = new Date("2026-04-01T12:00:00.000Z");
+    const result = await getCalculationUsageCount("user-1", now);
+
+    expect(result).toBe(0);
+    expect(stripeSubscriptionRetrieve).not.toHaveBeenCalled();
   });
 });

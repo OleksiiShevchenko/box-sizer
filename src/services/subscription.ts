@@ -186,22 +186,26 @@ function buildStarterSubscriptionData(userId: string, createdAt: Date, now: Date
   };
 }
 
-async function fetchStripeBillingPeriod(subscriptionId: string): Promise<UsagePeriod> {
-  const stripeSubscription = await stripe.subscriptions.retrieve(
-    subscriptionId
-  ) as StripeSubscriptionWithPeriods;
-  const start = typeof stripeSubscription.current_period_start === "number"
-    ? new Date(stripeSubscription.current_period_start * 1000)
-    : null;
-  const end = typeof stripeSubscription.current_period_end === "number"
-    ? new Date(stripeSubscription.current_period_end * 1000)
-    : null;
+async function fetchStripeBillingPeriod(subscriptionId: string): Promise<UsagePeriod | null> {
+  try {
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      subscriptionId
+    ) as StripeSubscriptionWithPeriods;
+    const start = typeof stripeSubscription.current_period_start === "number"
+      ? new Date(stripeSubscription.current_period_start * 1000)
+      : null;
+    const end = typeof stripeSubscription.current_period_end === "number"
+      ? new Date(stripeSubscription.current_period_end * 1000)
+      : null;
 
-  if (!start || !end) {
-    throw new Error("Subscription billing period is unavailable");
+    if (!start || !end) {
+      return null;
+    }
+
+    return { start, end };
+  } catch {
+    return null;
   }
-
-  return { start, end };
 }
 
 async function resolveUsagePeriod(
@@ -291,14 +295,31 @@ async function resolveUsagePeriod(
   }
 
   if (!subscription.stripeSubscriptionId) {
-    throw new Error("Subscription billing period is unavailable");
+    const fallbackPeriod = getStarterUsagePeriod(user.createdAt, now);
+    return {
+      subscription: normalizeSubscription(userId, subscription),
+      period: fallbackPeriod,
+    };
   }
 
   if (options?.allowStripeRefresh === false) {
-    throw new Error("Subscription billing period is unavailable");
+    const fallback = getStarterUsagePeriod(user.createdAt, now);
+    return {
+      subscription: normalizeSubscription(userId, subscription),
+      period: fallback,
+    };
   }
 
   const stripePeriod = await fetchStripeBillingPeriod(subscription.stripeSubscriptionId);
+
+  if (!stripePeriod) {
+    const fallback = getStarterUsagePeriod(user.createdAt, now);
+    return {
+      subscription: normalizeSubscription(userId, subscription),
+      period: fallback,
+    };
+  }
+
   const updated = await db.subscription.update({
     where: { userId },
     data: {

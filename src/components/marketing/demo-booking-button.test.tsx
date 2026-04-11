@@ -41,7 +41,11 @@ describe("DemoBookingButton", () => {
 
   it("does not initialize the popup twice while one is already active", async () => {
     const user = userEvent.setup();
-    const initPopupWidget = jest.fn();
+    const overlay = document.createElement("div");
+    overlay.className = "calendly-overlay";
+    const initPopupWidget = jest.fn(() => {
+      document.body.appendChild(overlay);
+    });
 
     window.Calendly = { initPopupWidget };
 
@@ -59,6 +63,7 @@ describe("DemoBookingButton", () => {
       expect(initPopupWidget).toHaveBeenCalledTimes(1);
     });
 
+    overlay.remove();
     window.dispatchEvent(
       new MessageEvent("message", {
         origin: "https://calendly.com",
