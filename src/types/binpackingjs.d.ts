@@ -24,6 +24,12 @@ declare module "binpackingjs" {
         depth: number,
         maxWeight: number
       );
+      getWidth(): number;
+      getHeight(): number;
+      getDepth(): number;
+      getPackedWeight(): number;
+      getBestRotationOrder(item: Item): number[];
+      putItem(item: Item, p: number[]): boolean;
     }
 
     class Item {
@@ -44,6 +50,9 @@ declare module "binpackingjs" {
         weight: number,
         allowedRotation?: number[]
       );
+      getWeight(): number;
+      getVolume(): number;
+      intersect(item: Item): boolean;
     }
   }
 }
