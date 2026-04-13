@@ -503,6 +503,70 @@ describe("stacking constraints", () => {
     }
   });
 
+  it("8 items (without Item6) fit in medium box when Item2 has canStackOnTop=false", () => {
+    const mediumBox: IBox = {
+      id: "5",
+      name: "Medium box",
+      width: 25.4,
+      height: 25.4,
+      depth: 25.4,
+      spacing: 0,
+      maxWeight: 42524.25,
+    };
+
+    const products: IProduct[] = [
+      { name: "Item 1_0", width: 10.16, height: 5.08, depth: 10.16, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any", weight: 4252.425 },
+      { name: "Item 2_0", width: 12.7, height: 12.7, depth: 12.7, canStackOnTop: false, canBePlacedOnTop: true, orientation: "any", weight: 5669.9 },
+      { name: "Item 2_1", width: 12.7, height: 12.7, depth: 12.7, canStackOnTop: false, canBePlacedOnTop: true, orientation: "any", weight: 5669.9 },
+      { name: "Item 3_0", width: 5.08, height: 7.62, depth: 5.08, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any", weight: 1417.475 },
+      { name: "Item 4_0", width: 5.08, height: 17.78, depth: 5.08, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any" },
+      { name: "Item 5_0", width: 7.62, height: 7.62, depth: 10.16, canStackOnTop: true, canBePlacedOnTop: true, orientation: "horizontal" },
+      { name: "Item 5_1", width: 7.62, height: 7.62, depth: 10.16, canStackOnTop: true, canBePlacedOnTop: true, orientation: "horizontal" },
+      { name: "Item 7_0", width: 15.24, height: 7.62, depth: 17.78, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any" },
+    ];
+
+    const result = checkFit(mediumBox, products);
+    expect(result.fits).toBe(true);
+  });
+
+  it("canStackOnTop=false on 5in cubes requires multi-box when column constraint removes too much space", () => {
+    // This scenario has 10 items (after quantity expansion) at 77% fill ratio.
+    // With canStackOnTop=false on Item 2 (two 5" cubes), the entire vertical
+    // column above each cube must be empty. The four 5" cubes cover the full
+    // floor plan, so there's nowhere to place remaining items without violating
+    // the constraint. Multi-box is the correct outcome here.
+    const boxes: IBox[] = [
+      { id: "1", name: "Small + Rectangle Box", width: 22.86, height: 17.78, depth: 10.16, spacing: 0, maxWeight: 25515 },
+      { id: "2", name: "Small Rectangle Box", width: 20.32, height: 15.24, depth: 12.7, spacing: 0, maxWeight: 22680 },
+      { id: "3", name: "Small + Square Box", width: 17.78, height: 17.78, depth: 17.78, spacing: 0, maxWeight: 19845 },
+      { id: "4", name: "Small Square Box", width: 15.24, height: 15.24, depth: 15.24, spacing: 0, maxWeight: 17010 },
+      { id: "5", name: "Medium box", width: 25.4, height: 25.4, depth: 25.4, spacing: 0, maxWeight: 42524.25 },
+    ];
+
+    const itemsStackable: IProduct[] = [
+      { name: "Item 1", quantity: 1, width: 10.16, height: 5.08, depth: 10.16, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any", weight: 4252.425 },
+      { name: "Item 2", quantity: 2, width: 12.7, height: 12.7, depth: 12.7, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any", weight: 5669.9 },
+      { name: "Item 3", quantity: 1, width: 5.08, height: 7.62, depth: 5.08, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any", weight: 1417.475 },
+      { name: "Item 4", quantity: 1, width: 5.08, height: 17.78, depth: 5.08, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any" },
+      { name: "Item 5", quantity: 2, width: 7.62, height: 7.62, depth: 10.16, canStackOnTop: true, canBePlacedOnTop: true, orientation: "horizontal" },
+      { name: "Item 6", quantity: 2, width: 12.7, height: 12.7, depth: 12.7, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any" },
+      { name: "Item 7", quantity: 1, width: 15.24, height: 7.62, depth: 17.78, canStackOnTop: true, canBePlacedOnTop: true, orientation: "any" },
+    ];
+
+    const itemsNoStack: IProduct[] = itemsStackable.map((item) =>
+      item.name === "Item 2"
+        ? { ...item, canStackOnTop: false }
+        : item
+    );
+
+    const resultStackable = calculatePacking(boxes, itemsStackable);
+    const resultNoStack = calculatePacking(boxes, itemsNoStack);
+
+    expect(resultStackable).toHaveLength(1);
+    // Multi-box is expected: the constraint genuinely prevents single-box packing
+    expect(resultNoStack.length).toBeGreaterThan(1);
+  });
+
   it("reduces capacity when canStackOnTop is disabled", () => {
     const box: IBox = { id: "s3", name: "Tight", width: 15, height: 25, depth: 15 };
     const products: IProduct[] = [
