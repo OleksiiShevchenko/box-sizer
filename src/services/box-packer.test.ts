@@ -441,6 +441,68 @@ describe("stacking constraints", () => {
     expect(result.fits).toBe(false);
   });
 
+  it("canStackOnTop=false does not prevent item from being placed on top of others when canBePlacedOnTop=true", () => {
+    // Regression: height inflation for canStackOnTop=false forced item to y=0,
+    // preventing valid arrangements where the item sits on top of another item.
+    const box: IBox = {
+      id: "s-regression",
+      name: "Medium Box",
+      width: 10,
+      height: 10,
+      depth: 10,
+      maxWeight: 1500,
+      spacing: 0,
+    };
+    const products: IProduct[] = [
+      {
+        name: "Item 1",
+        width: 4,
+        height: 9,
+        depth: 4,
+        canStackOnTop: false,
+        canBePlacedOnTop: true,
+        orientation: "horizontal",
+      },
+      {
+        name: "Item 2",
+        width: 9,
+        height: 2,
+        depth: 9,
+        canStackOnTop: true,
+        canBePlacedOnTop: true,
+        orientation: "horizontal",
+      },
+      {
+        name: "Item 3",
+        width: 5,
+        height: 2,
+        depth: 5,
+        canStackOnTop: true,
+        canBePlacedOnTop: true,
+        orientation: "vertical",
+      },
+    ];
+
+    // All three items should fit in a single 10x10x10 box
+    const result = calculatePacking([box], products);
+    expect(result).toHaveLength(1);
+    expect(result[0].items).toHaveLength(3);
+
+    // Verify canStackOnTop=false is still respected: nothing on top of Item 1
+    const item1 = result[0].items.find((i) => i.name.startsWith("Item 1"))!;
+    const item1Top = item1.y + item1.height;
+    for (const other of result[0].items) {
+      if (other.name.startsWith("Item 1")) continue;
+      const overlapX =
+        other.x < item1.x + item1.width && other.x + other.width > item1.x;
+      const overlapZ =
+        other.z < item1.z + item1.depth && other.z + other.depth > item1.z;
+      if (overlapX && overlapZ) {
+        expect(other.y).toBeLessThan(item1Top);
+      }
+    }
+  });
+
   it("reduces capacity when canStackOnTop is disabled", () => {
     const box: IBox = { id: "s3", name: "Tight", width: 15, height: 25, depth: 15 };
     const products: IProduct[] = [

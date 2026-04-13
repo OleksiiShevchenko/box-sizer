@@ -149,7 +149,30 @@ function normalizePackedItem(
   };
 }
 
-function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
+function hasItemStackedAbove(
+  item: PackedItem,
+  allItems: PackedItem[]
+): boolean {
+  const itemTop = item.y + item.height;
+  for (const other of allItems) {
+    if (other === item) continue;
+    // Check if other item is above and overlaps in the x-z footprint
+    const overlapX =
+      other.x < item.x + item.width && other.x + other.width > item.x;
+    const overlapZ =
+      other.z < item.z + item.depth && other.z + other.depth > item.z;
+    if (overlapX && overlapZ && other.y >= itemTop - 0.001) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function runPacker(
+  box: IBox,
+  products: IProduct[],
+  inflateOnlyCanStackOnTop: boolean
+): PackedBinResult {
   const spacing = getBoxSpacing(box);
   const effectiveWidth = box.width - spacing;
   const effectiveHeight = box.height - spacing;
@@ -179,14 +202,11 @@ function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
       product.orientation
     );
 
-    // Both stacking flags use height inflation to enforce constraints:
-    // - canStackOnTop=false: fills column so nothing can be placed above
-    // - canBePlacedOnTop=false: fills column so item must start at y=0
-    //   (BP3D sorts items by volume internally, so insertion order cannot
-    //   guarantee floor placement — height inflation is the only reliable
-    //   mechanism. As a side effect, it also prevents stacking above.)
+    // canBePlacedOnTop=false always needs inflation (forces floor placement).
+    // canStackOnTop=false uses inflation only when inflateOnlyCanStackOnTop is true.
     const needsHeightInflation =
-      product.canStackOnTop === false || product.canBePlacedOnTop === false;
+      product.canBePlacedOnTop === false ||
+      (inflateOnlyCanStackOnTop && product.canStackOnTop === false);
 
     let itemHeight = oh + spacing;
     if (needsHeightInflation) {
@@ -216,6 +236,38 @@ function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
       normalizePackedItem(item, spacing, heightOverrides)
     ),
   };
+}
+
+function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
+  const hasCanStackOnTopOnly = products.some(
+    (p) => p.canStackOnTop === false && p.canBePlacedOnTop !== false
+  );
+
+  // If any product has only canStackOnTop=false (not canBePlacedOnTop=false),
+  // first try packing without height inflation for those items.
+  // Height inflation is overly restrictive: it forces the item to y=0 and
+  // claims the full column, preventing valid arrangements where the item
+  // sits on top of another item with nothing stacked above it.
+  if (hasCanStackOnTopOnly) {
+    const relaxed = runPacker(box, products, false);
+    if (relaxed.bin && relaxed.bin.items.length === products.length) {
+      // Validate: no items are stacked on top of canStackOnTop=false items
+      const productMap = new Map(products.map((p) => [p.name, p]));
+      const violated = relaxed.packedItems.some((packed) => {
+        const product = productMap.get(packed.name);
+        return (
+          product?.canStackOnTop === false &&
+          hasItemStackedAbove(packed, relaxed.packedItems)
+        );
+      });
+      if (!violated) {
+        return relaxed;
+      }
+    }
+  }
+
+  // Fall back to full height inflation for all stacking constraints
+  return runPacker(box, products, true);
 }
 
 export function checkFit(
