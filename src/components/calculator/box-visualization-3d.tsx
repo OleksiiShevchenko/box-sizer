@@ -1,20 +1,28 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Edges, OrbitControls } from "@react-three/drei";
+import type { Group } from "three";
 import type { PackingResult, UnitSystem } from "@/types";
 import { cmToInches } from "@/types";
 
-interface BoxVisualization3DProps {
+export interface BoxVisualization3DProps {
   result: PackingResult;
   unit: UnitSystem;
-  size?: "default" | "large" | "render";
+  size?: "default" | "large" | "render" | "hero";
+  variant?: "default" | "transparent";
   interactive?: boolean;
+  autoRotate?: boolean;
+  rotationAngle?: number;
+  onAutoRotateFrame?: (rotationY: number) => void;
   cameraView?: VisualizationCameraView;
   showMeta?: boolean;
 }
 
 export type VisualizationCameraView = "perspective" | "front" | "side" | "top";
+export const HERO_CANVAS_WIDTH = 625;
+export const HERO_CANVAS_HEIGHT = 650;
 
 const COLORS = [
   "#3b82f6",
@@ -37,8 +45,54 @@ function shrinkDimension(value: number, inset: number) {
   return Math.max(value - appliedInset * 2, 0.001);
 }
 
-function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
+export function getAutoRotateSpeedRadians() {
+  return (Math.PI * 2) / 52;
+}
+
+function CameraTarget({ target }: { target: [number, number, number] }) {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    camera.lookAt(...target);
+    camera.updateProjectionMatrix();
+  }, [camera, target]);
+
+  return null;
+}
+
+function getVisualizationCameraDistance(
+  result: PackingResult,
+  size: BoxVisualization3DProps["size"] = "default"
+) {
+  const largestDimension = Math.max(result.box.width, result.box.height, result.box.depth);
+
+  if (size === "hero") {
+    return Math.max(largestDimension * 1.82, 24);
+  }
+
+  return Math.max(largestDimension * 2.2, 28);
+}
+
+function getVisualizationCameraFov(size: BoxVisualization3DProps["size"] = "default") {
+  if (size === "hero") {
+    return 37;
+  }
+
+  return 42;
+}
+
+function BoxScene({
+  result,
+  autoRotate = false,
+  rotationAngle,
+  onAutoRotateFrame,
+}: Pick<
+  BoxVisualization3DProps,
+  "result" | "autoRotate" | "rotationAngle" | "onAutoRotateFrame"
+>) {
   const { box, items } = result;
+  const groupRef = useRef<Group>(null);
+  const elapsedRef = useRef(0);
   const renderInset = Math.min(Math.max(Math.max(box.width, box.height, box.depth) * 0.002, 0.03), 0.12);
   const outlineInset = Math.min(Math.max(Math.max(box.width, box.height, box.depth) * 0.0015, 0.02), 0.08);
   const boxPosition: [number, number, number] = [
@@ -52,57 +106,81 @@ function BoxScene({ result }: Pick<BoxVisualization3DProps, "result">) {
     -box.depth / 2,
   ];
 
+  useEffect(() => {
+    if (!groupRef.current || rotationAngle == null) {
+      return;
+    }
+
+    groupRef.current.rotation.y = rotationAngle;
+  }, [rotationAngle]);
+
+  useFrame((_, delta) => {
+    if (!autoRotate || !groupRef.current || rotationAngle != null) {
+      return;
+    }
+
+    groupRef.current.rotation.y += delta * getAutoRotateSpeedRadians();
+    elapsedRef.current += delta;
+
+    if (onAutoRotateFrame && elapsedRef.current >= 0.25) {
+      onAutoRotateFrame(groupRef.current.rotation.y);
+      elapsedRef.current = 0;
+    }
+  });
+
   return (
-    <group position={centeredOffset}>
-      <mesh position={boxPosition} renderOrder={3}>
-        <boxGeometry
-          args={[
-            box.width + outlineInset * 2,
-            box.height + outlineInset * 2,
-            box.depth + outlineInset * 2,
-          ]}
-        />
-        <meshBasicMaterial transparent opacity={0} />
-        <Edges
-          color="#6b7280"
-          dashed
-          dashSize={0.45}
-          gapSize={0.25}
-          lineWidth={1}
-          renderOrder={3}
-          depthTest={false}
-        />
-      </mesh>
+    <group ref={groupRef}>
+      <group position={centeredOffset}>
+        <mesh position={boxPosition} renderOrder={3}>
+          <boxGeometry
+            args={[
+              box.width + outlineInset * 2,
+              box.height + outlineInset * 2,
+              box.depth + outlineInset * 2,
+            ]}
+          />
+          <meshBasicMaterial transparent opacity={0} />
+          <Edges
+            color="#6b7280"
+            dashed
+            dashSize={0.45}
+            gapSize={0.25}
+            lineWidth={1}
+            renderOrder={3}
+            depthTest={false}
+          />
+        </mesh>
 
-      {items.map((item, index) => {
-        const color = COLORS[index % COLORS.length];
-        const itemPosition: [number, number, number] = [
-          item.x + item.width / 2,
-          item.y + item.height / 2,
-          item.z + item.depth / 2,
-        ];
-        const renderWidth = shrinkDimension(item.width, renderInset);
-        const renderHeight = shrinkDimension(item.height, renderInset);
-        const renderDepth = shrinkDimension(item.depth, renderInset);
+        {items.map((item, index) => {
+          const color = COLORS[index % COLORS.length];
+          const itemPosition: [number, number, number] = [
+            item.x + item.width / 2,
+            item.y + item.height / 2,
+            item.z + item.depth / 2,
+          ];
+          const renderWidth = shrinkDimension(item.width, renderInset);
+          const renderHeight = shrinkDimension(item.height, renderInset);
+          const renderDepth = shrinkDimension(item.depth, renderInset);
 
-        return (
-          <mesh key={`${item.name}-${index}`} position={itemPosition} renderOrder={1}>
-            <boxGeometry args={[renderWidth, renderHeight, renderDepth]} />
-            <meshBasicMaterial color={color} transparent opacity={0.6} depthWrite={false} />
-            <Edges color={color} lineWidth={1} renderOrder={2} />
-          </mesh>
-        );
-      })}
+          return (
+            <mesh key={`${item.name}-${index}`} position={itemPosition} renderOrder={1}>
+              <boxGeometry args={[renderWidth, renderHeight, renderDepth]} />
+              <meshBasicMaterial color={color} transparent opacity={0.6} depthWrite={false} />
+              <Edges color={color} lineWidth={1} renderOrder={2} />
+            </mesh>
+          );
+        })}
+      </group>
     </group>
   );
 }
 
 export function getVisualizationCameraPosition(
   result: PackingResult,
-  view: VisualizationCameraView
+  view: VisualizationCameraView,
+  size: BoxVisualization3DProps["size"] = "default"
 ): [number, number, number] {
-  const largestDimension = Math.max(result.box.width, result.box.height, result.box.depth);
-  const cameraDistance = Math.max(largestDimension * 2.2, 28);
+  const cameraDistance = getVisualizationCameraDistance(result, size);
 
   switch (view) {
     case "front":
@@ -121,22 +199,39 @@ export function BoxVisualization3D({
   result,
   unit,
   size = "default",
+  variant = "default",
   interactive = true,
+  autoRotate = false,
+  rotationAngle,
+  onAutoRotateFrame,
   cameraView = "perspective",
   showMeta = true,
 }: BoxVisualization3DProps) {
   const { box, items } = result;
   const largestDimension = Math.max(box.width, box.height, box.depth);
-  const cameraDistance = Math.max(largestDimension * 2.2, 28);
-  const cameraPosition = getVisualizationCameraPosition(result, cameraView);
+  const cameraDistance = getVisualizationCameraDistance(result, size);
+  const cameraPosition = getVisualizationCameraPosition(result, cameraView, size);
+  const cameraFov = getVisualizationCameraFov(size);
   const containerClassName =
     size === "render"
       ? "w-[500px] shrink-0"
+      : size === "hero"
+        ? "w-full max-w-[625px] shrink-0"
       : size === "large"
         ? "w-full lg:w-full shrink-0"
         : "w-full lg:w-[360px] shrink-0";
-  const canvasHeightClassName =
-    size === "render" ? "h-[500px]" : size === "large" ? "h-[480px]" : "h-[280px]";
+  const canvasWrapperSizeClassName =
+    size === "render"
+      ? "h-[500px]"
+      : size === "hero"
+        ? "aspect-[625/650] w-full"
+        : size === "large"
+          ? "h-[480px]"
+          : "h-[280px]";
+  const isTransparentVariant = variant === "transparent";
+  const canvasWrapperClassName = isTransparentVariant
+    ? `${canvasWrapperSizeClassName} overflow-hidden`
+    : `${canvasWrapperSizeClassName} overflow-hidden rounded-lg border border-gray-200 bg-gray-50`;
 
   return (
     <div className={containerClassName}>
@@ -147,16 +242,20 @@ export function BoxVisualization3D({
         </div>
       ) : null}
 
-      <div
-        className={`${canvasHeightClassName} overflow-hidden rounded-lg border border-gray-200 bg-gray-50`}
-      >
+      <div className={canvasWrapperClassName}>
         <Canvas
-          camera={{ fov: 42, position: cameraPosition, near: 0.1, far: cameraDistance * 10 }}
+          camera={{ fov: cameraFov, position: cameraPosition, near: 0.1, far: cameraDistance * 10 }}
           dpr={[1, 1.5]}
           gl={{ antialias: true, alpha: true }}
         >
-          <color attach="background" args={["#f9fafb"]} />
-          <BoxScene result={result} />
+          {isTransparentVariant ? null : <color attach="background" args={["#f9fafb"]} />}
+          {!interactive ? <CameraTarget target={[0, 0, 0]} /> : null}
+          <BoxScene
+            result={result}
+            autoRotate={autoRotate}
+            rotationAngle={rotationAngle}
+            onAutoRotateFrame={onAutoRotateFrame}
+          />
           {interactive ? (
             <OrbitControls
               enableDamping

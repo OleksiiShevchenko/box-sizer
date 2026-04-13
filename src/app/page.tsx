@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { PackwellLogo } from "@/components/layout/packwell-logo";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
+import { HeroPackingVisualization } from "@/components/marketing/hero-packing-visualization";
 import { MarketingPricingSection } from "@/components/pricing/marketing-pricing-section";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -72,7 +73,10 @@ export default async function Home() {
         </nav>
 
         {/* Hero Section */}
-        <section className="relative overflow-hidden px-6 pt-28 pb-20 md:pt-36 md:pb-32">
+        <section
+          className="relative overflow-hidden px-6 pt-[calc(var(--spacing)*30)] pb-20 md:pt-36 md:pb-32"
+          data-testid="home-hero"
+        >
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7" data-reveal="left">
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-on-background mb-6 leading-[1.1]">
@@ -112,55 +116,11 @@ export default async function Home() {
                 Used by ecommerce brands and fulfillment teams optimizing shipping costs.
               </p>
             </div>
-            <div className="relative lg:col-span-5" data-reveal="right">
-              {/* Box Recommendation Card */}
-              <div className="relative bg-white p-8 rounded-xl shadow-[0_20px_35px_rgba(25,28,29,0.05)]" style={{ border: '1px solid rgba(0,0,0,0.04)' }}>
-                <div className="mb-[22px]">
-                  <span className="text-xs font-bold tracking-[1.2px] text-secondary mb-1 block">
-                    Optimal Recommendation
-                  </span>
-                  <h3 className="text-2xl font-bold">Box Type: Large 4(16X14X8)</h3>
-                </div>
-                <div className="rounded-lg mb-[22px] overflow-hidden relative" style={{ paddingTop: "104%" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    alt="Packwell box visualization"
-                    className="w-full h-auto absolute left-0"
-                    style={{ top: "-25%" }}
-                    src="/hero-box.png"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-[22px]">
-                  <div className="bg-surface p-[14px_16px] rounded-lg">
-                    <p className="text-xs text-on-surface-variant">
-                      Shipping Savings
-                    </p>
-                    <p className="text-xl font-bold text-secondary mt-1">-$4.22</p>
-                  </div>
-                  <div className="bg-surface p-[14px_16px] rounded-lg">
-                    <p className="text-xs text-on-surface-variant">
-                      Fill Saved
-                    </p>
-                    <p className="text-xl font-bold text-primary mt-1">62%</p>
-                  </div>
-                </div>
-                {/* JSON Block */}
-                <div className="bg-[#2e3132] p-[12px_16px_16px_16px] rounded-lg font-mono text-[10px] leading-[1.625] overflow-hidden">
-                  <div className="flex gap-2 mb-[10px]">
-                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  </div>
-                  <code className="text-[#6bff8f] whitespace-pre">{`"result": {
-  "id": "f7599914-5cdb-4f73-9b39-3d81003e7b42",
-  "name": "Large 4",
-  "width": 16,
-  "height": 14,
-  "depth": 8,
-  "dimensionalWeight": 9.7
-}`}</code>
-                </div>
-              </div>
+            <div
+              className="relative flex justify-center lg:col-span-5 lg:self-start lg:justify-end"
+              data-reveal="right"
+            >
+              <HeroPackingVisualization />
             </div>
           </div>
         </section>
