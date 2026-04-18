@@ -137,7 +137,7 @@ export default async function Home() {
               <ul className="space-y-6">
                 <li className="flex gap-4">
                   <span
-                    className="material-symbols-outlined text-error"
+                    className="material-symbols-outlined pt-[3px] text-error"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     error
@@ -152,7 +152,7 @@ export default async function Home() {
                 </li>
                 <li className="flex gap-4">
                   <span
-                    className="material-symbols-outlined text-error"
+                    className="material-symbols-outlined pt-[3px] text-error"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     error
@@ -167,7 +167,7 @@ export default async function Home() {
                 </li>
                 <li className="flex gap-4">
                   <span
-                    className="material-symbols-outlined text-error"
+                    className="material-symbols-outlined pt-[3px] text-error"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     error
