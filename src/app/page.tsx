@@ -4,6 +4,7 @@ import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
 import { HeroPackingVisualization } from "@/components/marketing/hero-packing-visualization";
 import { MarketingPricingSection } from "@/components/pricing/marketing-pricing-section";
+import { InstantScrollLink } from "@/components/layout/instant-scroll-link";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -16,7 +17,7 @@ export default async function Home() {
 
   return (
     <ScrollReveal>
-      <div className="bg-surface font-sans text-on-surface antialiased">
+      <div className="overflow-x-clip bg-surface font-sans text-on-surface antialiased">
         {/* Navigation */}
         <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl shadow-sm">
           <div className="flex justify-between items-center max-w-7xl mx-auto px-6 py-4">
@@ -79,10 +80,11 @@ export default async function Home() {
         >
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7" data-reveal="left">
-              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-on-background mb-6 leading-[1.1]">
-                Stop shipping air.{" "}
-                <br />
-                <span className="text-primary">Pack smarter.</span>
+              <h1 className="mb-6 text-[1.85rem] font-extrabold leading-[1.02] tracking-[-0.04em] text-on-background min-[360px]:text-[2.15rem] sm:text-5xl md:text-7xl">
+                <span className="block whitespace-nowrap">Stop shipping air.</span>
+                <span className="block whitespace-nowrap text-primary">
+                  Pack smarter.
+                </span>
               </h1>
               <p className="text-xl text-on-surface-variant max-w-xl mb-10 leading-relaxed">
                 Calculate the exact box for every order before it ships. Charge
@@ -135,7 +137,7 @@ export default async function Home() {
               <ul className="space-y-6">
                 <li className="flex gap-4">
                   <span
-                    className="material-symbols-outlined text-error"
+                    className="material-symbols-outlined pt-[3px] text-error"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     error
@@ -150,7 +152,7 @@ export default async function Home() {
                 </li>
                 <li className="flex gap-4">
                   <span
-                    className="material-symbols-outlined text-error"
+                    className="material-symbols-outlined pt-[3px] text-error"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     error
@@ -165,7 +167,7 @@ export default async function Home() {
                 </li>
                 <li className="flex gap-4">
                   <span
-                    className="material-symbols-outlined text-error"
+                    className="material-symbols-outlined pt-[3px] text-error"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     error
@@ -373,78 +375,8 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Savings Calculator Section */}
-        <section className="py-24 md:py-32 px-6 bg-surface-container-low">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div data-reveal="left">
-              <span className="text-sm font-bold text-[#64748B]">
-                Example savings
-              </span>
-              <h2 className="text-[42px] font-extrabold tracking-[-1px] mt-2 mb-5 leading-[1.05] text-[#1E293B]">
-                How much can you save?
-              </h2>
-              <p className="text-[17px] text-[#475569] mb-8 leading-relaxed">
-                Reduce shipping costs by optimizing box selection and eliminating wasted space.
-              </p>
-              <div className="bg-white border border-[#E2E8F0] rounded-[18px] p-5 mb-6">
-                <h4 className="font-bold text-[17px] text-[#1E293B] mb-3">If you ship 1,000 orders per month:</h4>
-                <ul className="space-y-2 text-[#64748B] text-[15px]">
-                  <li>• Save $2–$5 per shipment</li>
-                  <li>• Reduce dimensional weight charges</li>
-                  <li>• Eliminate oversized boxes</li>
-                </ul>
-              </div>
-              <div className="bg-[#F8FAFC] border border-[#DCFCE7] rounded-[18px] p-5">
-                <span className="text-[13px] font-bold text-[#475569]">Result</span>
-                <p className="text-[30px] font-extrabold text-[#15803D] leading-[1.05] mt-1">$2,000–$5,000 saved per month</p>
-              </div>
-            </div>
-            <div data-reveal="right">
-              <div className="bg-white border border-[#E2E8F0] rounded-[20px] p-6 flex flex-col gap-5 shadow-[0_12px_32px_-10px_rgba(15,23,42,0.06)]">
-                {/* Card Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[13px] font-bold text-[#64748B]">Order</span>
-                    <h3 className="text-[20px] font-extrabold text-[#1E293B]">Hoodie + Mug + Notebook</h3>
-                  </div>
-                  <div className="w-10 h-10 bg-[#F8FAFC] rounded-[10px] flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[#2563EB] text-lg">package_2</span>
-                  </div>
-                </div>
-                {/* Compare Row */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="border border-[#E2E8F0] rounded-[16px] p-[18px] flex flex-col gap-3">
-                    <h4 className="text-[18px] font-extrabold text-[#1E293B]">Without Packwell</h4>
-                    <p className="text-[16px] text-[#475569]">Box: Large</p>
-                    <p className="text-[18px] font-extrabold text-[#DC2626]">Shipping: $14.50</p>
-                  </div>
-                  <div className="bg-[#F6FBF7] border border-[#D1FAE5] rounded-[16px] p-[18px] flex flex-col gap-3">
-                    <h4 className="text-[18px] font-extrabold text-[#166534]">With Packwell</h4>
-                    <p className="text-[16px] text-[#166534]">Box: Medium</p>
-                    <p className="text-[18px] font-extrabold text-[#16A34A]">Shipping: $10.20</p>
-                  </div>
-                </div>
-                {/* Savings Band */}
-                <div className="bg-[#1F2937] rounded-[16px] px-[18px] py-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-[#16A34A] rounded-[10px] flex items-center justify-center">
-                      <span className="material-symbols-outlined text-white text-lg">paid</span>
-                    </div>
-                    <span className="text-[15px] font-bold text-[#CBD5E1]">Savings</span>
-                  </div>
-                  <span className="text-[24px] font-extrabold text-[#4ADE80]">$4.30 per shipment</span>
-                </div>
-                {/* Footnote */}
-                <p className="text-[12px] text-[#94A3B8]">
-                  Estimates based on typical ecommerce shipments
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* How It Works Section */}
-        <section id="how-it-works" className="py-24 md:py-32 px-6 bg-[#F8F9FA]">
+        <section id="how-it-works" className="px-6 pt-24 pb-32 md:pt-32 md:pb-40 bg-[#F8F9FA]">
           <div className="max-w-[1232px] mx-auto flex flex-col items-center gap-20">
             <h2
               className="text-[48px] font-extrabold tracking-[-1.2px] leading-none text-center text-[#1E293B]"
@@ -453,10 +385,10 @@ export default async function Home() {
               How Packwell works
             </h2>
             {/* Steps */}
-            <div className="relative w-full h-44" data-reveal="up">
+            <div className="relative w-full" data-reveal="up">
               {/* Connector line */}
               <div className="hidden md:block absolute top-12 left-[13%] right-[13%] h-0.5 bg-[#E2E8F0]"></div>
-              <div className="grid grid-cols-1 md:grid-cols-4 w-full h-full">
+              <div className="grid w-full grid-cols-1 gap-8 md:h-44 md:grid-cols-4 md:gap-0">
                 {[
                   { num: "1", icon: "shopping_cart", title: "Provide items\nin the order" },
                   { num: "2", icon: "pageview", title: "Packwell calculates\nbest box & layout" },
@@ -473,35 +405,6 @@ export default async function Home() {
                 ))}
               </div>
             </div>
-            {/* Flow Diagram */}
-            <div
-              className="bg-[#EDEEEF] rounded-[16px] p-8 flex flex-wrap items-center justify-center gap-6 w-full max-w-[960px]"
-              data-reveal="up"
-            >
-              <div className="flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-[24px] text-[#64748B]">shopping_cart</span>
-                <span className="text-[14px] font-semibold text-[#1E293B]">Cart</span>
-              </div>
-              <span className="material-symbols-outlined text-[20px] text-[#64748B] opacity-30">chevron_right</span>
-              <div className="bg-[#2563EB] text-white px-4 py-2 rounded-lg text-[14px] font-bold">
-                Packwell API
-              </div>
-              <span className="material-symbols-outlined text-[20px] text-[#64748B] opacity-30">chevron_right</span>
-              <div className="flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-[24px] text-[#64748B]">package_2</span>
-                <span className="text-[14px] font-semibold text-[#1E293B]">Box</span>
-              </div>
-              <span className="material-symbols-outlined text-[20px] text-[#64748B] opacity-30">chevron_right</span>
-              <div className="flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-[24px] text-[#64748B]">3d_rotation</span>
-                <span className="text-[14px] font-semibold text-[#1E293B]">3D</span>
-              </div>
-              <span className="material-symbols-outlined text-[20px] text-[#64748B] opacity-30">chevron_right</span>
-              <div className="flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-[24px] text-[#16A34A]">attach_money</span>
-                <span className="text-[14px] font-semibold text-[#1E293B]">Cost</span>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -509,7 +412,7 @@ export default async function Home() {
         <section id="features" className="px-5 py-20 sm:px-8 sm:py-24 lg:px-14 lg:py-28">
           <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,450px)] lg:gap-16 xl:gap-20">
             {/* Left column */}
-            <div className="flex flex-col gap-10 lg:gap-12">
+            <div className="min-w-0 flex flex-col gap-10 lg:gap-12">
               <div data-reveal="left" className="max-w-[720px]">
                 <h2 className="mb-3 text-[34px] font-extrabold leading-[1.02] tracking-[-0.9px] text-[#1E293B] sm:text-[38px] lg:text-[42px]">
                   Everything you need to ship smarter
@@ -566,7 +469,7 @@ export default async function Home() {
               </div>
             </div>
             {/* Right column - API response */}
-            <div className="flex flex-col justify-start lg:pt-4" data-reveal="right">
+            <div className="min-w-0 flex flex-col justify-start lg:pt-4" data-reveal="right">
               <div className="overflow-hidden rounded-[12px] bg-[#2e3132] shadow-[0_25px_44px_-12px_rgba(0,0,0,0.25)] lg:sticky lg:top-24">
                 {/* Header bar */}
                 <div className="flex flex-col gap-2 border-b border-white/[0.01] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -579,7 +482,7 @@ export default async function Home() {
                 </div>
                 {/* JSON body */}
                 <div className="overflow-x-auto p-4 sm:p-6">
-                  <pre className="min-w-[300px] font-mono text-[11px] leading-[1.5] whitespace-pre-wrap text-[#f0f1f2] sm:text-[12px] sm:leading-[1.33]">{`{
+                  <pre className="min-w-0 break-words font-mono text-[11px] leading-[1.5] whitespace-pre-wrap text-[#f0f1f2] sm:text-[12px] sm:leading-[1.33]">{`{
   "id": "fcaf6650-e07f-4768-b5c7-11d6991e73be",
   "units": {
      "unitSystem": "cm",
@@ -595,7 +498,7 @@ export default async function Home() {
         "height": 20,
         "depth": 45,
         "spacing": 0.25,
-        "maxWeight": 1.3,
+        "maxWeight": 1300,
         "dimensionalWeight": 6
      },
      "visualization": {
@@ -618,9 +521,9 @@ export default async function Home() {
         {/* CTA Section */}
         <section className="py-24 md:py-32 px-6">
           <div className="max-w-[1232px] mx-auto">
-            <div className="bg-[#DBE1FF] rounded-[24px] px-16 py-16 relative overflow-hidden flex flex-col md:flex-row items-center justify-between">
-              <div className="relative z-10 max-w-[700px] flex flex-col gap-6" data-reveal="left">
-                <h2 className="text-[48px] font-bold text-[#0F172A] leading-none">
+            <div className="relative flex flex-col items-start gap-12 overflow-hidden rounded-[24px] bg-[#DBE1FF] px-6 py-10 sm:px-10 sm:py-12 md:flex-row md:items-center md:justify-between md:gap-8 md:px-16 md:py-16">
+              <div className="relative z-10 flex max-w-[700px] flex-col gap-6" data-reveal="left">
+                <h2 className="text-[42px] font-bold leading-none text-[#0F172A] sm:text-[48px]">
                   Start packing smarter today.
                 </h2>
                 <p className="text-[18px] text-[#475569] leading-[1.56] max-w-[620px]">
@@ -628,15 +531,15 @@ export default async function Home() {
                   wasted packaging. Packwell picks the right carton for every order
                   automatically.
                 </p>
-                <div className="flex gap-4 pt-4">
+                <div className="flex w-full flex-col gap-4 pt-4 sm:w-auto sm:flex-row">
                   <Link
                     href="/signup"
-                    className="bg-[#2563EB] text-white px-8 py-4 rounded-lg text-[16px] font-bold hover:bg-[#1d4ed8] transition-colors"
+                    className="rounded-lg bg-[#2563EB] px-8 py-4 text-center text-[16px] font-bold whitespace-nowrap text-white transition-colors hover:bg-[#1d4ed8]"
                   >
                     Start free
                   </Link>
                   <DemoBookingButton
-                    className="bg-white text-[#1E293B] px-6 py-4 rounded-lg text-[16px] font-bold border border-[#E2E8F0] hover:bg-slate-50 transition-colors flex items-center gap-2"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-6 py-4 text-center text-[16px] font-bold whitespace-nowrap text-[#1E293B] transition-colors hover:bg-slate-50"
                   >
                     Contact Sales
                   </DemoBookingButton>
@@ -644,8 +547,9 @@ export default async function Home() {
               </div>
               {/* Recommended Box Card */}
               <div
-                className="relative z-10 bg-white p-6 rounded-[16px] w-[292px] shrink-0 flex flex-col gap-3 rotate-[4deg] shadow-[0_4px_12px_rgba(0,0,0,0.06),0_18px_34px_-18px_rgba(0,0,0,0.08)]"
+                className="relative z-10 mt-2 flex w-full max-w-[292px] shrink-0 flex-col gap-3 self-center rounded-[16px] bg-white p-6 rotate-0 shadow-[0_4px_12px_rgba(0,0,0,0.06),0_18px_34px_-18px_rgba(0,0,0,0.08)] md:mt-0 md:self-auto md:rotate-[4deg]"
                 data-reveal="right"
+                data-testid="cta-recommended-box-card"
               >
                 <span className="text-[13px] font-bold text-[#64748B] leading-[1.33]">Recommended Box</span>
                 <p className="text-[23px] font-extrabold text-[#0F172A] leading-[1.2]">Medium (14&times;10&times;8)</p>
@@ -745,20 +649,20 @@ export default async function Home() {
               </h5>
               <ul className="space-y-3">
                 <li>
-                  <Link
+                  <InstantScrollLink
                     href="/privacy-policy"
                     className="text-slate-500 hover:text-slate-900 transition-all duration-300 text-sm"
                   >
                     Privacy Policy
-                  </Link>
+                  </InstantScrollLink>
                 </li>
                 <li>
-                  <Link
+                  <InstantScrollLink
                     href="/terms-of-service"
                     className="text-slate-500 hover:text-slate-900 transition-all duration-300 text-sm"
                   >
                     Terms of Service
-                  </Link>
+                  </InstantScrollLink>
                 </li>
               </ul>
             </div>
