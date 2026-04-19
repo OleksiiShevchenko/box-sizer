@@ -570,7 +570,7 @@ describe("stacking constraints", () => {
     expect(result.packedItems).toHaveLength(0);
   });
 
-  it("8 items (without Item6) fit in medium box when Item2 has canStackOnTop=false", () => {
+  it("8 items (without Item6) no longer fit in one medium box when Item2 has canStackOnTop=false", () => {
     const mediumBox: IBox = {
       id: "5",
       name: "Medium box",
@@ -593,7 +593,8 @@ describe("stacking constraints", () => {
     ];
 
     const result = checkFit(mediumBox, products);
-    expect(result.fits).toBe(true);
+    expect(result.fits).toBe(false);
+    expect(result.packedItems).toHaveLength(0);
   });
 
   it("falls back to multi-box when the only single-box layout depends on unstable support", () => {

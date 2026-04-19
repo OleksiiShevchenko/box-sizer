@@ -247,11 +247,6 @@ function isPackedLayoutStable(
   });
 }
 
-type CanStackOnTopInflation = "none" | "partial" | "full";
-
-function getMinOtherItemHeight(
-  products: IProduct[],
-  spacing: number
 function footprintsOverlap(
   aPosition: BinPackingPosition,
   aDimensions: BinPackingDimensions,
@@ -405,9 +400,6 @@ function runPacker(box: IBox, products: IProduct[]): PackedBinResult {
 
 function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
   const spacing = getBoxSpacing(box);
-  const hasCanStackOnTopOnly = products.some(
-    (p) => p.canStackOnTop === false && p.canBePlacedOnTop !== false
-  );
   const isValidResult = ({ bin, packedItems }: PackedBinResult) =>
     Boolean(
       bin &&
@@ -415,31 +407,8 @@ function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
         isPackedLayoutStable(packedItems, products, spacing)
     );
 
-  if (!hasCanStackOnTopOnly) {
-    const packed = runPacker(box, products, "full");
-    return isValidResult(packed) ? packed : { bin: null, packedItems: [] };
-  }
-
-  // Strategy 1: No inflation for canStackOnTop — allows the item to be
-  // placed on top of others. If no stacking violations, this is ideal.
-  const relaxed = runPacker(box, products, "none");
-  if (relaxed.bin && relaxed.bin.items.length === products.length && isValidResult(relaxed)) {
-    return relaxed;
-  }
-
-  // Strategy 2: Partial inflation — inflate canStackOnTop=false items just
-  // enough to prevent any other item from fitting above, while wasting less
-  // space than full inflation. This is guaranteed to satisfy the constraint
-  // without needing post-validation.
-  const partial = runPacker(box, products, "partial");
-  if (partial.bin && partial.bin.items.length === products.length && isValidResult(partial)) {
-    return partial;
-  }
-
-  // Strategy 3: Full inflation (original behavior)
-  const full = runPacker(box, products, "full");
-  return isValidResult(full) ? full : { bin: null, packedItems: [] };
-  return runPacker(box, products);
+  const packed = runPacker(box, products);
+  return isValidResult(packed) ? packed : { bin: null, packedItems: [] };
 }
 
 export function checkFit(
