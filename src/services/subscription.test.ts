@@ -74,7 +74,12 @@ describe("subscription service", () => {
     });
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("creates a starter subscription row when one is missing", async () => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-03-19T12:00:00.000Z"));
     const createdAt = new Date("2026-03-19T12:00:00.000Z");
     prismaMock.user.findUniqueOrThrow.mockResolvedValue({ createdAt } as never);
     prismaMock.subscription.findUnique.mockResolvedValue(null);
@@ -202,6 +207,7 @@ describe("subscription service", () => {
   });
 
   it("creates a Stripe customer against an existing starter subscription", async () => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-03-19T12:00:00.000Z"));
     const currentPeriodStart = new Date("2026-03-19T12:00:00.000Z");
     const currentPeriodEnd = new Date("2026-04-19T12:00:00.000Z");
     prismaMock.user.findUniqueOrThrow

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import posthog from "posthog-js";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createBox, updateBox } from "@/actions/box-actions";
@@ -72,9 +73,13 @@ function getDisplayDimension(value: number, unit: "cm" | "in"): string {
 }
 
 export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
+  const idPrefix = useId();
+  const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
   const isEditMode = Boolean(box);
+
+  const fieldId = (name: string) => `${idPrefix}-${name}`;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -122,6 +127,7 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
       posthog.capture("box_created", { unit });
       form.reset();
     }
+    router.refresh();
     onSuccess?.();
   }
 
@@ -134,7 +140,7 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
       )}
 
       <Input
-        id="box-name"
+        id={fieldId("box-name")}
         name="boxName"
         label="Box Name"
         placeholder="e.g., Small Box"
@@ -144,7 +150,7 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Input
-          id="width"
+          id={fieldId("width")}
           name="width"
           type="number"
           step="0.1"
@@ -153,7 +159,7 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
           error={fieldErrors.width}
         />
         <Input
-          id="height"
+          id={fieldId("height")}
           name="height"
           type="number"
           step="0.1"
@@ -162,7 +168,7 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
           error={fieldErrors.height}
         />
         <Input
-          id="depth"
+          id={fieldId("depth")}
           name="depth"
           type="number"
           step="0.1"
@@ -173,7 +179,7 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
       </div>
 
       <Input
-        id="spacing"
+        id={fieldId("spacing")}
         name="spacing"
         type="number"
         step="0.1"
@@ -183,7 +189,7 @@ export function BoxForm({ unit, box, onSuccess }: BoxFormProps) {
       />
 
       <Input
-        id="maxWeight"
+        id={fieldId("maxWeight")}
         name="maxWeight"
         type="number"
         step="0.1"
