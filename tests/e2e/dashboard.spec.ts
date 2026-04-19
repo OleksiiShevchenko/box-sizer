@@ -1,76 +1,16 @@
 import { test, expect } from "@playwright/test";
 import { prisma } from "../../src/lib/prisma";
-import { ensurePackwellE2ESeeded } from "../../scripts/seed-packwell-e2e";
-import { PACKWELL_E2E_EMAIL, PACKWELL_ITEMS } from "../fixtures/packwell-core";
-import { AUTH_STATE_PATH } from "./auth-state";
-
-test.use({ storageState: AUTH_STATE_PATH });
+import { PACKWELL_ITEMS } from "../fixtures/packwell-core";
+import { createIsolatedTestUser, loginAs, QA_BOXES } from "./helpers/test-user";
 test.describe.configure({ mode: "serial" });
 
-async function getSeededUser() {
-  return prisma.user.findUniqueOrThrow({
-    where: { email: PACKWELL_E2E_EMAIL },
-    include: { boxes: true },
-  });
-}
-
-async function setupEmptyDashboardState() {
-  const { userId } = await ensurePackwellE2ESeeded();
-
-  await prisma.subscription.update({
-    where: { userId },
-    data: { tier: "starter" },
-  });
-
-  await prisma.box.deleteMany({
-    where: { userId },
-  });
-}
-
-async function setupPopulatedDashboardState() {
-  const { userId } = await ensurePackwellE2ESeeded();
-
-  await prisma.subscription.update({
-    where: { userId },
-    data: { tier: "starter" },
-  });
-
-  await prisma.calculationUsage.create({
-    data: { userId },
-  });
-
-  const user = await getSeededUser();
-  const defaultBox = user.boxes[1];
-
-  if (!defaultBox) {
-    throw new Error("Expected seeded dashboard verification box");
-  }
-
-  await Promise.all(
-    Array.from({ length: 12 }, (_, index) =>
-      prisma.packingPlan.create({
-        data: {
-          userId,
-          name: `Dashboard Plan ${String(index + 1).padStart(2, "0")}`,
-          boxId: defaultBox.id,
-          dimensionalWeight: 20 + index,
-          items: {
-            create: [
-              {
-                ...PACKWELL_ITEMS.base12(),
-              },
-            ],
-          },
-        },
-      })
-    )
-  );
-}
-
 test("renders the empty packing plans dashboard state", async ({ page }) => {
-  await setupEmptyDashboardState();
+  const credentials = await createIsolatedTestUser({
+    prefix: "dashboard-empty",
+    boxes: [],
+  });
 
-  await page.goto("/dashboard");
+  await loginAs(page, credentials);
 
   await expect(page.locator("h1", { hasText: "Packing plans" })).toBeVisible();
   await expect(page.getByText("Current Period Usage")).toBeVisible();
@@ -87,9 +27,34 @@ test("renders the empty packing plans dashboard state", async ({ page }) => {
 });
 
 test("renders the populated packing plans dashboard state", async ({ page }) => {
-  await setupPopulatedDashboardState();
+  const credentials = await createIsolatedTestUser({
+    prefix: "dashboard-populated",
+    boxes: [QA_BOXES[1]!],
+    usageCount: 1,
+  });
+  const defaultBox = await prisma.box.findFirstOrThrow({
+    where: { userId: credentials.userId, name: QA_BOXES[1]!.name },
+  });
 
-  await page.goto("/dashboard");
+  for (let index = 0; index < 12; index += 1) {
+    await prisma.packingPlan.create({
+      data: {
+        userId: credentials.userId,
+        name: `Dashboard Plan ${String(index + 1).padStart(2, "0")}`,
+        boxId: defaultBox.id,
+        dimensionalWeight: 20 + index,
+        items: {
+          create: [
+            {
+              ...PACKWELL_ITEMS.base12(),
+            },
+          ],
+        },
+      },
+    });
+  }
+
+  await loginAs(page, credentials);
 
   await expect(page.getByText("Current Period Usage")).toBeVisible();
   await expect(page.getByText("1 / 50 calculations used")).toBeVisible();
@@ -97,8 +62,13 @@ test("renders the populated packing plans dashboard state", async ({ page }) => 
   await expect(page.getByRole("button", { name: "New Packing Plan" })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Packing plan" })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Dimensional weight" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Dashboard Plan 12" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Dashboard Plan \d{2}/ })).toHaveCount(10);
   await expect(page.getByText("Showing 1-10 of 12 packing plans")).toBeVisible();
   await expect(page.getByRole("link", { name: "2", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Next", exact: true })).toBeVisible();
+
+  await page.getByRole("link", { name: "Next", exact: true }).click();
+  await expect(page).toHaveURL(/page=2/);
+  await expect(page.getByRole("link", { name: /Dashboard Plan \d{2}/ })).toHaveCount(2);
+  await expect(page.getByText("Showing 11-12 of 12 packing plans")).toBeVisible();
 });

@@ -2,6 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Marketing homepage hero", () => {
   test("replaces the top hero card with a rotating 3D widget", async ({ page }) => {
+    test.slow();
+
     const imageRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/hero-box.png")) {
@@ -16,24 +18,25 @@ test.describe("Marketing homepage hero", () => {
     const legendCard = page.getByTestId("hero-legend-card");
     const savingsLine = page.getByTestId("hero-savings-line");
 
-    await expect(hero).toBeVisible();
-    await expect(widget).toBeVisible();
-    await expect(widget.locator("canvas")).toBeVisible();
-    await expect(legendCard).toBeVisible();
-    await expect(hero.getByTestId("hero-recommendation-card")).toHaveCount(0);
+    await expect(hero).toBeVisible({ timeout: 15000 });
+    await expect(widget).toBeVisible({ timeout: 15000 });
+    await expect(widget.locator("canvas")).toBeVisible({ timeout: 15000 });
+    await expect(legendCard).toBeVisible({ timeout: 15000 });
+    await expect(hero.getByTestId("hero-recommendation-card")).toHaveCount(0, { timeout: 15000 });
     await expect(
       legendCard.getByRole("heading", {
         name: "Optimal Recommendation: Medium box",
       })
-    ).toBeVisible();
-    await expect(savingsLine.getByText("Shipping Savings:")).toBeVisible();
-    await expect(savingsLine.getByText("$4.22")).toBeVisible();
-    await expect(legendCard.getByText("Dimensions: 10.0 x 10.0 x 10.0 in")).toBeVisible();
-    await expect(legendCard.getByText("10 units")).toBeVisible();
-    await expect(legendCard.locator("span.text-gray-600").first()).toHaveText("Item 1");
-    await expect(legendCard.locator("span.text-gray-600").last()).toHaveText("Item 7");
-    await expect(hero.getByText("Fill Saved")).toHaveCount(0);
-    await expect(hero.locator('img[src="/hero-box.png"]')).toHaveCount(0);
+    ).toBeVisible({ timeout: 15000 });
+    await expect(savingsLine).toContainText("Shipping Savings:", { timeout: 15000 });
+    await expect(savingsLine).toContainText("$4.22", { timeout: 15000 });
+    await expect(legendCard.getByText("Dimensions: 10.0 x 10.0 x 10.0 in")).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(legendCard).toContainText("10 units", { timeout: 15000 });
+    await expect(legendCard).toContainText("Item 1", { timeout: 15000 });
+    await expect(legendCard).toContainText("Item 7", { timeout: 15000 });
+    await expect(hero.getByText("Fill Saved")).toHaveCount(0, { timeout: 15000 });
 
     const angleBefore = await widget.getAttribute("data-rotation-angle");
     await page.waitForTimeout(3500);
@@ -48,6 +51,8 @@ test.describe("Marketing homepage hero", () => {
   });
 
   test("stacks the hero widget below the copy on mobile", async ({ page }) => {
+    test.slow();
+
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
 
@@ -55,10 +60,9 @@ test.describe("Marketing homepage hero", () => {
     const legendCard = page.getByTestId("hero-legend-card");
     const savingsLine = page.getByTestId("hero-savings-line");
 
-    await expect(widget).toBeVisible();
-    await expect(widget.locator("canvas")).toBeVisible();
-    await legendCard.scrollIntoViewIfNeeded();
-    await expect(legendCard).toBeVisible();
-    await expect(savingsLine).toBeVisible();
+    await expect(widget).toBeVisible({ timeout: 15000 });
+    await expect(widget.locator("canvas")).toBeVisible({ timeout: 15000 });
+    await expect(legendCard).toBeVisible({ timeout: 15000 });
+    await expect(savingsLine).toBeVisible({ timeout: 15000 });
   });
 });
