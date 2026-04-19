@@ -124,4 +124,25 @@ describe("DemoBookingButton", () => {
       expect(initPopupWidget).toHaveBeenCalledWith({ url: CALENDLY_DEMO_URL });
     });
   });
+
+  it("calls the provided onClick handler before opening Calendly", async () => {
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+    const initPopupWidget = jest.fn();
+
+    window.Calendly = { initPopupWidget };
+
+    render(
+      <DemoBookingButton className="demo-trigger" onClick={onClick}>
+        Book a Demo
+      </DemoBookingButton>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Book a Demo" }));
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(initPopupWidget).toHaveBeenCalledWith({ url: CALENDLY_DEMO_URL });
+    });
+  });
 });

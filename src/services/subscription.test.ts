@@ -76,6 +76,7 @@ describe("subscription service", () => {
 
   it("creates a starter subscription row when one is missing", async () => {
     const createdAt = new Date("2026-03-19T12:00:00.000Z");
+    const expectedPeriod = getStarterUsagePeriod(createdAt);
     prismaMock.user.findUniqueOrThrow.mockResolvedValue({ createdAt } as never);
     prismaMock.subscription.findUnique.mockResolvedValue(null);
     prismaMock.subscription.create.mockResolvedValue({
@@ -87,8 +88,8 @@ describe("subscription service", () => {
       tier: "starter",
       billingInterval: null,
       status: "active",
-      currentPeriodStart: createdAt,
-      currentPeriodEnd: new Date("2026-04-19T12:00:00.000Z"),
+      currentPeriodStart: expectedPeriod.start,
+      currentPeriodEnd: expectedPeriod.end,
       cancelAtPeriodEnd: false,
       createdAt,
       updatedAt: createdAt,
@@ -97,16 +98,16 @@ describe("subscription service", () => {
     await expect(getUserSubscription("user-1")).resolves.toMatchObject({
       userId: "user-1",
       tier: "starter",
-      currentPeriodStart: createdAt,
-      currentPeriodEnd: new Date("2026-04-19T12:00:00.000Z"),
+      currentPeriodStart: expectedPeriod.start,
+      currentPeriodEnd: expectedPeriod.end,
     });
 
     expect(prismaMock.subscription.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         userId: "user-1",
         stripeCustomerId: null,
-        currentPeriodStart: createdAt,
-        currentPeriodEnd: new Date("2026-04-19T12:00:00.000Z"),
+        currentPeriodStart: expectedPeriod.start,
+        currentPeriodEnd: expectedPeriod.end,
       }),
     });
   });
@@ -202,10 +203,10 @@ describe("subscription service", () => {
   });
 
   it("creates a Stripe customer against an existing starter subscription", async () => {
-    const currentPeriodStart = new Date("2026-03-19T12:00:00.000Z");
-    const currentPeriodEnd = new Date("2026-04-19T12:00:00.000Z");
+    const createdAt = new Date("2026-03-19T12:00:00.000Z");
+    const currentPeriod = getStarterUsagePeriod(createdAt);
     prismaMock.user.findUniqueOrThrow
-      .mockResolvedValueOnce({ createdAt: currentPeriodStart } as never)
+      .mockResolvedValueOnce({ createdAt } as never)
       .mockResolvedValueOnce({
         email: "alex@example.com",
         name: "Alex",
@@ -219,11 +220,11 @@ describe("subscription service", () => {
       tier: "starter",
       billingInterval: null,
       status: "active",
-      currentPeriodStart,
-      currentPeriodEnd,
+      currentPeriodStart: currentPeriod.start,
+      currentPeriodEnd: currentPeriod.end,
       cancelAtPeriodEnd: false,
-      createdAt: currentPeriodStart,
-      updatedAt: currentPeriodStart,
+      createdAt,
+      updatedAt: createdAt,
     } as never);
     stripeCustomerCreate.mockResolvedValue({ id: "cus_new" } as never);
     prismaMock.subscription.update.mockResolvedValue({
@@ -235,11 +236,11 @@ describe("subscription service", () => {
       tier: "starter",
       billingInterval: null,
       status: "active",
-      currentPeriodStart,
-      currentPeriodEnd,
+      currentPeriodStart: currentPeriod.start,
+      currentPeriodEnd: currentPeriod.end,
       cancelAtPeriodEnd: false,
-      createdAt: currentPeriodStart,
-      updatedAt: currentPeriodStart,
+      createdAt,
+      updatedAt: createdAt,
     } as never);
 
     const result = await getOrCreateStripeCustomer("user-1");
