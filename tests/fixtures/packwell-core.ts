@@ -244,7 +244,7 @@ export const CORE_SELECTION_CASES: PackingCase[] = [
       buildProduct("Topper", 10, 8, 10, 200),
     ],
     expected: {
-      boxNames: ["QA-04 Mailer 24x12x18"],
+      boxNames: ["QA-03 Tall 10x24x10"],
       floorItemNames: ["Floor10"],
     },
   },
@@ -270,7 +270,7 @@ export const CORE_SELECTION_CASES: PackingCase[] = [
       }),
     ],
     expected: {
-      boxNames: ["QA-01 Flat 16x6x16"],
+      boxNames: ["QA-03 Tall 10x24x10"],
       floorItemNames: ["Cube10"],
       preservedHeights: { Cube10: 10 },
     },

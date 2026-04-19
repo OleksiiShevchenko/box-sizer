@@ -10,15 +10,12 @@ import {
 
 const { Packer, Bin, Item } = BP3D;
 const BINPACKING_SCALE_FACTOR = 10 ** 5;
+const STACK_EPSILON = 1;
 
-type BinPackingItem = {
-  name: string;
-  width: number;
-  height: number;
-  depth: number;
-  position: number[];
-  getDimension(): [number, number, number];
-};
+type BinPackingPosition = [number, number, number];
+type BinPackingDimensions = [number, number, number];
+type BinPackingItem = InstanceType<typeof Item>;
+type BinPackingBin = InstanceType<typeof Bin>;
 
 type PackedBinResult = {
   bin: InstanceType<typeof Bin> | null;
@@ -125,81 +122,127 @@ function getDimensionalWeight(box: IBox): number {
   return Math.ceil((box.width * box.height * box.depth) / 5000);
 }
 
-function normalizePackedItem(
-  item: BinPackingItem,
-  spacing: number,
-  heightOverrides?: Map<string, number>
-): PackedItem {
-  const [inflatedWidth, inflatedHeight, inflatedDepth] = item.getDimension();
-
-  const originalHeight = heightOverrides?.get(item.name);
-  const height =
-    originalHeight != null
-      ? originalHeight
-      : Math.max(inflatedHeight / BINPACKING_SCALE_FACTOR - spacing, 0);
+function normalizePackedItem(item: BinPackingItem, spacing: number): PackedItem {
+  const [width, height, depth] = item.getDimension();
 
   return {
     name: item.name,
-    width: Math.max(inflatedWidth / BINPACKING_SCALE_FACTOR - spacing, 0),
-    height,
-    depth: Math.max(inflatedDepth / BINPACKING_SCALE_FACTOR - spacing, 0),
+    width: Math.max(width / BINPACKING_SCALE_FACTOR - spacing, 0),
+    height: Math.max(height / BINPACKING_SCALE_FACTOR - spacing, 0),
+    depth: Math.max(depth / BINPACKING_SCALE_FACTOR - spacing, 0),
     x: (item.position?.[0] ?? 0) / BINPACKING_SCALE_FACTOR + spacing,
     y: (item.position?.[1] ?? 0) / BINPACKING_SCALE_FACTOR + spacing,
     z: (item.position?.[2] ?? 0) / BINPACKING_SCALE_FACTOR + spacing,
   };
 }
 
-function hasItemStackedAbove(
-  item: PackedItem,
-  allItems: PackedItem[]
+function footprintsOverlap(
+  aPosition: BinPackingPosition,
+  aDimensions: BinPackingDimensions,
+  bPosition: BinPackingPosition,
+  bDimensions: BinPackingDimensions
 ): boolean {
-  const itemTop = item.y + item.height;
-  for (const other of allItems) {
-    if (other === item) continue;
-    // Check if other item is above and overlaps in the x-z footprint
-    const overlapX =
-      other.x < item.x + item.width && other.x + other.width > item.x;
-    const overlapZ =
-      other.z < item.z + item.depth && other.z + other.depth > item.z;
-    if (overlapX && overlapZ && other.y >= itemTop - 0.001) {
-      return true;
-    }
-  }
-  return false;
+  const overlapX =
+    aPosition[0] < bPosition[0] + bDimensions[0] &&
+    aPosition[0] + aDimensions[0] > bPosition[0];
+  const overlapZ =
+    aPosition[2] < bPosition[2] + bDimensions[2] &&
+    aPosition[2] + aDimensions[2] > bPosition[2];
+
+  return overlapX && overlapZ;
 }
 
-type CanStackOnTopInflation = "none" | "partial" | "full";
-
-function getMinOtherItemHeight(
-  products: IProduct[],
-  spacing: number
+function itemTop(
+  position: BinPackingPosition,
+  dimensions: BinPackingDimensions
 ): number {
-  let minHeight = Infinity;
-  for (const product of products) {
-    if (product.canStackOnTop === false) continue;
-    const [, oh] = arrangeForOrientation(
-      product.width,
-      product.height,
-      product.depth,
-      product.orientation
-    );
-    // For items with ALL_ROTATIONS, any dimension can be height.
-    // The minimum possible height is the smallest dimension.
-    const rotations = getAllowedRotations(product);
-    const minDim =
-      rotations.length === ALL_ROTATIONS.length
-        ? Math.min(product.width, product.height, product.depth)
-        : oh;
-    minHeight = Math.min(minHeight, minDim + spacing);
-  }
-  return minHeight;
+  return position[1] + dimensions[1];
 }
 
-function runPacker(
+function isAboveOrTouching(baseY: number, topY: number): boolean {
+  return baseY >= topY - STACK_EPSILON;
+}
+
+function createConstraintAwareBin(
   box: IBox,
-  products: IProduct[],
-  canStackOnTopInflation: CanStackOnTopInflation
-): PackedBinResult {
+  productByName: ReadonlyMap<string, IProduct>
+): BinPackingBin {
+  const spacing = getBoxSpacing(box);
+  const bin = new Bin(
+    box.name,
+    box.width - spacing,
+    box.height - spacing,
+    box.depth - spacing,
+    box.maxWeight ?? 9999999
+  );
+
+  bin.putItem = (item: BinPackingItem, position: BinPackingPosition): boolean => {
+    const rotations = bin.getBestRotationOrder(item);
+    const itemProduct = productByName.get(item.name);
+    item.position = position;
+
+    for (const rotation of rotations) {
+      item.rotationType = rotation;
+      const dimensions = item.getDimension() as BinPackingDimensions;
+
+      if (
+        bin.getWidth() < position[0] + dimensions[0] ||
+        bin.getHeight() < position[1] + dimensions[1] ||
+        bin.getDepth() < position[2] + dimensions[2]
+      ) {
+        continue;
+      }
+
+      if (itemProduct?.canBePlacedOnTop === false && position[1] !== 0) {
+        continue;
+      }
+
+      let fits = true;
+
+      for (const placedItem of bin.items) {
+        if (placedItem.intersect(item)) {
+          fits = false;
+          break;
+        }
+
+        const placedDimensions = placedItem.getDimension() as BinPackingDimensions;
+        const placedPosition = placedItem.position as BinPackingPosition;
+
+        if (!footprintsOverlap(position, dimensions, placedPosition, placedDimensions)) {
+          continue;
+        }
+
+        const placedProduct = productByName.get(placedItem.name);
+        if (
+          placedProduct?.canStackOnTop === false &&
+          isAboveOrTouching(position[1], itemTop(placedPosition, placedDimensions))
+        ) {
+          fits = false;
+          break;
+        }
+
+        if (
+          itemProduct?.canStackOnTop === false &&
+          isAboveOrTouching(placedPosition[1], itemTop(position, dimensions))
+        ) {
+          fits = false;
+          break;
+        }
+      }
+
+      if (fits) {
+        bin.items.push(item);
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  return bin;
+}
+
+function runPacker(box: IBox, products: IProduct[]): PackedBinResult {
   const spacing = getBoxSpacing(box);
   const effectiveWidth = box.width - spacing;
   const effectiveHeight = box.height - spacing;
@@ -209,28 +252,10 @@ function runPacker(
     return { bin: null, packedItems: [] };
   }
 
-  // For partial inflation, compute the target height that guarantees
-  // no other item can fit above the constrained item.
-  let canStackOnTopTarget = effectiveHeight;
-  if (canStackOnTopInflation === "partial") {
-    const minOtherHeight = getMinOtherItemHeight(products, spacing);
-    if (minOtherHeight > 0 && isFinite(minOtherHeight)) {
-      // Leave just under minOtherHeight of space above, so nothing fits
-      canStackOnTopTarget = effectiveHeight - minOtherHeight + 0.001;
-    }
-  }
-
   const packer = new Packer();
-  const bin = new Bin(
-    box.name,
-    effectiveWidth,
-    effectiveHeight,
-    effectiveDepth,
-    box.maxWeight ?? 9999999
-  );
+  const productByName = new Map(products.map((product) => [product.name, product]));
+  const bin = createConstraintAwareBin(box, productByName);
   packer.addBin(bin);
-
-  const heightOverrides = new Map<string, number>();
 
   for (const product of products) {
     const [ow, oh, od] = arrangeForOrientation(
@@ -240,27 +265,13 @@ function runPacker(
       product.orientation
     );
 
-    // canBePlacedOnTop=false always needs full inflation (forces floor placement).
-    // canStackOnTop=false inflation depends on the strategy.
-    let itemHeight = oh + spacing;
-    if (product.canBePlacedOnTop === false) {
-      heightOverrides.set(product.name, oh);
-      itemHeight = effectiveHeight;
-    } else if (
-      canStackOnTopInflation !== "none" &&
-      product.canStackOnTop === false
-    ) {
-      heightOverrides.set(product.name, oh);
-      itemHeight = canStackOnTopTarget;
-    }
-
     const allowedRotation = getAllowedRotations(product);
 
     packer.addItem(
       new Item(
         product.name,
         ow + spacing,
-        itemHeight,
+        oh + spacing,
         od + spacing,
         product.weight ?? 0,
         allowedRotation
@@ -272,49 +283,12 @@ function runPacker(
 
   return {
     bin,
-    packedItems: bin.items.map((item: BinPackingItem) =>
-      normalizePackedItem(item, spacing, heightOverrides)
-    ),
+    packedItems: bin.items.map((item: BinPackingItem) => normalizePackedItem(item, spacing)),
   };
 }
 
 function packItemsIntoBox(box: IBox, products: IProduct[]): PackedBinResult {
-  const hasCanStackOnTopOnly = products.some(
-    (p) => p.canStackOnTop === false && p.canBePlacedOnTop !== false
-  );
-
-  if (!hasCanStackOnTopOnly) {
-    return runPacker(box, products, "full");
-  }
-
-  // Strategy 1: No inflation for canStackOnTop — allows the item to be
-  // placed on top of others. If no stacking violations, this is ideal.
-  const relaxed = runPacker(box, products, "none");
-  if (relaxed.bin && relaxed.bin.items.length === products.length) {
-    const productMap = new Map(products.map((p) => [p.name, p]));
-    const violated = relaxed.packedItems.some((packed) => {
-      const product = productMap.get(packed.name);
-      return (
-        product?.canStackOnTop === false &&
-        hasItemStackedAbove(packed, relaxed.packedItems)
-      );
-    });
-    if (!violated) {
-      return relaxed;
-    }
-  }
-
-  // Strategy 2: Partial inflation — inflate canStackOnTop=false items just
-  // enough to prevent any other item from fitting above, while wasting less
-  // space than full inflation. This is guaranteed to satisfy the constraint
-  // without needing post-validation.
-  const partial = runPacker(box, products, "partial");
-  if (partial.bin && partial.bin.items.length === products.length) {
-    return partial;
-  }
-
-  // Strategy 3: Full inflation (original behavior)
-  return runPacker(box, products, "full");
+  return runPacker(box, products);
 }
 
 export function checkFit(

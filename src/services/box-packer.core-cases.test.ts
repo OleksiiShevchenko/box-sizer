@@ -6,10 +6,50 @@ import {
   createUnlimitedWeightBox,
   getQaBox,
 } from "../../tests/fixtures/packwell-core";
-import type { PackingResult } from "@/types";
+import type { IProduct, PackedItem, PackingResult } from "@/types";
 
 function getPackedItems(results: PackingResult[]) {
   return results.flatMap((result) => result.items);
+}
+
+function getSourceProduct(name: string, products: IProduct[]): IProduct | undefined {
+  return products.find(
+    (product) => product.name === name || name.startsWith(`${product.name}_`)
+  );
+}
+
+function footprintsOverlap(a: PackedItem, b: PackedItem): boolean {
+  const overlapX = a.x < b.x + b.width && a.x + a.width > b.x;
+  const overlapZ = a.z < b.z + b.depth && a.z + a.depth > b.z;
+
+  return overlapX && overlapZ;
+}
+
+function assertRespectsStackingConstraints(
+  packedItems: PackedItem[],
+  products: IProduct[]
+): void {
+  for (const packedItem of packedItems) {
+    const product = getSourceProduct(packedItem.name, products);
+    if (!product) {
+      continue;
+    }
+
+    if (product.canBePlacedOnTop === false) {
+      expect(packedItem.y).toBeCloseTo(0, 5);
+    }
+
+    if (product.canStackOnTop === false) {
+      const packedItemTop = packedItem.y + packedItem.height;
+      for (const other of packedItems) {
+        if (other === packedItem || !footprintsOverlap(packedItem, other)) {
+          continue;
+        }
+
+        expect(other.y).toBeLessThan(packedItemTop + 0.001);
+      }
+    }
+  }
 }
 
 describe("Packwell core selection matrix", () => {
@@ -33,6 +73,8 @@ describe("Packwell core selection matrix", () => {
         packedItems.find((item) => item.name.startsWith(itemName))?.height
       ).toBeCloseTo(height, 5);
     }
+
+    assertRespectsStackingConstraints(packedItems, items);
   });
 
   it("returns an ideal custom box when saved boxes do not fit", () => {
