@@ -4,7 +4,7 @@ import {
   findIdealBox,
   getSmallestSuitableBox,
 } from "./box-packer";
-import type { IBox, IProduct } from "@/types";
+import type { IBox, IProduct, PackedItem } from "@/types";
 
 const smallBox: IBox = {
   id: "1",
@@ -31,6 +31,46 @@ const largeBox: IBox = {
 };
 
 const boxes = [smallBox, mediumBox, largeBox];
+
+function getSourceProduct(name: string, products: IProduct[]): IProduct | undefined {
+  return products.find(
+    (product) => product.name === name || name.startsWith(`${product.name}_`)
+  );
+}
+
+function footprintsOverlap(a: PackedItem, b: PackedItem): boolean {
+  const overlapX = a.x < b.x + b.width && a.x + a.width > b.x;
+  const overlapZ = a.z < b.z + b.depth && a.z + a.depth > b.z;
+
+  return overlapX && overlapZ;
+}
+
+function assertRespectsStackingConstraints(
+  packedItems: PackedItem[],
+  products: IProduct[]
+): void {
+  for (const packedItem of packedItems) {
+    const product = getSourceProduct(packedItem.name, products);
+    if (!product) {
+      continue;
+    }
+
+    if (product.canBePlacedOnTop === false) {
+      expect(packedItem.y).toBeCloseTo(0, 5);
+    }
+
+    if (product.canStackOnTop === false) {
+      const packedItemTop = packedItem.y + packedItem.height;
+      for (const other of packedItems) {
+        if (other === packedItem || !footprintsOverlap(packedItem, other)) {
+          continue;
+        }
+
+        expect(other.y).toBeLessThan(packedItemTop + 0.001);
+      }
+    }
+  }
+}
 
 describe("checkFit", () => {
   it("returns true when a single item fits in a box", () => {
@@ -410,7 +450,7 @@ describe("stacking constraints", () => {
   });
 
   it("places canBePlacedOnTop=false items at ground level", () => {
-    // Floor-only item uses height inflation, so both items need side-by-side space
+    // Floor-only items must be placed on the floor even when another valid item is present.
     const box: IBox = { id: "s2", name: "Wide Box", width: 30, height: 30, depth: 30 };
     const products: IProduct[] = [
       { name: "Any", width: 12, height: 8, depth: 12 },
@@ -428,8 +468,7 @@ describe("stacking constraints", () => {
   it("places smaller canBePlacedOnTop=false items at ground level despite BP3D volume sort", () => {
     // The floor-only item is SMALLER than the other item.
     // BP3D sorts by volume descending, placing the bigger item first.
-    // Height inflation guarantees the floor item fills the full column
-    // and must be placed at y=0.
+    // The placement override still forces the floor item to y=0.
     const box: IBox = { id: "s2c", name: "Wide Box", width: 30, height: 30, depth: 30 };
     const products: IProduct[] = [
       { name: "Big", width: 14, height: 18, depth: 14 },
@@ -443,25 +482,26 @@ describe("stacking constraints", () => {
     expect(floorItem.height).toBeCloseTo(10, 0);
   });
 
-  it("canBePlacedOnTop=false prevents stacking above (height inflation side effect)", () => {
-    // canBePlacedOnTop=false uses height inflation to guarantee floor placement.
-    // This also prevents items from being stacked above, even if canStackOnTop=true.
-    // This is a known trade-off: BP3D's internal volume sort makes insertion-order
-    // enforcement unreliable, so height inflation is the only reliable mechanism.
+  it("canBePlacedOnTop=false still allows stacking above when canStackOnTop=true", () => {
     const box: IBox = { id: "s2b", name: "Stack Test", width: 15, height: 25, depth: 15 };
     const products: IProduct[] = [
       { name: "FloorOnly", width: 12, height: 12, depth: 12, canBePlacedOnTop: false, canStackOnTop: true },
       { name: "OnTop", width: 12, height: 12, depth: 12 },
     ];
     const result = checkFit(box, products);
-    // FloorOnly fills the full column height, so OnTop can't stack above it
-    // and the box is too narrow for side-by-side placement
-    expect(result.fits).toBe(false);
+    expect(result.fits).toBe(true);
+
+    const floorOnly = result.packedItems.find((p) => p.name.startsWith("FloorOnly"))!;
+    const onTop = result.packedItems.find((p) => p.name.startsWith("OnTop"))!;
+
+    expect(floorOnly.y).toBe(0);
+    expect(footprintsOverlap(floorOnly, onTop)).toBe(true);
+    expect(onTop.y).toBeGreaterThanOrEqual(floorOnly.y + floorOnly.height - 0.001);
   });
 
   it("canStackOnTop=false does not prevent item from being placed on top of others when canBePlacedOnTop=true", () => {
-    // Regression: height inflation for canStackOnTop=false forced item to y=0,
-    // preventing valid arrangements where the item sits on top of another item.
+    // Regression: no-stack items must still be allowed to sit on top of other items
+    // when the product itself can be placed on top.
     const box: IBox = {
       id: "s-regression",
       name: "Medium Box",
@@ -505,20 +545,7 @@ describe("stacking constraints", () => {
     const result = calculatePacking([box], products);
     expect(result).toHaveLength(1);
     expect(result[0].items).toHaveLength(3);
-
-    // Verify canStackOnTop=false is still respected: nothing on top of Item 1
-    const item1 = result[0].items.find((i) => i.name.startsWith("Item 1"))!;
-    const item1Top = item1.y + item1.height;
-    for (const other of result[0].items) {
-      if (other.name.startsWith("Item 1")) continue;
-      const overlapX =
-        other.x < item1.x + item1.width && other.x + other.width > item1.x;
-      const overlapZ =
-        other.z < item1.z + item1.depth && other.z + other.depth > item1.z;
-      if (overlapX && overlapZ) {
-        expect(other.y).toBeLessThan(item1Top);
-      }
-    }
+    assertRespectsStackingConstraints(result[0].items, products);
   });
 
   it("rejects layouts where an upper item is left with almost no support underneath", () => {
@@ -650,8 +677,8 @@ describe("stacking constraints", () => {
     expect(item.y).toBeGreaterThanOrEqual(2);
   });
 
-  it("keeps inflated height on Y axis even with non-cubic items", () => {
-    // Regression: BP3D must not rotate the inflated height onto X or Z
+  it("keeps stacking-constrained height on Y axis even with non-cubic items", () => {
+    // Regression: constrained items must keep their real height on the Y axis.
     const box: IBox = { id: "s6", name: "Rotation Test", width: 30, height: 30, depth: 30 };
     const products: IProduct[] = [
       { name: "Rect", width: 8, height: 5, depth: 12, canStackOnTop: false },
@@ -661,10 +688,10 @@ describe("stacking constraints", () => {
     expect(result.fits).toBe(true);
 
     const rect = result.packedItems.find((p) => p.name.startsWith("Rect"))!;
-    // The original height (5) must be restored, not the inflated box height
+    // Height must stay on the Y axis rather than being rotated onto X or Z.
     expect(rect.height).toBeCloseTo(5, 0);
-    // The inflated dimension must have been on Y (height axis), so small
-    // item should NOT overlap the rect's footprint vertically
+    // Because the constrained item keeps height on Y, the smaller item must not
+    // appear above the same footprint.
     const small = result.packedItems.find((p) => p.name.startsWith("Small"))!;
     const overlapX = small.x < rect.x + rect.width && small.x + small.width > rect.x;
     const overlapZ = small.z < rect.z + rect.depth && small.z + small.depth > rect.z;
@@ -770,7 +797,7 @@ describe("combined constraints", () => {
     expect(result.fits).toBe(true);
 
     const tallFragile = result.packedItems.find((p) => p.name.startsWith("TallFragile"))!;
-    // Height must be largest dim (20) — restored from inflation
+    // Height must still be the largest dimension on the Y axis.
     expect(tallFragile.height).toBeCloseTo(20, 0);
   });
 
