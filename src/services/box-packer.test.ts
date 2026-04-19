@@ -405,6 +405,26 @@ describe("findIdealBox", () => {
     expect(dims[2]! / dims[0]!).toBeLessThanOrEqual(2.1);
   });
 
+  it("tightens each ideal box dimension after selecting a ratio family", () => {
+    const products: IProduct[] = [
+      { name: "A", width: 12, height: 10, depth: 8 },
+      { name: "B", width: 9, height: 8, depth: 6 },
+      { name: "C", width: 7, height: 6, depth: 5 },
+    ];
+    const result = findIdealBox(products);
+
+    expect(result).not.toBeNull();
+    expect(checkFit(result!.box, products).fits).toBe(true);
+
+    for (const dimension of ["width", "height", "depth"] as const) {
+      const shrunk = {
+        ...result!.box,
+        [dimension]: result!.box[dimension] - 0.2,
+      };
+      expect(checkFit(shrunk, products).fits).toBe(false);
+    }
+  });
+
   it("respects spacing when calculating the ideal box", () => {
     const result = findIdealBox(
       [{ name: "Single", width: 12, height: 8, depth: 6 }],
@@ -676,6 +696,32 @@ describe("stacking constraints", () => {
     const item = result.packedItems[0];
     expect(item.height).toBeCloseTo(10, 0);
     expect(item.y).toBeGreaterThanOrEqual(2);
+  });
+
+  it("allows supported vertical stacking when box spacing is non-zero", () => {
+    const box: IBox = {
+      id: "s5-stack",
+      name: "Spaced Stack",
+      width: 18,
+      height: 34,
+      depth: 18,
+      spacing: 2,
+    };
+    const products: IProduct[] = [
+      { name: "Base", width: 12, height: 12, depth: 12 },
+      { name: "Top", width: 12, height: 12, depth: 12 },
+    ];
+
+    const result = checkFit(box, products);
+    expect(result.fits).toBe(true);
+    expect(result.packedItems).toHaveLength(2);
+
+    const base = result.packedItems.find((item) => item.name.startsWith("Base"))!;
+    const top = result.packedItems.find((item) => item.name.startsWith("Top"))!;
+
+    expect(base.x).toBeCloseTo(top.x, 5);
+    expect(base.z).toBeCloseTo(top.z, 5);
+    expect(top.y).toBeCloseTo(base.y + base.height + box.spacing!, 5);
   });
 
   it("keeps stacking-constrained height on Y axis even with non-cubic items", () => {

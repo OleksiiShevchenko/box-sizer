@@ -13,6 +13,7 @@ const BINPACKING_SCALE_FACTOR = 10 ** 5;
 const POSITION_TOLERANCE = 0.001;
 const MIN_SUPPORT_SURFACE_RATIO = 0.7;
 const STACK_EPSILON = 1;
+const IDEAL_BOX_DIMENSION_TOLERANCE = 0.1;
 
 type BinPackingPosition = [number, number, number];
 type BinPackingDimensions = [number, number, number];
@@ -195,7 +196,8 @@ function hasSufficientSupport(
     if (other === item) continue;
 
     const otherTop = other.y + other.height;
-    if (Math.abs(otherTop - item.y) > POSITION_TOLERANCE) {
+    const expectedSupportedY = otherTop + spacing;
+    if (Math.abs(expectedSupportedY - item.y) > POSITION_TOLERANCE) {
       continue;
     }
 
@@ -553,6 +555,123 @@ function createIdealBoxCandidate(
   };
 }
 
+function getPackedLayoutExtents(
+  packedItems: PackedItem[],
+  spacing: number
+): { width: number; height: number; depth: number } {
+  const maxX = packedItems.reduce((value, item) => Math.max(value, item.x + item.width), 0);
+  const maxY = packedItems.reduce((value, item) => Math.max(value, item.y + item.height), 0);
+  const maxZ = packedItems.reduce((value, item) => Math.max(value, item.z + item.depth), 0);
+
+  return {
+    width: maxX + spacing,
+    height: maxY + spacing,
+    depth: maxZ + spacing,
+  };
+}
+
+function minimizeIdealBoxDimension(
+  box: IBox,
+  products: IProduct[],
+  dimension: "width" | "height" | "depth"
+): { box: IBox; packedItems: PackedItem[] } | null {
+  const spacing = getBoxSpacing(box);
+  const initialResult = checkFit(box, products);
+
+  if (!initialResult.fits) {
+    return null;
+  }
+
+  let low = 0;
+  let high = box[dimension];
+  let bestValue = box[dimension];
+  let bestPackedItems = initialResult.packedItems;
+
+  while (high - low > IDEAL_BOX_DIMENSION_TOLERANCE) {
+    const mid = low + (high - low) / 2;
+    const candidate = createIdealBoxCandidate(
+      {
+        width: dimension === "width" ? mid : box.width,
+        height: dimension === "height" ? mid : box.height,
+        depth: dimension === "depth" ? mid : box.depth,
+      },
+      spacing
+    );
+    const result = checkFit(candidate, products);
+
+    if (result.fits) {
+      bestValue = mid;
+      bestPackedItems = result.packedItems;
+      high = mid;
+    } else {
+      low = mid;
+    }
+  }
+
+  return {
+    box: createIdealBoxCandidate(
+      {
+        width: dimension === "width" ? bestValue : box.width,
+        height: dimension === "height" ? bestValue : box.height,
+        depth: dimension === "depth" ? bestValue : box.depth,
+      },
+      spacing
+    ),
+    packedItems: bestPackedItems,
+  };
+}
+
+function tightenIdealBoxCandidate(
+  candidate: { box: IBox; packedItems: PackedItem[] },
+  products: IProduct[]
+): { box: IBox; packedItems: PackedItem[] } | null {
+  const spacing = getBoxSpacing(candidate.box);
+  let currentBox = candidate.box;
+  let currentPackedItems = candidate.packedItems;
+
+  const compactBox = createIdealBoxCandidate(
+    getPackedLayoutExtents(currentPackedItems, spacing),
+    spacing
+  );
+  const compactResult = checkFit(compactBox, products);
+
+  if (compactResult.fits) {
+    currentBox = compactBox;
+    currentPackedItems = compactResult.packedItems;
+  }
+
+  for (let round = 0; round < 3; round += 1) {
+    let improved = false;
+
+    for (const dimension of ["width", "height", "depth"] as const) {
+      const minimized = minimizeIdealBoxDimension(currentBox, products, dimension);
+      if (!minimized) {
+        return null;
+      }
+
+      if (minimized.box[dimension] < currentBox[dimension] - POSITION_TOLERANCE) {
+        currentBox = minimized.box;
+        currentPackedItems = minimized.packedItems;
+        improved = true;
+      }
+    }
+
+    if (!improved) {
+      break;
+    }
+  }
+
+  const finalResult = checkFit(currentBox, products);
+  if (!finalResult.fits) {
+    return null;
+  }
+
+  return {
+    box: currentBox,
+    packedItems: finalResult.packedItems,
+  };
+}
+
 function findIdealBoxForRatios(
   ratios: readonly [number, number, number],
   lowerBounds: { width: number; height: number; depth: number },
@@ -597,7 +716,7 @@ function findIdealBoxForRatios(
     return null;
   }
 
-  while (high - low > 0.1) {
+  while (high - low > IDEAL_BOX_DIMENSION_TOLERANCE) {
     const mid = low + (high - low) / 2;
     const candidate = createCandidateAtScale(mid);
 
@@ -615,10 +734,13 @@ function findIdealBoxForRatios(
     return null;
   }
 
-  return {
-    box: finalBox,
-    packedItems: finalResult.packedItems,
-  };
+  return tightenIdealBoxCandidate(
+    {
+      box: finalBox,
+      packedItems: finalResult.packedItems,
+    },
+    products
+  );
 }
 
 function buildMaskKey(mask: number): string {
