@@ -1,0 +1,11 @@
+<svg width="800" height="480" viewBox="0 0 800 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="480" rx="32" fill="#E0F2FE"/>
+  <rect x="74" y="78" width="652" height="324" rx="28" fill="#F8FAFC"/>
+  <path d="M244 316L400 220L559 316L400 399L244 316Z" fill="#D97706"/>
+  <path d="M244 316V190L400 93V220L244 316Z" fill="#F59E0B"/>
+  <path d="M559 316V190L400 93V220L559 316Z" fill="#FBBF24"/>
+  <path d="M310 161L468 255" stroke="#92400E" stroke-width="14" stroke-linecap="round"/>
+  <path d="M401 218V396" stroke="#92400E" stroke-width="14" stroke-linecap="round"/>
+  <rect x="108" y="108" width="148" height="40" rx="20" fill="#DBEAFE"/>
+  <text x="182" y="134" text-anchor="middle" fill="#1D4ED8" font-family="Arial, sans-serif" font-size="20" font-weight="700">Carton box</text>
+</svg>

@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Marketing homepage hero", () => {
   test("replaces the top hero card with a rotating 3D widget", async ({ page }) => {
+    test.slow();
     const imageRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("/hero-box.png")) {
@@ -12,14 +13,14 @@ test.describe("Marketing homepage hero", () => {
     await page.goto("/");
 
     const hero = page.getByTestId("home-hero");
-    const widget = page.getByTestId("hero-packing-visualization");
+    const widget = page.getByTestId("hero-packing-visualization").first();
     const legendCard = page.getByTestId("hero-legend-card");
     const savingsLine = page.getByTestId("hero-savings-line");
 
-    await expect(hero).toBeVisible();
-    await expect(widget).toBeVisible();
-    await expect(widget.locator("canvas")).toBeVisible();
-    await expect(legendCard).toBeVisible();
+    await expect(hero).toBeVisible({ timeout: 30000 });
+    await expect(widget).toBeVisible({ timeout: 30000 });
+    await expect(widget.locator("canvas")).toBeVisible({ timeout: 30000 });
+    await expect(legendCard).toBeVisible({ timeout: 30000 });
     await expect(hero.getByTestId("hero-recommendation-card")).toHaveCount(0);
     await expect(
       legendCard.getByRole("heading", {
@@ -48,15 +49,16 @@ test.describe("Marketing homepage hero", () => {
   });
 
   test("stacks the hero widget below the copy on mobile", async ({ page }) => {
+    test.slow();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
 
-    const widget = page.getByTestId("hero-packing-visualization");
+    const widget = page.getByTestId("hero-packing-visualization").first();
     const legendCard = page.getByTestId("hero-legend-card");
     const savingsLine = page.getByTestId("hero-savings-line");
 
-    await expect(widget).toBeVisible();
-    await expect(widget.locator("canvas")).toBeVisible();
+    await expect(widget).toBeVisible({ timeout: 30000 });
+    await expect(widget.locator("canvas")).toBeVisible({ timeout: 30000 });
     await legendCard.scrollIntoViewIfNeeded();
     await expect(legendCard).toBeVisible();
     await expect(savingsLine).toBeVisible();

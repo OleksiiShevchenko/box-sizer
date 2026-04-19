@@ -50,7 +50,7 @@ export default async function Home() {
                 Pricing
               </a>
               <Link
-                href="/api/v1/docs"
+                href="/api/v1/docs#description/introduction"
                 className="text-slate-600 hover:text-blue-600 transition-colors"
               >
                 Docs
@@ -93,30 +93,18 @@ export default async function Home() {
               </p>
               <div className="flex flex-wrap gap-4 mb-6">
                 <Link
-                  href="/signup"
+                  href="/demo"
                   className="bg-primary text-on-primary px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-lg transition-all"
+                >
+                  Try Interactive Demo
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-surface-container-high text-on-surface px-8 py-4 rounded-lg font-semibold text-lg hover:bg-surface-container-highest transition-all border border-outline-variant/30"
                 >
                   Start Free
                 </Link>
-                <DemoBookingButton
-                  className="bg-surface-container-high text-on-surface px-8 py-4 rounded-lg font-semibold text-lg hover:bg-surface-container-highest transition-all border border-outline-variant/30"
-                >
-                  Book a Demo
-                </DemoBookingButton>
               </div>
-              <p className="text-xs text-on-surface-variant/80 flex flex-wrap items-center gap-[18px]">
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-xs text-on-surface-variant/80">check</span>
-                  No credit card required
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-xs text-on-surface-variant/80">bolt</span>
-                  API in minutes
-                </span>
-              </p>
-              <p className="text-xs text-on-surface-variant/60 mt-4">
-                Used by ecommerce brands and fulfillment teams optimizing shipping costs.
-              </p>
             </div>
             <div
               className="relative flex justify-center lg:col-span-5 lg:self-start lg:justify-end"
@@ -609,7 +597,7 @@ export default async function Home() {
                 </li>
                 <li>
                   <Link
-                    href="/api/v1/docs"
+                    href="/api/v1/docs#description/introduction"
                     className="text-slate-500 hover:text-slate-900 transition-all duration-300 text-sm"
                   >
                     API Documentation
