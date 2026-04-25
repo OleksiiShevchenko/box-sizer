@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import type { DemoScenario } from "@/lib/demo-scenarios";
 
 export interface DemoDraftItem {
@@ -51,31 +50,56 @@ export function DemoOrderForm({
         {items.map((item) => (
           <div
             key={item.id}
-            className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4"
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-2 rounded-lg border border-slate-200 bg-white px-3 py-3 sm:px-4"
             data-testid={`demo-item-${item.id}`}
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1">
-                <h3 className="font-semibold text-slate-900">{item.name}</h3>
-                <p className="text-sm text-slate-500">{formatItemMeta(item)}</p>
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-5">
+                <h3 className="min-w-0 truncate font-semibold leading-9 text-slate-900" title={item.name}>
+                  {item.name}
+                </h3>
+                <div className="flex shrink-0 items-center gap-1">
+                  <label
+                    htmlFor={`quantity-${item.id}`}
+                    className="text-xs font-medium text-slate-500"
+                  >
+                    Q-ty:
+                  </label>
+                  <input
+                    id={`quantity-${item.id}`}
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputMode="numeric"
+                    aria-label="Quantity"
+                    aria-invalid={fieldErrors[item.id] ? "true" : "false"}
+                    aria-describedby={fieldErrors[item.id] ? `quantity-${item.id}-error` : undefined}
+                    className={`block h-9 w-12 rounded-lg border px-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:bg-slate-50 disabled:text-slate-500 ${
+                      fieldErrors[item.id]
+                        ? "border-red-600 focus:border-red-600 focus:ring-red-600/10"
+                        : "border-slate-200 focus:border-blue-600 focus:ring-blue-600/15"
+                    }`}
+                    value={item.quantity}
+                    onChange={(event) => onQuantityChange(item.id, event.target.value)}
+                  />
+                </div>
               </div>
-              <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(item.id)}>
-                Delete
-              </Button>
+              <p className="text-sm text-slate-500">{formatItemMeta(item)}</p>
+              {fieldErrors[item.id] ? (
+                <p id={`quantity-${item.id}-error`} className="mt-1 text-[11px] font-medium text-red-600">
+                  {fieldErrors[item.id]}
+                </p>
+              ) : null}
             </div>
-            <div className="max-w-[160px]">
-              <Input
-                id={`quantity-${item.id}`}
-                type="number"
-                min="1"
-                step="1"
-                inputMode="numeric"
-                label="Quantity"
-                value={item.quantity}
-                onChange={(event) => onQuantityChange(item.id, event.target.value)}
-                error={fieldErrors[item.id]}
-              />
-            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="!px-0"
+              onClick={() => onDelete(item.id)}
+            >
+              Delete
+            </Button>
           </div>
         ))}
       </div>
