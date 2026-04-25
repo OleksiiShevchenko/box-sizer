@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { PackwellLogo } from "@/components/layout/packwell-logo";
@@ -102,13 +102,13 @@ export function DemoPageClient() {
     [selectedScenarioId]
   );
 
-  function createHistoryState(
+  const createHistoryState = useCallback((
     step: 1 | 2 | 3 = currentStep,
     scenarioId: DemoScenarioId | null = selectedScenarioId,
     nextDraftItems: DemoDraftItem[] = draftItems,
     nextResults: PackingResult[] | null = results,
     nextIdealResult: PackingResult | null = idealResult
-  ): DemoHistoryState {
+  ): DemoHistoryState => {
     return {
       __demoFlow: true,
       step,
@@ -117,7 +117,7 @@ export function DemoPageClient() {
       results: nextResults,
       idealResult: nextIdealResult,
     };
-  }
+  }, [currentStep, draftItems, idealResult, results, selectedScenarioId]);
 
   function applyHistoryState(state: DemoHistoryState) {
     setCurrentStep(state.step);
@@ -177,7 +177,7 @@ export function DemoPageClient() {
     }
 
     window.history.replaceState(createHistoryState(), "", window.location.href);
-  }, [currentStep, selectedScenarioId, draftItems, results, idealResult]);
+  }, [createHistoryState, currentStep, selectedScenarioId, draftItems, results, idealResult]);
 
   useEffect(() => {
     if (currentStep !== 3 || !selectedScenario) {

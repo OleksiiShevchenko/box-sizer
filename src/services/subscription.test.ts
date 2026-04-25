@@ -49,7 +49,22 @@ jest.mock("@/services/email-notifications", () => ({
   notifyQuotaReached: jest.fn(),
 }));
 
-const prismaMock = prisma as jest.Mocked<typeof prisma>;
+const prismaMock = prisma as unknown as {
+  $transaction: jest.Mock;
+  subscription: {
+    findUnique: jest.Mock;
+    create: jest.Mock;
+    update: jest.Mock;
+  };
+  calculationUsage: {
+    count: jest.Mock;
+    create: jest.Mock;
+  };
+  user: {
+    findUniqueOrThrow: jest.Mock;
+    findUnique: jest.Mock;
+  };
+};
 const stripeCustomerCreate = stripe.customers.create as jest.MockedFunction<
   typeof stripe.customers.create
 >;

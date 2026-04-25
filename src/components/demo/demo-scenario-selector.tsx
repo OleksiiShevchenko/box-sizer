@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import type { DemoScenario } from "@/lib/demo-scenarios";
 
@@ -23,10 +24,13 @@ export function DemoScenarioSelector({
           data-testid={`scenario-card-${scenario.id}`}
         >
           <Card className="h-full overflow-hidden p-0 transition-shadow hover:shadow-md">
-            <img
+            <Image
               src={scenario.imageSrc}
               alt={`${scenario.name} illustration`}
-              className="h-[16.5rem] w-full object-cover"
+              width={1696}
+              height={960}
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="h-auto w-full object-cover sm:h-[16.5rem]"
             />
             <div className="space-y-4 p-6">
               <div className="space-y-2">
