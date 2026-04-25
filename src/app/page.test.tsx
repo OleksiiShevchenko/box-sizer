@@ -68,6 +68,31 @@ describe("Home page", () => {
     expect(within(hero).getByRole("link", { name: "Start Free" })).toHaveAttribute("href", "/signup");
   });
 
+  it("shows the checkout versus carrier pricing example", async () => {
+    mockedAuth.mockResolvedValue(null);
+
+    render(await Home());
+
+    expect(
+      screen.getByRole("heading", {
+        name: "A Typical Shipping Scenario",
+      })
+    ).toBeVisible();
+    expect(
+      screen.getByText("Why shipping quotes don't match what you're actually charged")
+    ).toBeVisible();
+    expect(
+      screen.queryByText(
+        "A single mixed order can look lightweight at checkout, then price like a much larger package once the carrier applies dimensional weight."
+      )
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Backpack + Mug + Notebook")).toBeVisible();
+    expect(screen.getByText("13 x 8 x 14 in")).toBeVisible();
+    expect(screen.getByText("$23.63")).toBeVisible();
+    expect(screen.getByText("$53.28")).toBeVisible();
+    expect(screen.getByText("Loss on one order: $29.65")).toBeVisible();
+  });
+
   it("redirects authenticated users to the dashboard", async () => {
     mockedAuth.mockResolvedValue({
       user: { id: "user-1" },
