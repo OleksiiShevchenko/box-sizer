@@ -49,8 +49,8 @@ jest.mock("@/components/layout/instant-scroll-link", () => ({
   ),
 }));
 
-const mockedAuth = jest.mocked(auth);
-const mockedRedirect = jest.mocked(redirect);
+const mockedAuth = auth as jest.Mock;
+const mockedRedirect = redirect as unknown as jest.Mock;
 
 describe("Home page", () => {
   beforeEach(() => {
@@ -97,7 +97,7 @@ describe("Home page", () => {
     mockedAuth.mockResolvedValue({
       user: { id: "user-1" },
       expires: "2099-01-01",
-    } as never);
+    });
 
     await Home();
 

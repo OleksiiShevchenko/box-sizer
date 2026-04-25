@@ -12,6 +12,30 @@ jest.mock("posthog-js", () => ({
   capture: jest.fn(),
 }));
 
+jest.mock("next/link", () => ({
+  __esModule: true,
+  default: ({
+    children,
+    href,
+    onClick,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children: React.ReactNode;
+  }) => (
+    <a
+      href={href}
+      onClick={(event) => {
+        event.preventDefault();
+        onClick?.(event);
+      }}
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+}));
+
 jest.mock("@/components/packing-plans/packing-plan-result-panel", () => ({
   PackingPlanResultPanel: ({
     results,
@@ -64,8 +88,14 @@ describe("DemoPageClient", () => {
         "You provide item dimensions. Packwell returns the best box, dimensional weight, and a 3D packing plan."
       )
     ).toBeInTheDocument();
-    expect(screen.getByAltText("Ecommerce order illustration")).toBeInTheDocument();
-    expect(screen.getByAltText("Gift kit illustration")).toBeInTheDocument();
+    expect(screen.getByAltText("Ecommerce order illustration")).toHaveClass(
+      "h-auto",
+      "sm:h-[16.5rem]"
+    );
+    expect(screen.getByAltText("Gift kit illustration")).toHaveClass(
+      "h-auto",
+      "sm:h-[16.5rem]"
+    );
     expect(mockedPosthog.capture).toHaveBeenCalledWith("demo_started");
   });
 
