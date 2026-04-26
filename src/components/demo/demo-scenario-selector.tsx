@@ -19,7 +19,7 @@ export function DemoScenarioSelector({
         <button
           key={scenario.id}
           type="button"
-          className="text-left"
+          className="group text-left"
           onClick={() => onSelect(scenario)}
           data-testid={`scenario-card-${scenario.id}`}
         >
@@ -32,11 +32,14 @@ export function DemoScenarioSelector({
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="h-auto w-full object-cover sm:h-[16.5rem]"
             />
-            <div className="space-y-4 p-6">
+            <div className="flex h-full flex-col gap-5 p-6">
               <div className="space-y-2">
                 <h2 className="text-2xl font-semibold text-slate-900">{scenario.name}</h2>
                 <p className="text-sm text-slate-600">{scenario.description}</p>
               </div>
+              <span className="inline-flex w-fit items-center justify-center rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors group-hover:bg-blue-700">
+                Select
+              </span>
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Included items
