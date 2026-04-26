@@ -300,7 +300,7 @@ export default async function Home() {
                       Checkout quote
                     </p>
                     <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-on-background">
-                      Box size not considered
+                      Based on real weight of products
                     </h3>
                   </div>
                   <span className="material-symbols-outlined text-[28px] text-on-surface-variant" aria-hidden="true">
@@ -320,7 +320,7 @@ export default async function Home() {
                       Carrier invoice
                     </p>
                     <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-on-background">
-                      Dimensional weight applied
+                      Based on real and volumetric weight
                     </h3>
                   </div>
                   <span className="material-symbols-outlined text-[28px] text-on-surface-variant" aria-hidden="true">

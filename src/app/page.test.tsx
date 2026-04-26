@@ -88,6 +88,10 @@ describe("Home page", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText("Backpack + Mug + Notebook")).toBeVisible();
     expect(screen.getByText("13 x 8 x 14 in")).toBeVisible();
+    expect(screen.getByText("Based on real weight of products")).toBeVisible();
+    expect(
+      screen.getByText("Based on real and volumetric weight")
+    ).toBeVisible();
     expect(screen.getByText("$23.63")).toBeVisible();
     expect(screen.getByText("$53.28")).toBeVisible();
     expect(screen.getByText("Loss on one order: $29.65")).toBeVisible();

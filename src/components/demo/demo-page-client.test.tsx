@@ -96,6 +96,7 @@ describe("DemoPageClient", () => {
       "h-auto",
       "sm:h-[16.5rem]"
     );
+    expect(within(screen.getByTestId("demo-scenario-selector")).getAllByText("Select")).toHaveLength(2);
     expect(mockedPosthog.capture).toHaveBeenCalledWith("demo_started");
   });
 
