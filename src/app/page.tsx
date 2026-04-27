@@ -410,7 +410,7 @@ export default async function Home() {
         {/* How It Works Section */}
         <section
           id="how-it-works"
-          className="px-6 py-24 md:py-32 bg-surface-container-low"
+          className="px-6 pt-24 pb-8 md:pt-32 md:pb-8 bg-surface-container-low"
           data-testid="how-packwell-section"
         >
           <div className="max-w-7xl mx-auto">
@@ -473,6 +473,19 @@ export default async function Home() {
                   </div>
                 );
               })}
+            </div>
+
+            <div className="mt-14 border-t border-outline-variant/50 pt-8 text-center">
+              <p className="text-base font-medium leading-relaxed text-on-surface-variant">
+                Run a sample order through Packwell{" "}
+                <Link
+                  href="/demo"
+                  className="inline-flex items-center font-bold text-primary underline-offset-4 transition-colors hover:text-primary-container hover:underline"
+                >
+                  in the interactive demo
+                </Link>
+                .
+              </p>
             </div>
           </div>
         </section>

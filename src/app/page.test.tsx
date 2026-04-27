@@ -127,6 +127,14 @@ describe("Home page", () => {
     expect(
       screen.getByAltText("Packing instruction visualization with 3D, front, side, and top views")
     ).toBeVisible();
+    const howItWorksSection = screen.getByTestId("how-packwell-section");
+
+    expect(
+      within(howItWorksSection).getByText(/Run a sample order through Packwell/)
+    ).toBeVisible();
+    expect(
+      within(howItWorksSection).getByRole("link", { name: "in the interactive demo" })
+    ).toHaveAttribute("href", "/demo");
   });
 
   it("redirects authenticated users to the dashboard", async () => {
