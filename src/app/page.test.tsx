@@ -97,6 +97,38 @@ describe("Home page", () => {
     expect(screen.getByText("Loss on one order: $29.65")).toBeVisible();
   });
 
+  it("shows the redesigned How Packwell works section after the shipping scenario", async () => {
+    mockedAuth.mockResolvedValue(null);
+
+    render(await Home());
+
+    const scenarioHeading = screen.getByRole("heading", {
+      name: "A Typical Shipping Scenario",
+    });
+    const howItWorksHeading = screen.getByRole("heading", {
+      name: "How Packwell works",
+    });
+
+    expect(screen.queryByText("Stop undercharging for shipping")).not.toBeInTheDocument();
+    expect(
+      scenarioHeading.compareDocumentPosition(howItWorksHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(screen.getByText("Step 1")).toBeVisible();
+    expect(screen.getByText("Define your packaging options")).toBeVisible();
+    expect(screen.getByText("Step 5")).toBeVisible();
+    expect(screen.getByText("Pack exactly as planned")).toBeVisible();
+    expect(
+      screen.getByText(/Use the Packwell UI or REST API to integrate precise box selection/)
+    ).toBeVisible();
+    expect(
+      screen.getByAltText("Packwell box catalog UI showing available shipping boxes")
+    ).toBeVisible();
+    expect(
+      screen.getByAltText("Packing instruction visualization with 3D, front, side, and top views")
+    ).toBeVisible();
+  });
+
   it("redirects authenticated users to the dashboard", async () => {
     mockedAuth.mockResolvedValue({
       user: { id: "user-1" },
