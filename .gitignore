@@ -51,6 +51,7 @@ next-env.d.ts
 *.png
 !public/demo/*.png
 !public/marketing/*.png
+!public/marketing/how-packwell/*.png
 .env.local
 
 # Playwright MCP artifacts

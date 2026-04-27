@@ -30,6 +30,64 @@ const shippingMismatchItems = [
   },
 ];
 
+const howPackwellSteps = [
+  {
+    step: "Step 1",
+    title: "Define your packaging options",
+    description:
+      "Add the boxes you use for shipping, or let Packwell calculate the ideal box size automatically.",
+    image: "/marketing/how-packwell/box-catalog.png",
+    imageAlt: "Packwell box catalog UI showing available shipping boxes",
+    imageWidth: 1396,
+    imageHeight: 914,
+    icon: "inventory_2",
+  },
+  {
+    step: "Step 2",
+    title: "Provide shipment details",
+    description:
+      "Send the items to be shipped, including dimensions, weight, and quantity. Optionally define packing rules like stacking or orientation.",
+    image: "/marketing/how-packwell/shipment-details-products.png",
+    imageAlt: "Packwell shipment details UI with item dimensions and weights",
+    imageWidth: 965,
+    imageHeight: 714,
+    icon: "straighten",
+  },
+  {
+    step: "Step 3",
+    title: "Packwell calculates the best box",
+    description:
+      "Packwell uses a 3D Bin Packing Algorithm to select the best box for shipping the items and minimize dimensional weight and wasted space.",
+    image: "/marketing/how-packwell/best-box-3d.png",
+    imageAlt: "Packwell 3D packing visualization with the recommended box",
+    imageWidth: 1386,
+    imageHeight: 1420,
+    icon: "view_in_ar",
+  },
+  {
+    step: "Step 4",
+    title: "Calculate real shipping cost",
+    description:
+      "Use actual weight and dimensional weight to get accurate shipping rates from your carrier. No more undercharging or surprise costs.",
+    image: "/marketing/how-packwell/carrier-logos.png",
+    imageAlt: "USPS, UPS, FedEx, and DHL carrier logos",
+    imageWidth: 1152,
+    imageHeight: 922,
+    icon: "local_shipping",
+  },
+  {
+    step: "Step 5",
+    title: "Pack exactly as planned",
+    description:
+      "Follow the packing plan visualization to ensure orders are packed consistently and match what was quoted.",
+    image: "/marketing/how-packwell/packing-instructions.png",
+    imageAlt: "Packing instruction visualization with 3D, front, side, and top views",
+    imageWidth: 1024,
+    imageHeight: 1024,
+    icon: "warehouse",
+  },
+];
+
 export default async function Home() {
   const session = await auth();
 
@@ -97,7 +155,7 @@ export default async function Home() {
 
         {/* Hero Section */}
         <section
-          className="relative overflow-hidden px-6 pt-[calc(var(--spacing)*30)] pb-20 md:pt-36 md:pb-32"
+          className="relative overflow-hidden bg-surface-container-lowest px-6 pt-[calc(var(--spacing)*30)] pb-20 md:pt-36 md:pb-32"
           data-testid="home-hero"
         >
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -349,52 +407,78 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Stop undercharging for shipping */}
-        <section className="py-24 md:py-32 px-6 bg-surface-container-lowest">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6" data-reveal="up">
-              Stop undercharging for shipping
-            </h2>
-            <p className="text-lg text-on-surface-variant mb-16 max-w-2xl mx-auto" data-reveal="up">
-              Calculate the exact box and dimensional weight before checkout &mdash; so you never
-              lose margin.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center" data-reveal="up">
-              <div className="bg-surface-container-low rounded-2xl p-8 text-center">
-                <div className="w-14 h-14 bg-surface-container rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="material-symbols-outlined text-[#3B82F6] text-2xl">shopping_cart</span>
-                </div>
-                <h4 className="font-bold mb-1">Ecommerce Cart</h4>
-                <p className="text-sm text-on-surface-variant">Customer adds items to their order</p>
-              </div>
-              <div className="relative">
-                <div className="hidden md:flex absolute left-[-2rem] top-1/2 -translate-y-1/2 text-on-surface-variant/30">
-                  <span className="material-symbols-outlined">arrow_forward</span>
-                </div>
-                <div className="bg-primary rounded-2xl p-8 text-center text-on-primary">
-                  <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <span className="material-symbols-outlined text-on-primary text-2xl">memory</span>
+        {/* How It Works Section */}
+        <section
+          id="how-it-works"
+          className="px-6 py-24 md:py-32 bg-surface-container-low"
+          data-testid="how-packwell-section"
+        >
+          <div className="max-w-7xl mx-auto">
+            <div className="mx-auto max-w-3xl text-center" data-reveal="up">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-on-background leading-tight">
+                How Packwell works
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-on-surface-variant">
+                Use the Packwell UI or REST API to integrate precise box selection
+                and packing instructions into your existing business process.
+              </p>
+            </div>
+
+            <div className="mt-16 space-y-20 lg:mt-20 lg:space-y-24">
+              {howPackwellSteps.map((step, index) => {
+                const imageFirst = index % 2 === 1;
+
+                return (
+                  <div
+                    key={step.step}
+                    className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16"
+                    data-reveal="up"
+                  >
+                    <div className={imageFirst ? "lg:order-2" : undefined}>
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-fixed text-primary shadow-[0_12px_24px_-18px_rgba(37,99,235,0.9)]">
+                          <span
+                            className="material-symbols-outlined text-[22px]"
+                            aria-hidden="true"
+                          >
+                            {step.icon}
+                          </span>
+                        </span>
+                        <p className="text-sm font-bold uppercase tracking-[0.16em] text-primary">
+                          {step.step}
+                        </p>
+                      </div>
+                      <h3 className="mt-5 text-3xl font-extrabold tracking-tight text-on-background sm:text-4xl">
+                        {step.title}
+                      </h3>
+                      <p className="mt-5 max-w-xl text-lg leading-relaxed text-on-surface-variant">
+                        {step.description}
+                      </p>
+                    </div>
+
+                    <div className={imageFirst ? "lg:order-1" : undefined}>
+                      <div className="overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest shadow-[0_24px_60px_-44px_rgba(15,23,42,0.55)]">
+                        <div className="relative flex min-h-[280px] items-center justify-center bg-surface-container-low p-3 sm:min-h-[360px] sm:p-5">
+                          <Image
+                            src={step.image}
+                            alt={step.imageAlt}
+                            width={step.imageWidth}
+                            height={step.imageHeight}
+                            sizes="(min-width: 1024px) 560px, calc(100vw - 48px)"
+                            className="max-h-[520px] w-full rounded-xl object-contain"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <h4 className="font-bold mb-1">Packwell API</h4>
-                  <p className="text-sm text-on-primary/80">Calculates optimal box &amp; dimensional weight</p>
-                </div>
-                <div className="hidden md:flex absolute right-[-2rem] top-1/2 -translate-y-1/2 text-on-surface-variant/30">
-                  <span className="material-symbols-outlined">arrow_forward</span>
-                </div>
-              </div>
-              <div className="bg-surface-container-low rounded-2xl p-8 text-center">
-                <div className="w-14 h-14 bg-surface-container rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="material-symbols-outlined text-[#16A34A] text-2xl">package_2</span>
-                </div>
-                <h4 className="font-bold mb-1">Output</h4>
-                <p className="text-sm text-on-surface-variant">Box dimensions + accurate shipping cost</p>
-              </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
         {/* Use Cases Section */}
-        <section id="use-cases" className="py-24 md:py-32 bg-surface-container-low px-6">
+        <section id="use-cases" className="py-24 md:py-32 bg-surface-container-lowest px-6">
           <div className="max-w-7xl mx-auto">
             <h2
               className="text-4xl md:text-5xl font-bold tracking-tight text-center mb-6"
@@ -435,7 +519,7 @@ export default async function Home() {
               ].map((card) => (
                 <div
                   key={card.title}
-                  className="bg-surface-container-lowest rounded-xl p-8 hover:shadow-lg transition-shadow"
+                  className="bg-surface-container-low rounded-xl p-8 hover:shadow-lg transition-shadow"
                   data-reveal="up"
                 >
                   <div className={`w-12 h-12 ${card.iconBg} rounded-lg flex items-center justify-center mb-4`}>
@@ -452,7 +536,7 @@ export default async function Home() {
         </section>
 
         {/* Turn packaging into a cost advantage */}
-        <section className="py-20 px-6">
+        <section className="py-20 px-6 bg-surface-container-low">
           <div className="max-w-[1120px] mx-auto flex flex-col items-center gap-12">
             <h2 className="text-[48px] font-extrabold tracking-[-1.2px] leading-[1.1] text-center text-[#1E293B] max-w-[600px]" data-reveal="up">
               Turn packaging into{"\n"}a cost advantage
@@ -508,41 +592,11 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* How It Works Section */}
-        <section id="how-it-works" className="px-6 pt-24 pb-32 md:pt-32 md:pb-40 bg-[#F8F9FA]">
-          <div className="max-w-[1232px] mx-auto flex flex-col items-center gap-20">
-            <h2
-              className="text-[48px] font-extrabold tracking-[-1.2px] leading-none text-center text-[#1E293B]"
-              data-reveal="up"
-            >
-              How Packwell works
-            </h2>
-            {/* Steps */}
-            <div className="relative w-full" data-reveal="up">
-              {/* Connector line */}
-              <div className="hidden md:block absolute top-12 left-[13%] right-[13%] h-0.5 bg-[#E2E8F0]"></div>
-              <div className="grid w-full grid-cols-1 gap-8 md:h-44 md:grid-cols-4 md:gap-0">
-                {[
-                  { num: "1", icon: "shopping_cart", title: "Provide items\nin the order" },
-                  { num: "2", icon: "pageview", title: "Packwell calculates\nbest box & layout" },
-                  { num: "3", icon: "straighten", title: "Receive dimensions\n+ packing plan" },
-                  { num: "4", icon: "warehouse", title: "Use in checkout\nor warehouse" },
-                ].map((step) => (
-                  <div key={step.num} className="relative z-10 flex flex-col items-center">
-                    <div className="w-24 h-24 bg-[#EFF6FF] rounded-full flex flex-col items-center justify-center gap-1">
-                      <span className="text-[36px] font-bold leading-none text-[#2563EB]">{step.num}</span>
-                      <span className="material-symbols-outlined text-[20px] text-[#64748B]">{step.icon}</span>
-                    </div>
-                    <p className="text-[16px] font-semibold text-[#1E293B] text-center leading-normal mt-3 whitespace-pre-line">{step.title}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Features Section */}
-        <section id="features" className="px-5 py-20 sm:px-8 sm:py-24 lg:px-14 lg:py-28">
+        <section
+          id="features"
+          className="bg-surface-container-lowest px-5 py-20 sm:px-8 sm:py-24 lg:px-14 lg:py-28"
+        >
           <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,450px)] lg:gap-16 xl:gap-20">
             {/* Left column */}
             <div className="min-w-0 flex flex-col gap-10 lg:gap-12">
@@ -652,7 +706,7 @@ export default async function Home() {
         <MarketingPricingSection />
 
         {/* CTA Section */}
-        <section className="py-24 md:py-32 px-6">
+        <section className="py-24 md:py-32 px-6 bg-surface-container-lowest">
           <div className="max-w-[1232px] mx-auto">
             <div className="relative flex flex-col items-start gap-12 overflow-hidden rounded-[24px] bg-[#DBE1FF] px-6 py-10 sm:px-10 sm:py-12 md:flex-row md:items-center md:justify-between md:gap-8 md:px-16 md:py-16">
               <div className="relative z-10 flex max-w-[700px] flex-col gap-6" data-reveal="left">
