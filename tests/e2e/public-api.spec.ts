@@ -377,31 +377,36 @@ test("calculates, lists, reads, and updates packing plans through the public API
   const calculated = await calculate.json();
   expectUuid(calculated.id);
   packingPlanId = calculated.id;
-  expect(calculated).toEqual(
+  expect(calculated.units).toEqual(
     expect.objectContaining({
-      units: expect.objectContaining({
-        unitSystem: "cm",
-        dimension: "cm",
-        weight: "g",
-        dimensionalWeight: "kg",
-      }),
-      result: expect.objectContaining({
-        boxes: [
-          expect.objectContaining({
-            box: expect.objectContaining({
-              id: calculationBoxId,
-              name: "API Calculation Cube",
-            }),
-            items: expect.arrayContaining([
-              expect.objectContaining({ name: expect.stringContaining("Item A") }),
-              expect.objectContaining({ name: expect.stringContaining("Item B") }),
-            ]),
-          }),
-        ],
-        idealBox: expect.objectContaining({
-          box: expect.objectContaining({ name: "Ideal Box" }),
+      unitSystem: "cm",
+      dimension: "cm",
+      weight: "g",
+      dimensionalWeight: "kg",
+    })
+  );
+  expect(calculated.result.boxes.length).toBeGreaterThan(0);
+  expect(calculated.result.boxes).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        box: expect.objectContaining({
+          id: calculationBoxId,
+          name: "API Calculation Cube",
         }),
       }),
+    ])
+  );
+  expect(calculated.result.boxes.every((result) => result.box.id === calculationBoxId)).toBe(true);
+  expect(calculated.result.boxes.flatMap((result) => result.items)).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ name: expect.stringContaining("Item A") }),
+      expect.objectContaining({ name: expect.stringContaining("Item B") }),
+    ])
+  );
+  expect(calculated.result.boxes.flatMap((result) => result.items)).toHaveLength(5);
+  expect(calculated.result.idealBox).toEqual(
+    expect.objectContaining({
+      box: expect.objectContaining({ name: "Ideal Box" }),
     })
   );
   expect(calculated.visualization).toBeUndefined();

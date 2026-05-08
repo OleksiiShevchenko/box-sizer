@@ -290,7 +290,7 @@ describe("subscription service", () => {
     const currentPeriodStart = new Date("2026-03-19T12:00:00.000Z");
     const currentPeriodEnd = new Date("2026-04-19T12:00:00.000Z");
     prismaMock.user.findUniqueOrThrow
-      .mockResolvedValueOnce({ createdAt } as never)
+      .mockResolvedValueOnce({ createdAt: currentPeriodStart } as never)
       .mockResolvedValueOnce({
         email: "alex@example.com",
         name: "Alex",
@@ -304,11 +304,11 @@ describe("subscription service", () => {
       tier: "starter",
       billingInterval: null,
       status: "active",
-      currentPeriodStart: currentPeriod.start,
-      currentPeriodEnd: currentPeriod.end,
+      currentPeriodStart,
+      currentPeriodEnd,
       cancelAtPeriodEnd: false,
-      createdAt,
-      updatedAt: createdAt,
+      createdAt: currentPeriodStart,
+      updatedAt: currentPeriodStart,
     } as never);
     stripeCustomerCreate.mockResolvedValue({ id: "cus_new" } as never);
     prismaMock.subscription.update.mockResolvedValue({
@@ -320,11 +320,11 @@ describe("subscription service", () => {
       tier: "starter",
       billingInterval: null,
       status: "active",
-      currentPeriodStart: currentPeriod.start,
-      currentPeriodEnd: currentPeriod.end,
+      currentPeriodStart,
+      currentPeriodEnd,
       cancelAtPeriodEnd: false,
-      createdAt,
-      updatedAt: createdAt,
+      createdAt: currentPeriodStart,
+      updatedAt: currentPeriodStart,
     } as never);
 
     const result = await getOrCreateStripeCustomer("user-1");
