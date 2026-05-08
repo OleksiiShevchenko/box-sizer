@@ -20,7 +20,7 @@ jest.mock("@/lib/prisma", () => ({
     $transaction: jest.fn(),
     subscription: {
       findUnique: jest.fn(),
-      create: jest.fn(),
+      upsert: jest.fn(),
       update: jest.fn(),
     },
     calculationUsage: {
@@ -49,7 +49,22 @@ jest.mock("@/services/email-notifications", () => ({
   notifyQuotaReached: jest.fn(),
 }));
 
-const prismaMock = prisma as jest.Mocked<typeof prisma>;
+const prismaMock = prisma as unknown as {
+  $transaction: jest.Mock;
+  subscription: {
+    findUnique: jest.Mock;
+    upsert: jest.Mock;
+    update: jest.Mock;
+  };
+  calculationUsage: {
+    count: jest.Mock;
+    create: jest.Mock;
+  };
+  user: {
+    findUniqueOrThrow: jest.Mock;
+    findUnique: jest.Mock;
+  };
+};
 const stripeCustomerCreate = stripe.customers.create as jest.MockedFunction<
   typeof stripe.customers.create
 >;
@@ -81,9 +96,10 @@ describe("subscription service", () => {
   it("creates a starter subscription row when one is missing", async () => {
     jest.useFakeTimers().setSystemTime(new Date("2026-03-19T12:00:00.000Z"));
     const createdAt = new Date("2026-03-19T12:00:00.000Z");
+    const expectedPeriod = getStarterUsagePeriod(createdAt);
     prismaMock.user.findUniqueOrThrow.mockResolvedValue({ createdAt } as never);
     prismaMock.subscription.findUnique.mockResolvedValue(null);
-    prismaMock.subscription.create.mockResolvedValue({
+    prismaMock.subscription.upsert.mockResolvedValue({
       id: "sub-1",
       userId: "user-1",
       stripeCustomerId: null,
@@ -92,8 +108,8 @@ describe("subscription service", () => {
       tier: "starter",
       billingInterval: null,
       status: "active",
-      currentPeriodStart: createdAt,
-      currentPeriodEnd: new Date("2026-04-19T12:00:00.000Z"),
+      currentPeriodStart: expectedPeriod.start,
+      currentPeriodEnd: expectedPeriod.end,
       cancelAtPeriodEnd: false,
       createdAt,
       updatedAt: createdAt,
@@ -102,18 +118,81 @@ describe("subscription service", () => {
     await expect(getUserSubscription("user-1")).resolves.toMatchObject({
       userId: "user-1",
       tier: "starter",
-      currentPeriodStart: createdAt,
-      currentPeriodEnd: new Date("2026-04-19T12:00:00.000Z"),
+      currentPeriodStart: expectedPeriod.start,
+      currentPeriodEnd: expectedPeriod.end,
     });
 
-    expect(prismaMock.subscription.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
+    expect(prismaMock.subscription.upsert).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      update: {},
+      create: expect.objectContaining({
         userId: "user-1",
         stripeCustomerId: null,
-        currentPeriodStart: createdAt,
-        currentPeriodEnd: new Date("2026-04-19T12:00:00.000Z"),
+        currentPeriodStart: expectedPeriod.start,
+        currentPeriodEnd: expectedPeriod.end,
       }),
     });
+  });
+
+  it("uses the existing subscription when a concurrent request creates the missing row first", async () => {
+    const createdAt = new Date("2026-03-19T12:00:00.000Z");
+    const currentPeriodStart = new Date("2026-04-15T08:00:00.000Z");
+    const currentPeriodEnd = new Date("2026-05-15T08:00:00.000Z");
+
+    jest.useFakeTimers().setSystemTime(new Date("2026-04-27T12:00:00.000Z"));
+    prismaMock.user.findUniqueOrThrow.mockResolvedValue({
+      createdAt,
+    } as never);
+    prismaMock.subscription.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: "sub-1",
+        userId: "user-1",
+        stripeCustomerId: "cus_123",
+        stripeSubscriptionId: "sub_123",
+        stripePriceId: "price_growth_monthly",
+        tier: "growth",
+        billingInterval: "monthly",
+        status: "active",
+        currentPeriodStart,
+        currentPeriodEnd,
+        cancelAtPeriodEnd: false,
+        createdAt,
+        updatedAt: createdAt,
+      } as never);
+    prismaMock.subscription.upsert.mockResolvedValue({
+      id: "sub-1",
+      userId: "user-1",
+      stripeCustomerId: "cus_123",
+      stripeSubscriptionId: "sub_123",
+      stripePriceId: "price_growth_monthly",
+      tier: "growth",
+      billingInterval: "monthly",
+      status: "active",
+      currentPeriodStart,
+      currentPeriodEnd,
+      cancelAtPeriodEnd: false,
+      createdAt,
+      updatedAt: createdAt,
+    } as never);
+
+    await expect(getUserSubscription("user-1")).resolves.toMatchObject({
+      userId: "user-1",
+      tier: "growth",
+      stripeCustomerId: "cus_123",
+      currentPeriodStart,
+      currentPeriodEnd,
+    });
+
+    expect(prismaMock.subscription.upsert).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      update: {},
+      create: expect.objectContaining({
+        userId: "user-1",
+        stripeCustomerId: null,
+      }),
+    });
+    expect(stripeSubscriptionRetrieve).not.toHaveBeenCalled();
   });
 
   it("counts usage inside the active Stripe billing period", async () => {
@@ -211,7 +290,7 @@ describe("subscription service", () => {
     const currentPeriodStart = new Date("2026-03-19T12:00:00.000Z");
     const currentPeriodEnd = new Date("2026-04-19T12:00:00.000Z");
     prismaMock.user.findUniqueOrThrow
-      .mockResolvedValueOnce({ createdAt: currentPeriodStart } as never)
+      .mockResolvedValueOnce({ createdAt } as never)
       .mockResolvedValueOnce({
         email: "alex@example.com",
         name: "Alex",
@@ -225,11 +304,11 @@ describe("subscription service", () => {
       tier: "starter",
       billingInterval: null,
       status: "active",
-      currentPeriodStart,
-      currentPeriodEnd,
+      currentPeriodStart: currentPeriod.start,
+      currentPeriodEnd: currentPeriod.end,
       cancelAtPeriodEnd: false,
-      createdAt: currentPeriodStart,
-      updatedAt: currentPeriodStart,
+      createdAt,
+      updatedAt: createdAt,
     } as never);
     stripeCustomerCreate.mockResolvedValue({ id: "cus_new" } as never);
     prismaMock.subscription.update.mockResolvedValue({
@@ -241,11 +320,11 @@ describe("subscription service", () => {
       tier: "starter",
       billingInterval: null,
       status: "active",
-      currentPeriodStart,
-      currentPeriodEnd,
+      currentPeriodStart: currentPeriod.start,
+      currentPeriodEnd: currentPeriod.end,
       cancelAtPeriodEnd: false,
-      createdAt: currentPeriodStart,
-      updatedAt: currentPeriodStart,
+      createdAt,
+      updatedAt: createdAt,
     } as never);
 
     const result = await getOrCreateStripeCustomer("user-1");

@@ -27,6 +27,7 @@ jobs:
     env:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/box_sizer?schema=public"
       AUTH_SECRET: "ci-test-secret-not-real"
+      API_JWT_SECRET: "ci-api-jwt-secret-not-real"
       AUTH_TRUST_HOST: "true"
       NEXTAUTH_URL: "http://localhost:3000"
       GOOGLE_CLIENT_ID: "placeholder"

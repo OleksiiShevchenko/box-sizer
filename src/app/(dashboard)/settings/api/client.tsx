@@ -21,7 +21,7 @@ export function ApiSettingsClient({ initialApps }: { initialApps: ApiApp[] }) {
             Manage OAuth client credentials for the Packwell.io public API.
           </p>
           <Link
-            href="/api/v1/docs"
+            href="/api/v1/docs#description/introduction"
             className="mt-2 inline-flex text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
           >
             View API documentation

@@ -2,6 +2,7 @@ import { calculatePackingPlanForUser, createPackingPlanCalculation } from "@/lib
 import { inchesToCm, ozToGrams } from "@/types";
 import { POST } from "./route";
 import { performMeteredCalculation } from "@/services/subscription";
+import type { NextRequest } from "next/server";
 
 jest.mock("next/server", () => {
   const actual = jest.requireActual("next/server");
@@ -159,7 +160,7 @@ describe("POST /api/v1/packing-plans/calculate", () => {
           },
         ],
       }),
-    }) as Request & { nextUrl: URL };
+    }) as unknown as NextRequest;
     Object.defineProperty(request, "nextUrl", {
       value: new URL("http://localhost/api/v1/packing-plans/calculate"),
     });
@@ -237,7 +238,7 @@ describe("POST /api/v1/packing-plans/calculate", () => {
           },
         ],
       }),
-    }) as Request & { nextUrl: URL };
+    }) as unknown as NextRequest;
     Object.defineProperty(request, "nextUrl", {
       value: new URL("http://localhost/api/v1/packing-plans/calculate"),
     });
@@ -308,7 +309,7 @@ describe("POST /api/v1/packing-plans/calculate", () => {
           },
         ],
       }),
-    }) as Request & { nextUrl: URL };
+    }) as unknown as NextRequest;
     Object.defineProperty(request, "nextUrl", {
       value: new URL("http://localhost/api/v1/packing-plans/calculate"),
     });

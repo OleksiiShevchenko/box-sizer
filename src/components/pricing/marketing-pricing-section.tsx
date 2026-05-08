@@ -7,7 +7,7 @@ export function MarketingPricingSection() {
   const plans = getVisiblePlans();
 
   return (
-    <section id="pricing" className="bg-[#F8F9FA] px-6 py-24 md:py-32">
+    <section id="pricing" className="bg-surface-container-low px-6 py-24 md:py-32">
       <div className="mx-auto flex max-w-[1232px] flex-col items-center">
         <div
           className="mb-16 flex max-w-[760px] flex-col items-center gap-3.5 text-center"

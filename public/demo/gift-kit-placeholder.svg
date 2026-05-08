@@ -1,0 +1,12 @@
+<svg width="800" height="480" viewBox="0 0 800 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="480" rx="32" fill="#FCE7F3"/>
+  <rect x="74" y="78" width="652" height="324" rx="28" fill="#FFF7FB"/>
+  <rect x="240" y="150" width="320" height="190" rx="28" fill="#EC4899"/>
+  <rect x="240" y="126" width="320" height="62" rx="24" fill="#F472B6"/>
+  <rect x="380" y="110" width="40" height="246" rx="20" fill="#FDF2F8"/>
+  <rect x="260" y="226" width="280" height="30" rx="15" fill="#FDF2F8"/>
+  <path d="M398 112C364 72 311 76 294 110C277 144 333 162 381 148" stroke="#BE185D" stroke-width="18" stroke-linecap="round"/>
+  <path d="M402 112C436 72 489 76 506 110C523 144 467 162 419 148" stroke="#BE185D" stroke-width="18" stroke-linecap="round"/>
+  <rect x="108" y="108" width="132" height="40" rx="20" fill="#FBCFE8"/>
+  <text x="174" y="134" text-anchor="middle" fill="#9D174D" font-family="Arial, sans-serif" font-size="20" font-weight="700">Gift box</text>
+</svg>

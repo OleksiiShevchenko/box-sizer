@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from "react";
 import { CALENDLY_DEMO_URL } from "@/lib/calendly";
 
 declare global {
@@ -106,10 +106,17 @@ interface DemoBookingButtonProps {
 export function DemoBookingButton({
   children,
   className = "",
-}: DemoBookingButtonProps) {
+  onClick,
+  ...props
+}: DemoBookingButtonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [loading, setLoading] = useState(false);
 
-  async function handleClick() {
+  async function handleClick(event: MouseEvent<HTMLButtonElement>) {
+    onClick?.(event);
+    if (event.defaultPrevented) {
+      return;
+    }
+
     if (calendlyPopupActive && document.querySelector(".calendly-overlay")) {
       return;
     }
@@ -141,6 +148,7 @@ export function DemoBookingButton({
       aria-busy={loading}
       disabled={loading}
       onClick={handleClick}
+      {...props}
     >
       {children}
     </button>

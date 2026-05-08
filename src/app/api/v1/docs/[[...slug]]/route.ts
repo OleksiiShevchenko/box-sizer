@@ -5,6 +5,7 @@ export const runtime = "nodejs";
 export const GET = ApiReference({
   url: "/api/v1/openapi.json",
   theme: "bluePlanet",
+  darkMode: false,
   title: "Packwell.io Public API",
   pageTitle: "Packwell.io Public API",
   favicon: "/email/packwell-mark.svg",

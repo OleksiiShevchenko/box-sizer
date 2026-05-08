@@ -18,7 +18,7 @@ jest.mock("@/services/packing-plan-packing", () => ({
   calculateIdealBoxPacking: jest.fn(),
 }));
 
-const prismaMock = prisma as jest.Mocked<typeof prisma>;
+const boxFindManyMock = prisma.box.findMany as jest.Mock;
 const calculatePackingPlanPackingMock = calculatePackingPlanPacking as jest.MockedFunction<
   typeof calculatePackingPlanPacking
 >;
@@ -32,7 +32,7 @@ describe("calculatePackingPlanForUser", () => {
   });
 
   it("returns ideal-only results when the account has no saved boxes and ideal packing is requested", async () => {
-    prismaMock.box.findMany.mockResolvedValue([]);
+    boxFindManyMock.mockResolvedValue([]);
     calculateIdealBoxPackingMock.mockReturnValue({
       box: {
         id: "ideal",
@@ -60,7 +60,7 @@ describe("calculatePackingPlanForUser", () => {
   });
 
   it("throws a user-facing error when no boxes are available and ideal packing is not requested", async () => {
-    prismaMock.box.findMany.mockResolvedValue([]);
+    boxFindManyMock.mockResolvedValue([]);
 
     await expect(
       calculatePackingPlanForUser("user-1", {
@@ -71,7 +71,7 @@ describe("calculatePackingPlanForUser", () => {
   });
 
   it("falls back to an ideal box when saved boxes do not fit and ideal packing is requested", async () => {
-    prismaMock.box.findMany.mockResolvedValue([
+    boxFindManyMock.mockResolvedValue([
       {
         id: "box-1",
         publicId: "box-public-1",
@@ -118,7 +118,7 @@ describe("calculatePackingPlanForUser", () => {
   });
 
   it("still throws when saved boxes do not fit and ideal packing is not requested", async () => {
-    prismaMock.box.findMany.mockResolvedValue([
+    boxFindManyMock.mockResolvedValue([
       {
         id: "box-1",
         publicId: "box-public-1",

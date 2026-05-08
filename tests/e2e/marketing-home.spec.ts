@@ -14,7 +14,7 @@ test.describe("Marketing homepage hero", () => {
     await page.goto("/");
 
     const hero = page.getByTestId("home-hero");
-    const widget = page.getByTestId("hero-packing-visualization");
+    const widget = page.getByTestId("hero-packing-visualization").first();
     const legendCard = page.getByTestId("hero-legend-card");
     const savingsLine = page.getByTestId("hero-savings-line");
 
@@ -56,7 +56,7 @@ test.describe("Marketing homepage hero", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
 
-    const widget = page.getByTestId("hero-packing-visualization");
+    const widget = page.getByTestId("hero-packing-visualization").first();
     const legendCard = page.getByTestId("hero-legend-card");
     const savingsLine = page.getByTestId("hero-savings-line");
 

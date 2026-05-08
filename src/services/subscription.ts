@@ -227,19 +227,26 @@ async function resolveUsagePeriod(
   ]);
 
   if (!subscription) {
-    const created = await db.subscription.create({
-      data: {
+    const upserted = await db.subscription.upsert({
+      where: { userId },
+      update: {},
+      create: {
         ...buildStarterSubscriptionData(userId, user.createdAt, now),
         stripeCustomerId: null,
       },
     });
-    const normalized = normalizeSubscription(userId, created);
+
+    if (!isStarterTier(upserted) || !upserted.currentPeriodStart || !upserted.currentPeriodEnd) {
+      return resolveUsagePeriod(db, userId, now, options);
+    }
+
+    const normalized = normalizeSubscription(userId, upserted);
 
     return {
       subscription: normalized,
       period: {
-        start: created.currentPeriodStart!,
-        end: created.currentPeriodEnd!,
+        start: upserted.currentPeriodStart,
+        end: upserted.currentPeriodEnd,
       },
     };
   }
