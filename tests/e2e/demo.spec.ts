@@ -30,8 +30,6 @@ test.describe("Interactive demo", () => {
 
     await page.getByTestId("scenario-card-gift-kit").click();
     await expect(page.getByTestId("demo-order-form")).toBeVisible();
-
-    await page.getByRole("button", { name: "Calculate Box" }).click();
     await expect(page.getByText("Best Available Box")).toBeVisible();
     await expect(page.getByText("Ideal Custom Box")).toBeVisible();
     await expect(page.getByText("3D view (width x height x depth)")).toBeVisible();
@@ -48,6 +46,7 @@ test.describe("Interactive demo", () => {
 
     await page.getByTestId("scenario-card-ecommerce-order").click();
     await expect(page.getByTestId("demo-order-form")).toBeVisible();
+    await expect(page.getByText("Best Available Box")).toBeVisible();
     await setQuantity(page.getByTestId("demo-item-pair-of-socks").getByLabel("Quantity"), "10");
     await page.getByTestId("demo-item-running-shoes").getByRole("button", { name: "Delete" }).click();
     await expect(page.getByTestId("demo-item-running-shoes")).toHaveCount(0);
@@ -55,8 +54,11 @@ test.describe("Interactive demo", () => {
     await page.getByRole("button", { name: "Calculate Box" }).click();
     await expect(page.getByText("Best Available Box")).toBeVisible();
     const resultActions = page.getByTestId("demo-result-actions");
-    await expect(resultActions.getByRole("link", { name: "Start Free" })).toBeVisible();
-    await resultActions.getByRole("link", { name: "Start Free" }).click();
-    await expect(page).toHaveURL("/signup");
+    const startFreeLink = resultActions.getByRole("link", { name: "Start Free" });
+    await expect(startFreeLink).toBeVisible();
+    await Promise.all([
+      page.waitForURL("/signup"),
+      startFreeLink.click(),
+    ]);
   });
 });
