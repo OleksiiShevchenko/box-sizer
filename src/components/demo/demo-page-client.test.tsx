@@ -75,6 +75,22 @@ const mockedPosthog = jest.mocked(posthog);
 describe("DemoPageClient", () => {
   beforeEach(() => {
     mockedCalculateDemoPacking.mockReset();
+    mockedCalculateDemoPacking.mockResolvedValue({
+      results: [],
+      idealResult: {
+        box: {
+          id: "ideal-box",
+          name: "Ideal Box",
+          width: 1,
+          height: 1,
+          depth: 1,
+          spacing: 0,
+          maxWeight: null,
+        },
+        items: [],
+        dimensionalWeight: 3,
+      },
+    });
     mockedPosthog.capture.mockReset();
     window.history.replaceState(null, "", "/demo");
   });
@@ -145,6 +161,17 @@ describe("DemoPageClient", () => {
     expect(screen.getByTestId("demo-order-form")).toBeInTheDocument();
     expect(screen.queryByText("How can this item be oriented when packed?")).not.toBeInTheDocument();
     expect(screen.queryByText("Can other items be stacked on top of this item?")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockedCalculateDemoPacking).toHaveBeenCalledWith({
+        scenarioId: "gift-kit",
+        quantities: {
+          "ceramic-mug": 1,
+          "soy-candle": 1,
+          notebook: 1,
+        },
+      });
+    });
+    expect(await screen.findByText("Large Shipper")).toBeInTheDocument();
 
     const soyCandleQuantity = within(screen.getByTestId("demo-item-soy-candle")).getByLabelText("Quantity");
     await user.clear(soyCandleQuantity);
@@ -157,7 +184,7 @@ describe("DemoPageClient", () => {
     await user.click(screen.getByRole("button", { name: "Calculate Box" }));
 
     await waitFor(() => {
-      expect(mockedCalculateDemoPacking).toHaveBeenCalledWith({
+      expect(mockedCalculateDemoPacking).toHaveBeenLastCalledWith({
         scenarioId: "gift-kit",
         quantities: {
           "soy-candle": 12,
@@ -165,9 +192,9 @@ describe("DemoPageClient", () => {
         },
       });
     });
+    expect(mockedCalculateDemoPacking).toHaveBeenCalledTimes(2);
 
     expect(await screen.findByTestId("mock-result-panel")).toBeInTheDocument();
-    expect(screen.getByText("Large Shipper")).toBeInTheDocument();
     expect(mockedPosthog.capture).toHaveBeenCalledWith("demo_result_viewed", {
       preset_id: "gift-kit",
       preset_name: "Gift kit",
@@ -189,8 +216,6 @@ describe("DemoPageClient", () => {
 
     await user.click(screen.getByTestId("scenario-card-gift-kit"));
     expect(screen.getByTestId("demo-order-form")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Calculate Box" }));
     expect(await screen.findByTestId("demo-result-actions")).toBeInTheDocument();
 
     await user.click(
@@ -216,6 +241,9 @@ describe("DemoPageClient", () => {
 
     render(<DemoPageClient />);
     await user.click(screen.getByTestId("scenario-card-ecommerce-order"));
+    await waitFor(() => {
+      expect(mockedCalculateDemoPacking).toHaveBeenCalledTimes(1);
+    });
 
     while (screen.queryAllByRole("button", { name: "Delete" }).length > 0) {
       await user.click(screen.getAllByRole("button", { name: "Delete" })[0]!);
@@ -231,6 +259,9 @@ describe("DemoPageClient", () => {
 
     render(<DemoPageClient />);
     await user.click(screen.getByTestId("scenario-card-ecommerce-order"));
+    await waitFor(() => {
+      expect(mockedCalculateDemoPacking).toHaveBeenCalledTimes(1);
+    });
 
     await user.clear(within(screen.getByTestId("demo-item-running-shoes")).getByLabelText("Quantity"));
     await user.type(within(screen.getByTestId("demo-item-running-shoes")).getByLabelText("Quantity"), "50");
@@ -241,12 +272,13 @@ describe("DemoPageClient", () => {
 
     await user.click(screen.getByRole("button", { name: "Calculate Box" }));
 
-    expect(mockedCalculateDemoPacking).not.toHaveBeenCalled();
+    expect(mockedCalculateDemoPacking).toHaveBeenCalledTimes(1);
     expect(screen.getByText("Demo requests are limited to 120 total units.")).toBeInTheDocument();
   });
 
   it("restores previous demo steps from browser history state", async () => {
     const user = userEvent.setup();
+    const pushStateSpy = jest.spyOn(window.history, "pushState");
     mockedCalculateDemoPacking.mockResolvedValue({
       results: [
         {
@@ -281,9 +313,10 @@ describe("DemoPageClient", () => {
     render(<DemoPageClient />);
 
     await user.click(screen.getByTestId("scenario-card-gift-kit"));
-    const stepTwoState = window.history.state;
-
-    await user.click(screen.getByRole("button", { name: "Calculate Box" }));
+    await waitFor(() => {
+      expect(pushStateSpy.mock.calls.some(([state]) => state.step === 2)).toBe(true);
+    });
+    const stepTwoState = pushStateSpy.mock.calls.find(([state]) => state.step === 2)?.[0];
     expect(await screen.findByText("Gift Set Box")).toBeInTheDocument();
 
     await act(async () => {
@@ -295,5 +328,6 @@ describe("DemoPageClient", () => {
       expect(screen.queryByTestId("demo-result-actions")).not.toBeInTheDocument();
       expect(screen.getByText("No result yet")).toBeInTheDocument();
     });
+    pushStateSpy.mockRestore();
   });
 });

@@ -40,7 +40,7 @@ export function DemoOrderForm({
   onCalculate,
 }: DemoOrderFormProps) {
   return (
-    <Card className="space-y-6" data-testid="demo-order-form">
+    <Card className="min-w-0 space-y-6 !p-4 sm:!p-6" data-testid="demo-order-form">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold text-slate-900">{scenario.name}</h2>
         <p className="text-sm text-slate-500">{scenario.description}</p>
@@ -50,56 +50,55 @@ export function DemoOrderForm({
         {items.map((item) => (
           <div
             key={item.id}
-            className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-2 rounded-lg border border-slate-200 bg-white px-3 py-3 sm:px-4"
+            className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-x-2 gap-y-2 rounded-lg border border-slate-200 bg-white px-3 py-3 sm:grid-cols-[minmax(0,13rem)_auto_minmax(0,1fr)_auto] sm:px-4"
             data-testid={`demo-item-${item.id}`}
           >
-            <div className="min-w-0">
-              <div className="flex min-w-0 items-center gap-5">
-                <h3 className="min-w-0 truncate font-semibold leading-9 text-slate-900" title={item.name}>
-                  {item.name}
-                </h3>
-                <div className="flex shrink-0 items-center gap-1">
-                  <label
-                    htmlFor={`quantity-${item.id}`}
-                    className="text-xs font-medium text-slate-500"
-                  >
-                    Q-ty:
-                  </label>
-                  <input
-                    id={`quantity-${item.id}`}
-                    type="number"
-                    min="1"
-                    step="1"
-                    inputMode="numeric"
-                    aria-label="Quantity"
-                    aria-invalid={fieldErrors[item.id] ? "true" : "false"}
-                    aria-describedby={fieldErrors[item.id] ? `quantity-${item.id}-error` : undefined}
-                    className={`block h-9 w-12 rounded-lg border px-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:bg-slate-50 disabled:text-slate-500 ${
-                      fieldErrors[item.id]
-                        ? "border-red-600 focus:border-red-600 focus:ring-red-600/10"
-                        : "border-slate-200 focus:border-blue-600 focus:ring-blue-600/15"
-                    }`}
-                    value={item.quantity}
-                    onChange={(event) => onQuantityChange(item.id, event.target.value)}
-                  />
-                </div>
-              </div>
-              <p className="text-sm text-slate-500">{formatItemMeta(item)}</p>
-              {fieldErrors[item.id] ? (
-                <p id={`quantity-${item.id}-error`} className="mt-1 text-[11px] font-medium text-red-600">
-                  {fieldErrors[item.id]}
-                </p>
-              ) : null}
+            <h3 className="min-w-0 truncate font-semibold leading-9 text-slate-900" title={item.name}>
+              {item.name}
+            </h3>
+            <div className="flex shrink-0 items-center gap-1 sm:col-start-2">
+              <label
+                htmlFor={`quantity-${item.id}`}
+                className="text-xs font-medium text-slate-500"
+              >
+                Q-ty:
+              </label>
+              <input
+                id={`quantity-${item.id}`}
+                type="number"
+                min="1"
+                step="1"
+                inputMode="numeric"
+                aria-label="Quantity"
+                aria-invalid={fieldErrors[item.id] ? "true" : "false"}
+                aria-describedby={fieldErrors[item.id] ? `quantity-${item.id}-error` : undefined}
+                className={`block h-9 w-12 rounded-lg border px-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:bg-slate-50 disabled:text-slate-500 ${
+                  fieldErrors[item.id]
+                    ? "border-red-600 focus:border-red-600 focus:ring-red-600/10"
+                    : "border-slate-200 focus:border-blue-600 focus:ring-blue-600/15"
+                }`}
+                value={item.quantity}
+                onChange={(event) => onQuantityChange(item.id, event.target.value)}
+              />
             </div>
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="!px-0"
+              className="justify-self-end !px-0 sm:col-start-4"
               onClick={() => onDelete(item.id)}
             >
               Delete
             </Button>
+            <p className="col-span-full min-w-0 text-sm text-slate-500 sm:col-span-3">{formatItemMeta(item)}</p>
+            {fieldErrors[item.id] ? (
+              <p
+                id={`quantity-${item.id}-error`}
+                className="col-span-full mt-1 text-[11px] font-medium text-red-600"
+              >
+                {fieldErrors[item.id]}
+              </p>
+            ) : null}
           </div>
         ))}
       </div>

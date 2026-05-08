@@ -96,6 +96,7 @@ export function DemoPageClient() {
   const [loading, setLoading] = useState(false);
   const hasTrackedStart = useRef(false);
   const lastTrackedResultKey = useRef<string | null>(null);
+  const calculationRequestId = useRef(0);
 
   const selectedScenario = useMemo(
     () => DEMO_SCENARIOS.find((scenario) => scenario.id === selectedScenarioId) ?? null,
@@ -162,6 +163,7 @@ export function DemoPageClient() {
 
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.__demoFlow) {
+        calculationRequestId.current += 1;
         applyHistoryState(event.state as DemoHistoryState);
       }
     };
@@ -206,6 +208,7 @@ export function DemoPageClient() {
   }, [currentStep, idealResult, results, selectedScenario]);
 
   function resetDemoFlow() {
+    calculationRequestId.current += 1;
     const nextState = createHistoryState(1, null, [], null, null);
     window.history.pushState(nextState, "", window.location.href);
     applyHistoryState(nextState);
@@ -225,6 +228,7 @@ export function DemoPageClient() {
       preset_id: scenario.id,
       preset_name: scenario.name,
     });
+    void calculateDraftItems(scenario, nextDraftItems);
   }
 
   function handleQuantityChange(itemId: string, quantity: string) {
@@ -255,6 +259,7 @@ export function DemoPageClient() {
     }
 
     if (step === 1) {
+      calculationRequestId.current += 1;
       const nextState = createHistoryState(1, null, [], null, null);
       window.history.pushState(nextState, "", window.location.href);
       applyHistoryState(nextState);
@@ -269,6 +274,7 @@ export function DemoPageClient() {
     }
 
     if (step === 2) {
+      calculationRequestId.current += 1;
       const nextState = createHistoryState(2, selectedScenario.id, draftItems, null, null);
       window.history.pushState(nextState, "", window.location.href);
       applyHistoryState(nextState);
@@ -285,29 +291,32 @@ export function DemoPageClient() {
     }
   }
 
-  async function handleCalculate() {
-    if (!selectedScenario) {
-      return;
-    }
-
-    if (draftItems.length === 0) {
+  async function calculateDraftItems(scenario: DemoScenario, items: DemoDraftItem[]) {
+    if (items.length === 0) {
       setError("Select at least one item to continue.");
       return;
     }
 
-    const parsed = parseQuantities(draftItems);
+    const parsed = parseQuantities(items);
     setFieldErrors(parsed.fieldErrors);
     if (!parsed.quantities) {
       setError(parsed.formError ?? "Fix the highlighted quantities to continue.");
       return;
     }
 
+    const requestId = calculationRequestId.current + 1;
+    calculationRequestId.current = requestId;
     setLoading(true);
     setError("");
     const result = await calculateDemoPacking({
-      scenarioId: selectedScenario.id,
+      scenarioId: scenario.id,
       quantities: parsed.quantities,
     });
+
+    if (calculationRequestId.current !== requestId) {
+      return;
+    }
+
     setLoading(false);
 
     if (result.error) {
@@ -321,13 +330,21 @@ export function DemoPageClient() {
     setIdealResult(result.idealResult);
     const nextState = createHistoryState(
       3,
-      selectedScenario.id,
-      draftItems,
+      scenario.id,
+      items,
       result.results,
       result.idealResult
     );
     window.history.pushState(nextState, "", window.location.href);
     applyHistoryState(nextState);
+  }
+
+  async function handleCalculate() {
+    if (!selectedScenario) {
+      return;
+    }
+
+    await calculateDraftItems(selectedScenario, draftItems);
   }
 
   return (
@@ -384,7 +401,7 @@ export function DemoPageClient() {
         {currentStep === 1 ? (
           <DemoScenarioSelector scenarios={DEMO_SCENARIOS} onSelect={handleSelectScenario} />
         ) : selectedScenario ? (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
             <DemoOrderForm
               scenario={selectedScenario}
               items={draftItems}
@@ -396,7 +413,7 @@ export function DemoPageClient() {
               onCalculate={handleCalculate}
             />
 
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               <PackingPlanResultPanel
                 results={results}
                 idealResult={idealResult}
