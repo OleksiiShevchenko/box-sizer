@@ -387,6 +387,44 @@ describe("findIdealBox", () => {
     );
   });
 
+  it("prefers a balanced ideal box when multiple shapes have the same dimensional weight", () => {
+    const products = Array.from({ length: 7 }, (_, index) => ({
+      name: `Cube${index + 1}`,
+      width: 10,
+      height: 10,
+      depth: 10,
+    }));
+    const result = findIdealBox(products);
+
+    expect(result).not.toBeNull();
+    expect(checkFit(result!.box, products).fits).toBe(true);
+
+    const dims = [result!.box.width, result!.box.height, result!.box.depth].sort(
+      (a, b) => a - b
+    );
+    expect(dims[2]! / dims[0]!).toBeLessThanOrEqual(2.1);
+  });
+
+  it("tightens each ideal box dimension after selecting a ratio family", () => {
+    const products: IProduct[] = [
+      { name: "A", width: 12, height: 10, depth: 8 },
+      { name: "B", width: 9, height: 8, depth: 6 },
+      { name: "C", width: 7, height: 6, depth: 5 },
+    ];
+    const result = findIdealBox(products);
+
+    expect(result).not.toBeNull();
+    expect(checkFit(result!.box, products).fits).toBe(true);
+
+    for (const dimension of ["width", "height", "depth"] as const) {
+      const shrunk = {
+        ...result!.box,
+        [dimension]: result!.box[dimension] - 0.2,
+      };
+      expect(checkFit(shrunk, products).fits).toBe(false);
+    }
+  });
+
   it("respects spacing when calculating the ideal box", () => {
     const result = findIdealBox(
       [{ name: "Single", width: 12, height: 8, depth: 6 }],
@@ -530,7 +568,29 @@ describe("stacking constraints", () => {
     assertRespectsStackingConstraints(result[0].items, products);
   });
 
-  it("8 items (without Item6) fit in medium box when Item2 has canStackOnTop=false", () => {
+  it("rejects layouts where an upper item is left with almost no support underneath", () => {
+    const box: IBox = {
+      id: "s-support",
+      name: "Support Box",
+      width: 12,
+      height: 12,
+      depth: 6,
+      spacing: 0,
+    };
+    const products: IProduct[] = [
+      { name: "Tall Base", width: 5, height: 6, depth: 5 },
+      { name: "Short Base", width: 5, height: 3, depth: 5 },
+      { name: "Stable Top", width: 5, height: 3, depth: 5 },
+      { name: "Floating Top", width: 4, height: 6, depth: 3 },
+    ];
+
+    const result = checkFit(box, products);
+
+    expect(result.fits).toBe(false);
+    expect(result.packedItems).toHaveLength(0);
+  });
+
+  it("8 items (without Item6) no longer fit in one medium box when Item2 has canStackOnTop=false", () => {
     const mediumBox: IBox = {
       id: "5",
       name: "Medium box",
@@ -553,15 +613,15 @@ describe("stacking constraints", () => {
     ];
 
     const result = checkFit(mediumBox, products);
-    expect(result.fits).toBe(true);
+    expect(result.fits).toBe(false);
+    expect(result.packedItems).toHaveLength(0);
   });
 
-  it("canStackOnTop=false on 5in cubes requires multi-box when column constraint removes too much space", () => {
-    // This scenario has 10 items (after quantity expansion) at 77% fill ratio.
-    // With canStackOnTop=false on Item 2 (two 5" cubes), the entire vertical
-    // column above each cube must be empty. The four 5" cubes cover the full
-    // floor plan, so there's nowhere to place remaining items without violating
-    // the constraint. Multi-box is the correct outcome here.
+  it("falls back to multi-box when the only single-box layout depends on unstable support", () => {
+    // This scenario used to squeeze into one medium box, but only by leaving
+    // large items mostly unsupported on the layer below. The support validator
+    // now rejects that layout, so both the fully stackable and no-stack
+    // variants legitimately fall back to multiple boxes.
     const boxes: IBox[] = [
       { id: "1", name: "Small + Rectangle Box", width: 22.86, height: 17.78, depth: 10.16, spacing: 0, maxWeight: 25515 },
       { id: "2", name: "Small Rectangle Box", width: 20.32, height: 15.24, depth: 12.7, spacing: 0, maxWeight: 22680 },
@@ -589,9 +649,9 @@ describe("stacking constraints", () => {
     const resultStackable = calculatePacking(boxes, itemsStackable);
     const resultNoStack = calculatePacking(boxes, itemsNoStack);
 
-    expect(resultStackable).toHaveLength(1);
-    // Multi-box is expected: the constraint genuinely prevents single-box packing
+    expect(resultStackable.length).toBeGreaterThan(1);
     expect(resultNoStack.length).toBeGreaterThan(1);
+    expect(resultNoStack.length).toBeGreaterThanOrEqual(resultStackable.length);
   });
 
   it("reduces capacity when canStackOnTop is disabled", () => {
@@ -636,6 +696,32 @@ describe("stacking constraints", () => {
     const item = result.packedItems[0];
     expect(item.height).toBeCloseTo(10, 0);
     expect(item.y).toBeGreaterThanOrEqual(2);
+  });
+
+  it("allows supported vertical stacking when box spacing is non-zero", () => {
+    const box: IBox = {
+      id: "s5-stack",
+      name: "Spaced Stack",
+      width: 18,
+      height: 34,
+      depth: 18,
+      spacing: 2,
+    };
+    const products: IProduct[] = [
+      { name: "Base", width: 12, height: 12, depth: 12 },
+      { name: "Top", width: 12, height: 12, depth: 12 },
+    ];
+
+    const result = checkFit(box, products);
+    expect(result.fits).toBe(true);
+    expect(result.packedItems).toHaveLength(2);
+
+    const base = result.packedItems.find((item) => item.name.startsWith("Base"))!;
+    const top = result.packedItems.find((item) => item.name.startsWith("Top"))!;
+
+    expect(base.x).toBeCloseTo(top.x, 5);
+    expect(base.z).toBeCloseTo(top.z, 5);
+    expect(top.y).toBeCloseTo(base.y + base.height + box.spacing!, 5);
   });
 
   it("keeps stacking-constrained height on Y axis even with non-cubic items", () => {

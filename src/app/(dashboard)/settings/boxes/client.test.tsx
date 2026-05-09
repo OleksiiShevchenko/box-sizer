@@ -8,6 +8,12 @@ jest.mock("@/actions/box-actions", () => ({
   deleteBox: jest.fn().mockResolvedValue({ success: true }),
 }));
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: jest.fn(),
+  }),
+}));
+
 const boxes = [
   {
     id: "box-1",

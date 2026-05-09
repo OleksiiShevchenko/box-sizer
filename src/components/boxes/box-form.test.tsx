@@ -4,9 +4,17 @@ import { BoxForm } from "./box-form";
 import { createBox, updateBox } from "@/actions/box-actions";
 import { inchesToCm } from "@/types";
 
+const refreshMock = jest.fn();
+
 jest.mock("@/actions/box-actions", () => ({
   createBox: jest.fn().mockResolvedValue({ success: true }),
   updateBox: jest.fn().mockResolvedValue({ success: true }),
+}));
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: refreshMock,
+  }),
 }));
 
 const mockedCreateBox = createBox as jest.Mock;
@@ -26,6 +34,7 @@ describe("BoxForm", () => {
   beforeEach(() => {
     mockedCreateBox.mockClear();
     mockedUpdateBox.mockClear();
+    refreshMock.mockClear();
   });
 
   it("renders all form fields", () => {
@@ -61,6 +70,7 @@ describe("BoxForm", () => {
     await user.click(screen.getByRole("button", { name: "Add Box" }));
 
     expect(mockedCreateBox).toHaveBeenCalled();
+    expect(refreshMock).toHaveBeenCalled();
   });
 
   it("converts spacing from inches to cm before submitting", async () => {
@@ -133,6 +143,20 @@ describe("BoxForm", () => {
       "box-1",
       expect.any(FormData)
     );
+    expect(refreshMock).toHaveBeenCalled();
     expect(onSuccess).toHaveBeenCalled();
+  });
+
+  it("submits an empty max weight when edit mode clears the optional field", async () => {
+    const user = userEvent.setup();
+
+    render(<BoxForm unit="cm" box={existingBox} />);
+
+    const maxWeightInput = screen.getByLabelText("Max Weight (g, optional)");
+    await user.clear(maxWeightInput);
+    await user.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    const formData = mockedUpdateBox.mock.calls[0][1] as FormData;
+    expect(formData.get("maxWeight")).toBe("");
   });
 });

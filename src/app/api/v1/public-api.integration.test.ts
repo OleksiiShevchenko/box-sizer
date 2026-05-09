@@ -839,14 +839,21 @@ describe("public API integration", () => {
     const calculation = await body(calculated);
     packingPlanId = calculation.id;
     expect(calculation.visualization).toBeUndefined();
-    expect(calculation.result.boxes).toEqual([
-      expect.objectContaining({
-        box: expect.objectContaining({
-          id: calculationBoxId,
-          name: "Calculation Cube",
+    expect(calculation.result.boxes.length).toBeGreaterThan(0);
+    expect(calculation.result.boxes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          box: expect.objectContaining({
+            id: calculationBoxId,
+            name: "Calculation Cube",
+          }),
         }),
-      }),
-    ]);
+      ])
+    );
+    expect(calculation.result.boxes.every((result) => result.box.id === calculationBoxId)).toBe(
+      true
+    );
+    expect(calculation.result.boxes.flatMap((result) => result.items)).toHaveLength(5);
     expect(calculation.result.idealBox).toEqual(
       expect.objectContaining({
         box: expect.objectContaining({ name: "Ideal Box" }),

@@ -58,6 +58,13 @@ function parseBoxFormData(formData: FormData) {
   });
 }
 
+function normalizeBoxDataForPersistence(data: z.infer<typeof createBoxSchema>) {
+  return {
+    ...data,
+    maxWeight: data.maxWeight ?? null,
+  };
+}
+
 export async function getBoxes() {
   const userId = await getCurrentUserId();
   return prisma.box.findMany({
@@ -85,7 +92,7 @@ export async function createBox(formData: FormData) {
 
   await prisma.box.create({
     data: {
-      ...parsed.data,
+      ...normalizeBoxDataForPersistence(parsed.data),
       userId,
     },
   });
@@ -110,7 +117,7 @@ export async function updateBox(id: string, formData: FormData) {
 
   await prisma.box.update({
     where: { id },
-    data: parsed.data,
+    data: normalizeBoxDataForPersistence(parsed.data),
   });
 
   revalidatePath("/settings/boxes");
