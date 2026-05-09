@@ -112,16 +112,16 @@ export default async function Home() {
                 Product
               </a>
               <a
-                href="#use-cases"
-                className="text-slate-600 hover:text-blue-600 transition-colors"
-              >
-                Use Cases
-              </a>
-              <a
                 href="#how-it-works"
                 className="text-slate-600 hover:text-blue-600 transition-colors"
               >
                 How it works
+              </a>
+              <a
+                href="#use-cases"
+                className="text-slate-600 hover:text-blue-600 transition-colors"
+              >
+                Use cases
               </a>
               <a
                 href="#pricing"
@@ -133,7 +133,7 @@ export default async function Home() {
                 href="/api/v1/docs#description/introduction"
                 className="text-slate-600 hover:text-blue-600 transition-colors"
               >
-                Docs
+                API Docs
               </Link>
             </div>
             <div className="flex items-center gap-4">
@@ -333,17 +333,19 @@ export default async function Home() {
                         {item.name}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
-                        Weight
-                      </p>
-                      <p className="mt-1 text-lg font-bold text-on-background">{item.weight}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
-                        Dimensions
-                      </p>
-                      <p className="mt-1 text-lg font-bold text-on-background">{item.dimensions}</p>
+                    <div className="grid grid-cols-[minmax(4.5rem,0.65fr)_minmax(0,1fr)] gap-4 md:contents">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
+                          Weight
+                        </p>
+                        <p className="mt-1 text-lg font-bold text-on-background">{item.weight}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
+                          Dimensions
+                        </p>
+                        <p className="mt-1 text-lg font-bold text-on-background">{item.dimensions}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -407,10 +409,206 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Features Section */}
+        <section
+          id="features"
+          className="bg-surface-container-low px-5 py-20 sm:px-8 sm:py-24 lg:px-14 lg:py-28"
+        >
+          <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,450px)] lg:gap-16 xl:gap-20">
+            {/* Left column */}
+            <div className="min-w-0 flex flex-col gap-10 lg:gap-12">
+              <div data-reveal="left" className="max-w-[720px]">
+                <h2 className="mb-3 text-[34px] font-extrabold leading-[1.02] tracking-[-0.9px] text-[#1E293B] sm:text-[38px] lg:text-[42px]">
+                  What you get for every shipment
+                </h2>
+                <p className="text-[16px] leading-[1.65] text-[#64748B] sm:text-[18px]">
+                  Turn item dimensions, weights, available boxes, and packing rules into
+                  the outputs your team needs: the recommended box, accurate carrier quote
+                  inputs, and a clear 3D packing plan.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5" data-reveal="left">
+                {[
+                  {
+                    icon: "inventory_2",
+                    iconBg: "bg-[#dbe1ff]",
+                    iconColor: "text-[#2563EB]",
+                    title: "Recommended box",
+                    desc: "Match each shipment to the best available box using item dimensions, weight, quantity, available packaging, and packing rules.",
+                  },
+                  {
+                    icon: "local_shipping",
+                    iconBg: "bg-[#6bff8f]",
+                    iconColor: "text-[#006e2f]",
+                    title: "Accurate carrier quotes",
+                    desc: "Use the recommended box, actual weight, and dimensional weight to calculate shipping cost before the order ships.",
+                  },
+                  {
+                    icon: "view_in_ar",
+                    iconBg: "bg-[#dce2f7]",
+                    iconColor: "text-[#4e5566]",
+                    title: "3D packing plan",
+                    desc: "Give your team a visual packing layout showing how items should fit inside the selected box.",
+                  },
+                  {
+                    icon: "integration_instructions",
+                    iconBg: "bg-[#dbe1ff]",
+                    iconColor: "text-[#2563EB]",
+                    title: "UI and API access",
+                    desc: "Run calculations in the Packwell web app or connect the API to checkout, order management, warehouse, or shipping workflows.",
+                  },
+                ].map((card) => (
+                  <div
+                    key={card.title}
+                    className="flex h-full flex-col gap-4 rounded-[24px] border border-[#E2E8F0] bg-[#F8F9FA] p-5 shadow-[0_18px_30px_-24px_rgba(15,23,42,0.45)] sm:p-6"
+                  >
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${card.iconBg}`}>
+                      <span className={`material-symbols-outlined text-[22px] ${card.iconColor}`}>{card.icon}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-[16px] font-bold text-[#191c1d] sm:text-[17px]">{card.title}</h4>
+                      <p className="text-[14px] leading-[1.55] text-[#424655]">{card.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Right column - Product diagram */}
+            <div className="min-w-0 flex flex-col justify-start lg:pt-1" data-reveal="right">
+              <div
+                className="relative mx-auto aspect-[450/760] w-full max-w-[450px]"
+                data-testid="packwell-product-diagram"
+                aria-label="Packwell product inputs and outputs diagram"
+              >
+                <svg
+                  className="absolute inset-0 h-full w-full overflow-visible"
+                  viewBox="0 0 450 760"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <marker
+                      id="packwell-arrowhead"
+                      markerWidth="8"
+                      markerHeight="8"
+                      refX="7"
+                      refY="4"
+                      orient="auto"
+                    >
+                      <path d="M0.5 0.75L7 4L0.5 7.25Z" fill="#2563EB" />
+                    </marker>
+                    <marker
+                      id="packwell-output-arrowhead"
+                      markerWidth="9"
+                      markerHeight="9"
+                      refX="8.2"
+                      refY="4.5"
+                      orient="auto"
+                    >
+                      <path d="M0.8 0.8L8.2 4.5L0.8 8.2Z" fill="#2563EB" />
+                    </marker>
+                  </defs>
+                  <g stroke="#2563EB" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" opacity="0.48">
+                    <path d="M225 76C225 155 225 260 225 343" markerEnd="url(#packwell-arrowhead)" />
+                    <path d="M99 190C132 246 152 306 174 345" markerEnd="url(#packwell-arrowhead)" />
+                    <path d="M347 190C318 246 298 306 276 345" markerEnd="url(#packwell-arrowhead)" />
+                    <path d="M106 296C138 315 152 355 170 390" markerEnd="url(#packwell-arrowhead)" />
+                    <path d="M351 296C312 315 298 355 280 390" markerEnd="url(#packwell-arrowhead)" />
+                  </g>
+                  <path
+                    d="M225 506V552"
+                    stroke="#2563EB"
+                    strokeLinecap="round"
+                    strokeWidth="1.9"
+                    opacity="0.7"
+                    markerEnd="url(#packwell-output-arrowhead)"
+                  />
+                </svg>
+
+                {[
+                  {
+                    label: "Dimensions & weights",
+                    icon: "straighten",
+                    className: "left-[18%] top-0 w-[64%]",
+                  },
+                  {
+                    label: "Quantities",
+                    icon: "inventory",
+                    className: "left-[2%] top-[15%] w-[40%]",
+                  },
+                  {
+                    label: "Available boxes",
+                    icon: "inventory_2",
+                    className: "right-[2%] top-[15%] w-[42%]",
+                  },
+                  {
+                    label: "Products to ship",
+                    icon: "shopping_bag",
+                    className: "left-[2%] top-[29%] w-[43%]",
+                  },
+                  {
+                    label: "Packing rules",
+                    icon: "checklist",
+                    className: "right-[2%] top-[29%] w-[40%]",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className={`absolute z-10 flex min-h-14 items-center gap-2.5 rounded-xl border border-[#D7DEE8] bg-white px-3.5 py-3 text-[#1E293B] shadow-[0_18px_35px_-28px_rgba(15,23,42,0.55)] ${item.className}`}
+                  >
+                    <span className="material-symbols-outlined shrink-0 text-[22px] text-[#2563EB]" aria-hidden="true">
+                      {item.icon}
+                    </span>
+                    <span className="text-[13px] font-bold leading-tight tracking-[-0.1px] sm:text-[14px]">
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+
+                <div className="absolute left-1/2 top-[45%] z-20 flex w-[86%] -translate-x-1/2 flex-col items-center gap-3 text-center">
+                  <div className="flex h-28 w-28 items-center justify-center border-none text-[#2563EB]">
+                    <Image
+                      src="/marketing/packwell-calculation-icon.svg"
+                      alt=""
+                      width={90}
+                      height={90}
+                      className="h-[90px] w-[90px] object-contain"
+                      data-testid="packwell-calculation-icon"
+                    />
+                  </div>
+                  <p className="text-[22px] font-extrabold leading-none tracking-[-0.4px] text-[#1E293B] sm:text-[26px]">
+                    Packwell calculation
+                  </p>
+                </div>
+
+                <div className="absolute inset-x-0 top-[74.5%] z-10 mx-auto flex w-[78%] flex-col gap-3">
+                  {[
+                    { label: "Recommended box", icon: "inventory_2" },
+                    { label: "Quote-ready package data", icon: "request_quote" },
+                    { label: "3D packing plan", icon: "view_in_ar" },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex min-h-14 items-center gap-3 rounded-xl border border-[#D7DEE8] bg-white px-4 py-3 text-[#1E293B] shadow-[0_18px_35px_-28px_rgba(15,23,42,0.55)]"
+                    >
+                      <span className="material-symbols-outlined shrink-0 text-[24px] text-[#2563EB]" aria-hidden="true">
+                        {item.icon}
+                      </span>
+                      <span className="text-[14px] font-bold leading-tight sm:text-[15px]">
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* How It Works Section */}
         <section
           id="how-it-works"
-          className="px-6 pt-24 pb-8 md:pt-32 md:pb-8 bg-surface-container-low"
+          className="px-6 pt-24 pb-8 md:pt-32 md:pb-8 bg-surface-container-lowest"
           data-testid="how-packwell-section"
         >
           <div className="max-w-7xl mx-auto">
@@ -491,7 +689,7 @@ export default async function Home() {
         </section>
 
         {/* Use Cases Section */}
-        <section id="use-cases" className="py-24 md:py-32 bg-surface-container-lowest px-6">
+        <section id="use-cases" className="py-24 md:py-32 bg-surface-container-low px-6">
           <div className="max-w-7xl mx-auto">
             <h2
               className="text-4xl md:text-5xl font-bold tracking-tight text-center mb-6"
@@ -532,7 +730,7 @@ export default async function Home() {
               ].map((card) => (
                 <div
                   key={card.title}
-                  className="bg-surface-container-low rounded-xl p-8 hover:shadow-lg transition-shadow"
+                  className="rounded-xl border border-outline-variant/40 bg-white p-8"
                   data-reveal="up"
                 >
                   <div className={`w-12 h-12 ${card.iconBg} rounded-lg flex items-center justify-center mb-4`}>
@@ -548,178 +746,10 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Turn packaging into a cost advantage */}
-        <section className="py-20 px-6 bg-surface-container-low">
-          <div className="max-w-[1120px] mx-auto flex flex-col items-center gap-12">
-            <h2 className="text-[48px] font-extrabold tracking-[-1.2px] leading-[1.1] text-center text-[#1E293B] max-w-[600px]" data-reveal="up">
-              Turn packaging into{"\n"}a cost advantage
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-              {[
-                {
-                  icon: "attach_money",
-                  iconBg: "bg-[#DCFCE7]",
-                  iconColor: "text-[#16A34A]",
-                  title: "Stop losing money on shipping",
-                  desc: "Kill hidden shipping surcharges before they eat your profit.",
-                },
-                {
-                  icon: "unfold_less",
-                  iconBg: "bg-[#EFF6FF]",
-                  iconColor: "text-[#3B82F6]",
-                  title: "Reduce shipping costs",
-                  desc: "Shrink box dimensions to hit lower carrier weight tiers.",
-                },
-                {
-                  icon: "bolt",
-                  iconBg: "bg-[#FFFBEB]",
-                  iconColor: "text-[#F59E0B]",
-                  title: "Automate manual work",
-                  desc: 'Remove the "best guess" from the packing table for good.',
-                },
-                {
-                  icon: "bar_chart",
-                  iconBg: "bg-[#DBEAFE]",
-                  iconColor: "text-[#2563EB]",
-                  title: "Unlock packaging insights",
-                  desc: "Identify which custom boxes are actually saving you money.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="bg-white border border-[#E2E8F0] rounded-[14px] p-6 flex items-center gap-4"
-                  data-reveal="up"
-                >
-                  <div className={`w-12 h-12 ${item.iconBg} rounded-[12px] flex items-center justify-center shrink-0`}>
-                    <span className={`material-symbols-outlined ${item.iconColor} text-[24px]`}>
-                      {item.icon}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <h4 className="text-[16px] font-bold text-[#1E293B]">{item.title}</h4>
-                    <p className="text-[14px] text-[#64748B] leading-[1.5]">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section
-          id="features"
-          className="bg-surface-container-lowest px-5 py-20 sm:px-8 sm:py-24 lg:px-14 lg:py-28"
-        >
-          <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,450px)] lg:gap-16 xl:gap-20">
-            {/* Left column */}
-            <div className="min-w-0 flex flex-col gap-10 lg:gap-12">
-              <div data-reveal="left" className="max-w-[720px]">
-                <h2 className="mb-3 text-[34px] font-extrabold leading-[1.02] tracking-[-0.9px] text-[#1E293B] sm:text-[38px] lg:text-[42px]">
-                  Everything you need to ship smarter
-                </h2>
-                <p className="text-[16px] leading-[1.65] text-[#64748B] sm:text-[18px]">
-                  From intelligent box matching to real-time 3D verification, Packwell gives
-                  your warehouse the tools to cut waste and speed up every order.
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 sm:gap-5" data-reveal="left">
-                {[
-                  {
-                    icon: "bolt",
-                    iconBg: "bg-[#dbe1ff]",
-                    iconColor: "text-[#2563EB]",
-                    title: "Lightning Fast API",
-                    desc: "Packing calculations in under 50ms for high-volume checkouts.",
-                  },
-                  {
-                    icon: "rule",
-                    iconBg: "bg-[#6bff8f]",
-                    iconColor: "text-[#006e2f]",
-                    title: "Custom Logic Rules",
-                    desc: "Define nesting, stacking, and fragility rules per SKU.",
-                  },
-                  {
-                    icon: "3d_rotation",
-                    iconBg: "bg-[#dce2f7]",
-                    iconColor: "text-[#4e5566]",
-                    title: "3D Visualizer",
-                    desc: "Review orientation, void fill, and fragile-item spacing before the order reaches the floor.",
-                  },
-                  {
-                    icon: "auto_awesome",
-                    iconBg: "bg-[#dbe1ff]",
-                    iconColor: "text-[#2563EB]",
-                    title: "Smart Selection",
-                    desc: "Surface the best box from live inventory so every order lands inside the lowest-cost fit.",
-                  },
-                ].map((card) => (
-                  <div
-                    key={card.title}
-                    className="flex h-full flex-col gap-4 rounded-[24px] border border-[#E2E8F0] bg-[#F8F9FA] p-5 shadow-[0_18px_30px_-24px_rgba(15,23,42,0.45)] sm:p-6"
-                  >
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${card.iconBg}`}>
-                      <span className={`material-symbols-outlined text-[22px] ${card.iconColor}`}>{card.icon}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <h4 className="text-[16px] font-bold text-[#191c1d] sm:text-[17px]">{card.title}</h4>
-                      <p className="text-[14px] leading-[1.55] text-[#424655]">{card.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* Right column - API response */}
-            <div className="min-w-0 flex flex-col justify-start lg:pt-4" data-reveal="right">
-              <div className="overflow-hidden rounded-[12px] bg-[#2e3132] shadow-[0_25px_44px_-12px_rgba(0,0,0,0.25)] lg:sticky lg:top-24">
-                {/* Header bar */}
-                <div className="flex flex-col gap-2 border-b border-white/[0.01] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                  <span className="overflow-x-auto font-mono text-[11px] leading-[1.5] text-[#f0f1f2] sm:text-[12px] sm:leading-[1.33]">
-                    POST /api/v1/packing-plans/calculate
-                  </span>
-                  <span className="w-fit rounded-lg bg-[#6bff8f] px-2 py-0.5 text-[10px] font-bold text-[#002109]">
-                    200 OK
-                  </span>
-                </div>
-                {/* JSON body */}
-                <div className="overflow-x-auto p-4 sm:p-6">
-                  <pre className="min-w-0 break-words font-mono text-[11px] leading-[1.5] whitespace-pre-wrap text-[#f0f1f2] sm:text-[12px] sm:leading-[1.33]">{`{
-  "id": "fcaf6650-e07f-4768-b5c7-11d6991e73be",
-  "units": {
-     "unitSystem": "cm",
-     "dimension": "cm",
-     "weight": "g",
-     "dimensionalWeight": "kg"
-  },
-  "result": {
-     "box": {
-        "id": "f7599914-5cdb-4f73-9b39-3d81003e7b42",
-        "name": "Small Box",
-        "width": 30,
-        "height": 20,
-        "depth": 45,
-        "spacing": 0.25,
-        "maxWeight": 1300,
-        "dimensionalWeight": 6
-     },
-     "visualization": {
-        "status": "pending",
-        "perspectiveUrl": "https://packwell.io/4a66f77.png",
-        "frontUrl": "https://packwell.io/4a66f7a.png",
-        "sideUrl": "https://packwell.io/4a6617a.png",
-        "topUrl": "https://packwell.io/4a66477a.png"
-     }
-  }
-}`}</pre>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <MarketingPricingSection />
 
         {/* CTA Section */}
-        <section className="py-24 md:py-32 px-6 bg-surface-container-lowest">
+        <section className="py-24 md:py-32 px-6 bg-surface-container-low">
           <div className="max-w-[1232px] mx-auto">
             <div className="relative flex flex-col items-start gap-12 overflow-hidden rounded-[24px] bg-[#DBE1FF] px-6 py-10 sm:px-10 sm:py-12 md:flex-row md:items-center md:justify-between md:gap-8 md:px-16 md:py-16">
               <div className="relative z-10 flex max-w-[700px] flex-col gap-6" data-reveal="left">
