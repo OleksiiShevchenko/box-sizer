@@ -4,6 +4,7 @@ import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
 import { HeroPackingVisualization } from "@/components/marketing/hero-packing-visualization";
 import { MarketingPricingSection } from "@/components/pricing/marketing-pricing-section";
+import { UseCaseSelector, type MarketingUseCase } from "@/components/marketing/use-case-selector";
 import { InstantScrollLink } from "@/components/layout/instant-scroll-link";
 import { redirect } from "next/navigation";
 import Image from "next/image";
@@ -27,6 +28,57 @@ const shippingMismatchItems = [
     weight: "0.63 lbs.",
     dimensions: "5 x 8 x 0.5 in",
     image: "/marketing/notebook.png",
+  },
+];
+
+const useCases: MarketingUseCase[] = [
+  {
+    icon: "shopping_cart",
+    title: "Ecommerce brands with owned inventory",
+    helper: "Mixed carts · bulky products · checkout quotes",
+    desc: "For stores that ship mixed-product orders from their own warehouse or 3PL. Calculate the package size before checkout so bulky or multi-item orders do not destroy shipping margin.",
+    image: {
+      src: "/marketing/use-cases/ecommerce.png",
+      alt: "Ecommerce use case packaging workflow",
+      width: 1376,
+      height: 768,
+    },
+  },
+  {
+    icon: "package_2",
+    title: "Promo warehouse programs",
+    helper: "Stored merch · company stores · event shipments",
+    desc: "For distributors storing customer merchandise and shipping different combinations to employees, events, offices, or customers. Select the right box and quote shipping before the warehouse packs the order.",
+    image: {
+      src: "/marketing/use-cases/promo.png",
+      alt: "Promo warehouse programs use case",
+      width: 1024,
+      height: 1024,
+    },
+  },
+  {
+    icon: "card_giftcard",
+    title: "Corporate gifting platforms",
+    helper: "Giveaways · direct mail · recipient shipments",
+    desc: "For gifting workflows where stored products are sent to many recipients in different combinations. Estimate package dimensions, charge shipping accurately, and give fulfillment teams packing instructions.",
+    image: {
+      src: "/marketing/use-cases/gifting.png",
+      alt: "Corporate gifting platforms use case",
+      width: 1024,
+      height: 1024,
+    },
+  },
+  {
+    icon: "redeem",
+    title: "Custom kit planning",
+    helper: "Welcome kits · custom boxes · presentation layout",
+    desc: "For teams building gift boxes, welcome kits, or event kits with customer-defined contents. Calculate the box size before ordering custom packaging and generate a packing layout that matches the desired presentation.",
+    image: {
+      src: "/marketing/use-cases/kitting-v1.png",
+      alt: "Custom kit planning use case",
+      width: 1024,
+      height: 1024,
+    },
   },
 ];
 
@@ -695,54 +747,9 @@ export default async function Home() {
               className="text-4xl md:text-5xl font-bold tracking-tight text-center mb-6"
               data-reveal="up"
             >
-              Built for teams that ship complex orders
+              Where smarter box selection matters
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
-              {[
-                {
-                  icon: "shopping_cart",
-                  iconBg: "bg-surface-container",
-                  iconColor: "text-[#2563EB]",
-                  title: "Ecommerce Brands",
-                  desc: "Show accurate shipping at checkout. Stop eating margin on every order.",
-                },
-                {
-                  icon: "package_2",
-                  iconBg: "bg-[#0F5FD3]",
-                  iconColor: "text-white",
-                  title: "Promotional & Gifting",
-                  desc: "Complex kits with mixed items. Optimize box selection across warehouse distributions.",
-                },
-                {
-                  icon: "bar_chart_4_bars",
-                  iconBg: "bg-[#0B7A36]",
-                  iconColor: "text-white",
-                  title: "3PL Warehouses",
-                  desc: "Standardize packing decisions across shifts and locations. Consistent box selection every time.",
-                },
-                {
-                  icon: "redeem",
-                  iconBg: "bg-surface-container",
-                  iconColor: "text-[#D97706]",
-                  title: "Subscription Brands",
-                  desc: "Design packaging around your recurring SKU mix. Optimize box inventory for predictable orders.",
-                },
-              ].map((card) => (
-                <div
-                  key={card.title}
-                  className="rounded-xl border border-outline-variant/40 bg-white p-8"
-                  data-reveal="up"
-                >
-                  <div className={`w-12 h-12 ${card.iconBg} rounded-lg flex items-center justify-center mb-4`}>
-                    <span className={`material-symbols-outlined ${card.iconColor}`}>
-                      {card.icon}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold mb-2">{card.title}</h3>
-                  <p className="text-sm text-on-surface-variant leading-relaxed">{card.desc}</p>
-                </div>
-              ))}
-            </div>
+            <UseCaseSelector useCases={useCases} />
           </div>
         </section>
 

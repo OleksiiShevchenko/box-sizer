@@ -1,4 +1,5 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import Home from "./page";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -150,7 +151,7 @@ describe("Home page", () => {
       name: "How Packwell works",
     });
     const useCasesHeading = screen.getByRole("heading", {
-      name: "Built for teams that ship complex orders",
+      name: "Where smarter box selection matters",
     });
     const ctaHeading = screen.getByRole("heading", {
       name: "Start packing smarter today.",
@@ -177,9 +178,46 @@ describe("Home page", () => {
     expect(howItWorksHeading.closest("section")).toHaveClass("bg-surface-container-lowest");
     expect(useCasesHeading.closest("section")).toHaveClass("bg-surface-container-low");
     expect(ctaHeading.closest("section")).toHaveClass("bg-surface-container-low");
-    const useCaseCard = screen.getByText("Ecommerce Brands").closest("div");
-    expect(useCaseCard).toHaveClass("bg-white", "border", "border-outline-variant/40");
-    expect(useCaseCard).not.toHaveClass("hover:shadow-lg", "transition-shadow");
+    const useCaseSelector = screen.getByTestId("use-case-selector");
+    const useCaseDesktop = screen.getByTestId("use-case-desktop");
+    const useCaseMobile = screen.getByTestId("use-case-mobile");
+    expect(useCaseSelector).toBeInTheDocument();
+    expect(useCaseDesktop).toHaveClass("lg:grid");
+    expect(useCaseMobile).toHaveClass("lg:hidden");
+    const ecommerceTab = within(useCaseDesktop).getByRole("tab", {
+      name: /Ecommerce brands with owned inventory/,
+    });
+    expect(ecommerceTab).toHaveAttribute("aria-selected", "true");
+    expect(ecommerceTab).toHaveTextContent(
+      "Mixed carts · bulky products · checkout quotes"
+    );
+    expect(
+      within(ecommerceTab).queryByText(
+        "For stores that ship mixed-product orders from their own warehouse or 3PL. Calculate the package size before checkout so bulky or multi-item orders do not destroy shipping margin."
+      )
+    ).not.toBeInTheDocument();
+    const defaultDetailPanel = screen.getByTestId("use-case-detail");
+    expect(within(defaultDetailPanel).queryByText("Selected use case")).not.toBeInTheDocument();
+    expect(
+      within(defaultDetailPanel).getByRole("heading", {
+        name: "Ecommerce brands with owned inventory",
+      })
+    ).toBeVisible();
+    expect(
+      within(defaultDetailPanel).getByAltText("Ecommerce use case packaging workflow")
+    ).toHaveAttribute("src", expect.stringContaining("ecommerce.png"));
+    expect(within(defaultDetailPanel).queryByText("shopping_cart")).not.toBeInTheDocument();
+    expect(defaultDetailPanel).toHaveTextContent(
+      "For stores that ship mixed-product orders from their own warehouse or 3PL. Calculate the package size before checkout so bulky or multi-item orders do not destroy shipping margin."
+    );
+    expect(within(defaultDetailPanel).queryByText("Packwell outputs")).not.toBeInTheDocument();
+    expect(within(defaultDetailPanel).queryByText("Recommended box")).not.toBeInTheDocument();
+    expect(within(defaultDetailPanel).queryByText("Quote-ready package data")).not.toBeInTheDocument();
+    expect(within(defaultDetailPanel).queryByText("3D packing plan")).not.toBeInTheDocument();
+    expect(within(defaultDetailPanel).queryByText("Stored products")).not.toBeInTheDocument();
+    expect(within(defaultDetailPanel).queryByText("variable orders")).not.toBeInTheDocument();
+    expect(within(defaultDetailPanel).queryByText("box selection")).not.toBeInTheDocument();
+    expect(within(defaultDetailPanel).queryByText("packing plan")).not.toBeInTheDocument();
     expect(screen.getAllByText("Recommended box")).toHaveLength(2);
     expect(
       screen.getByText(
@@ -241,6 +279,65 @@ describe("Home page", () => {
     expect(
       within(howItWorksSection).getByRole("link", { name: "in the interactive demo" })
     ).toHaveAttribute("href", "/demo");
+  });
+
+  it("updates the use case detail panel and mobile accordion selection", async () => {
+    mockedAuth.mockResolvedValue(null);
+    const user = userEvent.setup();
+
+    render(await Home());
+
+    const desktopSelector = screen.getByTestId("use-case-desktop");
+    const promoTab = within(desktopSelector).getByRole("tab", {
+      name: /Promo warehouse programs/,
+    });
+
+    await user.click(promoTab);
+
+    await waitFor(() => {
+      expect(promoTab).toHaveAttribute("aria-selected", "true");
+    });
+    const detailPanel = screen.getByTestId("use-case-detail");
+    expect(
+      within(detailPanel).getByRole("heading", {
+        name: "Promo warehouse programs",
+      })
+    ).toBeVisible();
+    expect(within(detailPanel).getByAltText("Promo warehouse programs use case")).toHaveAttribute(
+      "src",
+      expect.stringContaining("promo.png")
+    );
+    expect(detailPanel).toHaveTextContent(
+      "For distributors storing customer merchandise and shipping different combinations to employees, events, offices, or customers. Select the right box and quote shipping before the warehouse packs the order."
+    );
+
+    const mobileSelector = screen.getByTestId("use-case-mobile");
+    const promoMobileButton = within(mobileSelector).getByRole("button", {
+      name: /Promo warehouse programs/,
+    });
+    expect(promoMobileButton).toHaveAttribute("aria-expanded", "true");
+
+    const customKitMobileButton = within(mobileSelector).getByRole("button", {
+      name: /Custom kit planning/,
+    });
+    await user.click(customKitMobileButton);
+
+    await waitFor(() => {
+      expect(customKitMobileButton).toHaveAttribute("aria-expanded", "true");
+    });
+    expect(promoMobileButton).toHaveAttribute("aria-expanded", "false");
+    expect(
+      within(detailPanel).getByRole("heading", {
+        name: "Custom kit planning",
+      })
+    ).toBeVisible();
+    expect(within(detailPanel).getByAltText("Custom kit planning use case")).toHaveAttribute(
+      "src",
+      expect.stringContaining("kitting-v1.png")
+    );
+    expect(detailPanel).toHaveTextContent(
+      "For teams building gift boxes, welcome kits, or event kits with customer-defined contents. Calculate the box size before ordering custom packaging and generate a packing layout that matches the desired presentation."
+    );
   });
 
   it("redirects authenticated users to the dashboard", async () => {
