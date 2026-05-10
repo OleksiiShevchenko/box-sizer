@@ -618,16 +618,14 @@ export default async function Home() {
                 ))}
 
                 <div className="absolute left-1/2 top-[45%] z-20 flex w-[86%] -translate-x-1/2 flex-col items-center gap-3 text-center">
-                  <div className="flex h-28 w-28 items-center justify-center border-none text-[#2563EB]">
-                    <Image
-                      src="/marketing/packwell-calculation-icon.svg"
-                      alt=""
-                      width={90}
-                      height={90}
-                      className="h-[90px] w-[90px] object-contain"
-                      data-testid="packwell-calculation-icon"
-                    />
-                  </div>
+                  <Image
+                    src="/marketing/packwell-calculation-icon.svg"
+                    alt=""
+                    width={90}
+                    height={90}
+                    className="h-auto w-[23%] object-contain"
+                    data-testid="packwell-calculation-icon"
+                  />
                   <p className="text-[22px] font-extrabold leading-none tracking-[-0.4px] text-[#1E293B] sm:text-[26px]">
                     Packwell calculation
                   </p>
