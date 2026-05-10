@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       new URL("https://*.public.blob.vercel-storage.com/**"),
     ],
+    qualities: [75, 90],
   },
   async rewrites() {
     return [
