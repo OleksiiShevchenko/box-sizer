@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 export type MarketingUseCase = {
   icon: string;
@@ -22,21 +22,6 @@ type UseCaseSelectorProps = {
 
 export function UseCaseSelector({ useCases }: UseCaseSelectorProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (fadeTimerRef.current) {
-        clearTimeout(fadeTimerRef.current);
-      }
-
-      if (settleTimerRef.current) {
-        clearTimeout(settleTimerRef.current);
-      }
-    };
-  }, []);
 
   if (!useCases.length) {
     return null;
@@ -48,21 +33,7 @@ export function UseCaseSelector({ useCases }: UseCaseSelectorProps) {
     if (index === selectedIndex) {
       return;
     }
-
-    if (fadeTimerRef.current) {
-      clearTimeout(fadeTimerRef.current);
-    }
-
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-    }
-
-    setIsTransitioning(true);
-
-    fadeTimerRef.current = setTimeout(() => {
-      setSelectedIndex(index);
-      settleTimerRef.current = setTimeout(() => setIsTransitioning(false), 30);
-    }, 120);
+    setSelectedIndex(index);
   };
 
   return (
@@ -146,21 +117,26 @@ export function UseCaseSelector({ useCases }: UseCaseSelectorProps) {
           data-testid="use-case-detail"
           role="tabpanel"
           aria-labelledby={`use-case-tab-${selectedIndex}`}
-          className={[
-            "flex min-h-[520px] flex-col overflow-hidden rounded-2xl border border-outline-variant/40 bg-white transition-opacity duration-200 ease-out",
-            isTransitioning ? "opacity-0" : "opacity-100",
-          ].join(" ")}
+          className="flex min-h-[520px] flex-col overflow-hidden rounded-2xl border border-outline-variant/40 bg-white"
         >
           <div className="relative aspect-[16/9] w-full overflow-hidden bg-surface-container">
-            <Image
-              src={selectedUseCase.image.src}
-              alt={selectedUseCase.image.alt}
-              width={selectedUseCase.image.width}
-              height={selectedUseCase.image.height}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="h-full w-full object-cover"
-              priority={selectedIndex === 0}
-            />
+            {useCases.map((useCase, index) => (
+              <Image
+                key={useCase.title}
+                src={useCase.image.src}
+                alt={useCase.image.alt}
+                width={useCase.image.width}
+                height={useCase.image.height}
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                quality={90}
+                priority={index === 0}
+                className={[
+                  "absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ease-out",
+                  index === selectedIndex ? "opacity-100" : "opacity-0",
+                ].join(" ")}
+                aria-hidden={index !== selectedIndex}
+              />
+            ))}
           </div>
 
           <div className="p-8">
@@ -246,6 +222,7 @@ export function UseCaseSelector({ useCases }: UseCaseSelectorProps) {
                       width={useCase.image.width}
                       height={useCase.image.height}
                       sizes="100vw"
+                      quality={90}
                       className="h-full w-full object-cover"
                     />
                   </div>
