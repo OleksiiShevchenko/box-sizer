@@ -560,22 +560,31 @@ export function findIdealBox(
 
   const uniqueProducts = makeProductsUnique(expandedProducts);
   const normalizedSpacing = Math.max(spacing, 0);
+  // Use orientation-arranged dims so the box bounds match what the packer will
+  // actually place. Without this, products with horizontal/vertical orientation
+  // get a box too small along the rotated axis and findIdealBox returns null.
+  const arrangedDims = uniqueProducts.map((product) => {
+    const [width, height, depth] = arrangeForOrientation(
+      product.width,
+      product.height,
+      product.depth,
+      product.orientation
+    );
+    return { width, height, depth };
+  });
   const lowerBounds = {
-    width: Math.max(...uniqueProducts.map((product) => product.width)),
-    height: Math.max(...uniqueProducts.map((product) => product.height)),
-    depth: Math.max(...uniqueProducts.map((product) => product.depth)),
+    width: Math.max(...arrangedDims.map((dims) => dims.width)),
+    height: Math.max(...arrangedDims.map((dims) => dims.height)),
+    depth: Math.max(...arrangedDims.map((dims) => dims.depth)),
   };
   const spacingPadding = normalizedSpacing * (uniqueProducts.length + 1);
   const current = {
     width:
-      uniqueProducts.reduce((sum, product) => sum + product.width, 0) +
-      spacingPadding,
+      arrangedDims.reduce((sum, dims) => sum + dims.width, 0) + spacingPadding,
     height:
-      uniqueProducts.reduce((sum, product) => sum + product.height, 0) +
-      spacingPadding,
+      arrangedDims.reduce((sum, dims) => sum + dims.height, 0) + spacingPadding,
     depth:
-      uniqueProducts.reduce((sum, product) => sum + product.depth, 0) +
-      spacingPadding,
+      arrangedDims.reduce((sum, dims) => sum + dims.depth, 0) + spacingPadding,
   };
   const createIdealBox = (dimensions: typeof current): IBox => ({
     id: "ideal",
