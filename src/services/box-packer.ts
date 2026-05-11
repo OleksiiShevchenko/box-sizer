@@ -630,6 +630,33 @@ function permuteRatios(
   return result;
 }
 
+function isHeightAxisConstrained(product: IProduct): boolean {
+  return (
+    product.orientation === "horizontal" ||
+    product.orientation === "vertical" ||
+    product.canStackOnTop === false ||
+    product.canBePlacedOnTop === false
+  );
+}
+
+function getCanonicalRatioPermutations(
+  pattern: readonly [number, number, number],
+  heightPinned: boolean
+): [number, number, number][] {
+  if (!heightPinned) {
+    // No item pins height-on-Y, so all six box-orientation rotations are
+    // equivalent — items can rotate freely to match. Keep one canonical
+    // permutation per pattern (sorted ascending).
+    const sorted = [...pattern].sort((a, b) => a - b) as [number, number, number];
+    return [sorted];
+  }
+
+  // At least one item must keep height on Y, so the height axis is special,
+  // but width and depth remain interchangeable (items can swap them via
+  // rotations 0 and 3). Keep permutations where width <= depth.
+  return permuteRatios(pattern).filter(([w, , d]) => w <= d);
+}
+
 function normalizeRatios(
   ratios: readonly [number, number, number]
 ): [number, number, number] {
@@ -719,24 +746,30 @@ function minimizeIdealBoxDimension(
   };
 }
 
-function tightenIdealBoxCandidate(
+function compactIdealBoxCandidate(
   candidate: { box: IBox; packedItems: PackedItem[] },
   products: IProduct[]
-): { box: IBox; packedItems: PackedItem[] } | null {
+): { box: IBox; packedItems: PackedItem[] } {
   const spacing = getBoxSpacing(candidate.box);
-  let currentBox = candidate.box;
-  let currentPackedItems = candidate.packedItems;
-
   const compactBox = createIdealBoxCandidate(
-    getPackedLayoutExtents(currentPackedItems, spacing),
+    getPackedLayoutExtents(candidate.packedItems, spacing),
     spacing
   );
   const compactResult = checkFit(compactBox, products);
 
   if (compactResult.fits) {
-    currentBox = compactBox;
-    currentPackedItems = compactResult.packedItems;
+    return { box: compactBox, packedItems: compactResult.packedItems };
   }
+
+  return candidate;
+}
+
+function tightenIdealBoxCandidate(
+  candidate: { box: IBox; packedItems: PackedItem[] },
+  products: IProduct[]
+): { box: IBox; packedItems: PackedItem[] } | null {
+  const compacted = compactIdealBoxCandidate(candidate, products);
+  let currentBox = compacted.box;
 
   for (let round = 0; round < 3; round += 1) {
     let improved = false;
@@ -747,10 +780,16 @@ function tightenIdealBoxCandidate(
         return null;
       }
 
-      if (minimized.box[dimension] < currentBox[dimension] - POSITION_TOLERANCE) {
+      // Continue rounds only when a dimension shrunk past the binary-search
+      // tolerance. The previous threshold of POSITION_TOLERANCE (0.001) caused
+      // every round to look "improved" by tiny amounts and burn the full 3-round
+      // budget without meaningful change.
+      if (minimized.box[dimension] < currentBox[dimension] - IDEAL_BOX_DIMENSION_TOLERANCE) {
         currentBox = minimized.box;
-        currentPackedItems = minimized.packedItems;
         improved = true;
+      } else if (minimized.box[dimension] < currentBox[dimension] - POSITION_TOLERANCE) {
+        // Accept tiny shrinks but don't extend the round budget for them.
+        currentBox = minimized.box;
       }
     }
 
@@ -832,7 +871,9 @@ function findIdealBoxForRatios(
     return null;
   }
 
-  return tightenIdealBoxCandidate(
+  // Snap to packed-extents only here. Full per-dimension tightening is deferred
+  // to the winning candidate so we avoid paying ~70 checkFit calls per ratio.
+  return compactIdealBoxCandidate(
     {
       box: finalBox,
       packedItems: finalResult.packedItems,
@@ -909,10 +950,11 @@ export function findIdealBox(
     depth:
       arrangedDims.reduce((sum, dims) => sum + dims.depth, 0) + spacingPadding,
   };
+  const heightPinned = uniqueProducts.some(isHeightAxisConstrained);
   const ratioPatterns = new Map<string, [number, number, number]>();
 
   for (const pattern of IDEAL_BOX_RATIO_PATTERNS) {
-    for (const permutation of permuteRatios(pattern)) {
+    for (const permutation of getCanonicalRatioPermutations(pattern, heightPinned)) {
       ratioPatterns.set(permutation.join("|"), permutation);
     }
   }
@@ -958,10 +1000,16 @@ export function findIdealBox(
     return null;
   }
 
+  const tightened =
+    tightenIdealBoxCandidate(
+      { box: bestCandidate.box, packedItems: bestCandidate.packedItems },
+      uniqueProducts
+    ) ?? bestCandidate;
+
   return {
-    box: bestCandidate.box,
-    items: bestCandidate.packedItems,
-    dimensionalWeight: getDimensionalWeight(bestCandidate.box),
+    box: tightened.box,
+    items: tightened.packedItems,
+    dimensionalWeight: getDimensionalWeight(tightened.box),
   };
 }
 
