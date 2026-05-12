@@ -7,8 +7,13 @@ import { deletePackingPlan } from "@/actions/packing-plan-actions";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
 import { Tooltip } from "@/components/ui/tooltip";
+import {
+  calculateCarrierDimensionalWeights,
+  getDimensionalWeightDivisorDescription,
+  getDimensionalWeightUnitLabel,
+} from "@/lib/dimensional-weight";
 import type { IPackingPlanListItem, UnitSystem } from "@/types";
-import { cmToInches, kgToLbs, normalizeProductQuantity } from "@/types";
+import { cmToInches, normalizeProductQuantity } from "@/types";
 
 interface PackingPlanTableProps {
   packingPlans: IPackingPlanListItem[];
@@ -26,6 +31,56 @@ function formatDimensions(packingPlan: IPackingPlanListItem, unit: UnitSystem): 
   }
 
   return `${dim(packingPlan.box.width, unit)} x ${dim(packingPlan.box.height, unit)} x ${dim(packingPlan.box.depth, unit)} ${unit}`;
+}
+
+function CarrierDimensionalWeightCell({
+  packingPlan,
+  unitSystem,
+}: {
+  packingPlan: IPackingPlanListItem;
+  unitSystem: UnitSystem;
+}) {
+  if (!packingPlan.box) {
+    return <>Not calculated yet</>;
+  }
+
+  const weightUnit = getDimensionalWeightUnitLabel(unitSystem);
+  const carrierResults = calculateCarrierDimensionalWeights({
+    unitSystem,
+    length: unitSystem === "in" ? cmToInches(packingPlan.box.width) : packingPlan.box.width,
+    width: unitSystem === "in" ? cmToInches(packingPlan.box.height) : packingPlan.box.height,
+    height: unitSystem === "in" ? cmToInches(packingPlan.box.depth) : packingPlan.box.depth,
+  });
+
+  return (
+    <div className="grid min-w-32 gap-1">
+      {carrierResults.map((result) => (
+        <div
+          key={result.carrier}
+          className="flex items-center justify-between gap-2 text-xs"
+        >
+          <span className="flex items-center gap-1 text-slate-500">
+            {result.carrier}
+            <Tooltip
+              content={getDimensionalWeightDivisorDescription(result, unitSystem)}
+            >
+              <span
+                className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold leading-none text-slate-500"
+                aria-label={`${result.carrier} dimensional weight divisor`}
+              >
+                i
+              </span>
+            </Tooltip>
+          </span>
+          <span className="font-medium text-slate-700">
+            {result.appliesDimensionalWeight
+              ? `${result.dimensionalWeight} ${weightUnit}`
+              : "N/A"}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function PackingPlanTable({ packingPlans, unitSystem, onDeleted }: PackingPlanTableProps) {
@@ -104,9 +159,10 @@ export function PackingPlanTable({ packingPlans, unitSystem, onDeleted }: Packin
                 </td>
                 <td className="px-6 py-4">{formatDimensions(packingPlan, unitSystem)}</td>
                 <td className="px-6 py-4">
-                  {packingPlan.dimensionalWeight != null
-                    ? `${(unitSystem === "in" ? kgToLbs(packingPlan.dimensionalWeight) : packingPlan.dimensionalWeight).toFixed(1)} ${unitSystem === "in" ? "lbs" : "kg"}`
-                    : "Not calculated yet"}
+                  <CarrierDimensionalWeightCell
+                    packingPlan={packingPlan}
+                    unitSystem={unitSystem}
+                  />
                 </td>
                 <td className="px-6 py-4">{packingPlan.calculationCount}</td>
                 <td className="px-6 py-4">
