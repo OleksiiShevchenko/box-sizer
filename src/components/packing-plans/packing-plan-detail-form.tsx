@@ -115,15 +115,37 @@ export function PackingPlanDetailForm({
       return;
     }
 
+    const nextResults = result.results ?? [];
+    const nextIdealResult = result.idealResult ?? null;
+    const producedAnyResult = nextResults.length > 0 || nextIdealResult !== null;
+
+    if (!producedAnyResult) {
+      setError(
+        hasBoxes
+          ? "Couldn't fit these items into any of your boxes. Adjust item dimensions or add a larger box."
+          : "Couldn't compute an ideal box for these items. Check item dimensions and orientation/stacking constraints."
+      );
+      posthog.capture("packing_plan_calculated", {
+        packing_plan_id: packingPlan.id,
+        item_count: items.length,
+        total_units: getTotalProductUnits(items),
+        has_boxes: hasBoxes,
+        success: false,
+        no_fit: true,
+      });
+      onCalculated(trimmedName, nextResults, nextIdealResult);
+      return;
+    }
+
     posthog.capture("packing_plan_calculated", {
       packing_plan_id: packingPlan.id,
       item_count: items.length,
       total_units: getTotalProductUnits(items),
       has_boxes: hasBoxes,
       success: true,
-      results_count: result.results?.length ?? 0,
+      results_count: nextResults.length,
     });
-    onCalculated(trimmedName, result.results ?? [], result.idealResult ?? null);
+    onCalculated(trimmedName, nextResults, nextIdealResult);
   }
 
   const editingItem = editingIndex != null ? items[editingIndex] : undefined;

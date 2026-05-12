@@ -5,6 +5,9 @@ describe("MarketingPricingSection", () => {
   it("renders the shared subscription catalog on the homepage", () => {
     render(<MarketingPricingSection />);
 
+    expect(screen.getByRole("heading", { name: /Simple pricing/ }).closest("section")).toHaveClass(
+      "bg-surface-container-lowest"
+    );
     expect(screen.getByRole("heading", { name: "Starter" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Growth" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Pro" })).toBeInTheDocument();

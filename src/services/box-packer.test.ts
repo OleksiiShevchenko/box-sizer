@@ -387,6 +387,44 @@ describe("findIdealBox", () => {
     );
   });
 
+  it("prefers a balanced ideal box when multiple shapes have the same dimensional weight", () => {
+    const products = Array.from({ length: 7 }, (_, index) => ({
+      name: `Cube${index + 1}`,
+      width: 10,
+      height: 10,
+      depth: 10,
+    }));
+    const result = findIdealBox(products);
+
+    expect(result).not.toBeNull();
+    expect(checkFit(result!.box, products).fits).toBe(true);
+
+    const dims = [result!.box.width, result!.box.height, result!.box.depth].sort(
+      (a, b) => a - b
+    );
+    expect(dims[2]! / dims[0]!).toBeLessThanOrEqual(2.1);
+  });
+
+  it("tightens each ideal box dimension after selecting a ratio family", () => {
+    const products: IProduct[] = [
+      { name: "A", width: 12, height: 10, depth: 8 },
+      { name: "B", width: 9, height: 8, depth: 6 },
+      { name: "C", width: 7, height: 6, depth: 5 },
+    ];
+    const result = findIdealBox(products);
+
+    expect(result).not.toBeNull();
+    expect(checkFit(result!.box, products).fits).toBe(true);
+
+    for (const dimension of ["width", "height", "depth"] as const) {
+      const shrunk = {
+        ...result!.box,
+        [dimension]: result!.box[dimension] - 0.2,
+      };
+      expect(checkFit(shrunk, products).fits).toBe(false);
+    }
+  });
+
   it("respects spacing when calculating the ideal box", () => {
     const result = findIdealBox(
       [{ name: "Single", width: 12, height: 8, depth: 6 }],
