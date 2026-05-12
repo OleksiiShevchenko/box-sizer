@@ -1,9 +1,10 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { CarrierDimensionalWeightList } from "./carrier-dimensional-weight-list";
 import { BoxVisualization } from "./box-visualization";
 import type { PackingResult, UnitSystem } from "@/types";
-import { cmToInches, calculateDimensionalWeight } from "@/types";
+import { cmToInches } from "@/types";
 
 interface ResultDisplayProps {
   results: PackingResult[];
@@ -29,13 +30,6 @@ export function ResultDisplay({ results, unit }: ResultDisplayProps) {
       )}
 
       {results.map((result, i) => {
-        const dimWeight = calculateDimensionalWeight(
-          result.box.width,
-          result.box.height,
-          result.box.depth,
-          unit
-        );
-
         return (
           <Card key={i}>
             <div className="flex flex-col lg:flex-row gap-6">
@@ -50,13 +44,19 @@ export function ResultDisplay({ results, unit }: ResultDisplayProps) {
                     {dim(result.box.width, unit)} x {dim(result.box.height, unit)} x{" "}
                     {dim(result.box.depth, unit)} {unit}
                   </dd>
-                  <dt className="text-gray-500">Dimensional Weight</dt>
-                  <dd className="text-gray-900">{dimWeight} kg</dd>
                   <dt className="text-gray-500">Items</dt>
                   <dd className="text-gray-900">
                     {result.items.length} unit{result.items.length === 1 ? "" : "s"}
                   </dd>
                 </dl>
+                <div className="mt-3">
+                  <CarrierDimensionalWeightList
+                    widthCm={result.box.width}
+                    heightCm={result.box.height}
+                    depthCm={result.box.depth}
+                    unitSystem={unit}
+                  />
+                </div>
               </div>
               <BoxVisualization result={result} unit={unit} />
             </div>

@@ -43,8 +43,13 @@ export default function RootLayout({
   const shouldLoadGoogleAds = isProductionDeployment();
 
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" style={{ scrollBehavior: "auto" }}>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.addEventListener('load',function(){requestAnimationFrame(function(){document.documentElement.style.scrollBehavior='';});});`,
+          }}
+        />
         {shouldLoadGoogleAds ? (
           <>
             <Script

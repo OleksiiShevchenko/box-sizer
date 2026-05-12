@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { CarrierDimensionalWeightList } from "@/components/calculator/carrier-dimensional-weight-list";
 import { BoxVisualization3D } from "@/components/calculator/box-visualization-3d";
 import type { PackingResult, UnitSystem } from "@/types";
-import { cmToInches, kgToLbs } from "@/types";
+import { cmToInches } from "@/types";
 
 interface PackingPlanResultPanelProps {
   results: PackingResult[] | null;
@@ -52,15 +53,17 @@ function ResultCards({
                 {(unitSystem === "in" ? cmToInches(result.box.height) : result.box.height).toFixed(1)} x{" "}
                 {(unitSystem === "in" ? cmToInches(result.box.depth) : result.box.depth).toFixed(1)} {unitSystem}
               </dd>
-              <dt className="text-gray-500">Dimensional weight</dt>
-              <dd className="text-gray-900">
-                {(unitSystem === "in" ? kgToLbs(result.dimensionalWeight) : result.dimensionalWeight).toFixed(1)} {unitSystem === "in" ? "lbs" : "kg"}
-              </dd>
               <dt className="text-gray-500">Items packed</dt>
               <dd className="text-gray-900">
                 {result.items.length} unit{result.items.length === 1 ? "" : "s"}
               </dd>
             </dl>
+            <CarrierDimensionalWeightList
+              widthCm={result.box.width}
+              heightCm={result.box.height}
+              depthCm={result.box.depth}
+              unitSystem={unitSystem}
+            />
           </div>
 
           <BoxVisualization3D result={result} unit={unitSystem} size="large" />

@@ -54,6 +54,11 @@ describe("PackingPlanTable", () => {
     expect(screen.getByText("Order 1001")).toBeInTheDocument();
     expect(screen.getByText("Poster x3")).toBeInTheDocument();
     expect(screen.getByText(/28\.0 x 18\.0 x 2\.0 cm/)).toBeInTheDocument();
+    expect(screen.getByText("UPS")).toBeInTheDocument();
+    expect(screen.getByText("FedEx")).toBeInTheDocument();
+    expect(screen.getByText("USPS")).toBeInTheDocument();
+    expect(screen.getByText("DHL")).toBeInTheDocument();
+    expect(screen.getByText("UPS divisor: 5000 cm^3 per kg.", { exact: false })).toBeInTheDocument();
   });
 
   it("opens the delete dialog and confirms deletion", async () => {

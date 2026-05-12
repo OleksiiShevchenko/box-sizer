@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/resend";
 import { getStarterUsagePeriod } from "@/services/subscription";
+import { detectUnitSystemFromLocale } from "@/lib/unit-system";
 import { z } from "zod/v4";
 
 const signUpSchema = z.object({
@@ -19,9 +20,6 @@ const resetPasswordSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-const IMPERIAL_COUNTRIES = new Set([
-  "US", "LR", "MM",
-]);
 const VERIFICATION_EMAIL_ERROR = "Failed to send verification email. Please try again.";
 
 export async function signUp(formData: FormData) {
@@ -46,9 +44,7 @@ export async function signUp(formData: FormData) {
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
-  // Detect unit system from browser locale (e.g. "en-US" → "US")
-  const countryCode = locale.split("-").pop()?.toUpperCase() ?? "";
-  const unitSystem = IMPERIAL_COUNTRIES.has(countryCode) ? "in" : "cm";
+  const unitSystem = detectUnitSystemFromLocale(locale);
   const createdAt = new Date();
   const starterPeriod = getStarterUsagePeriod(createdAt, createdAt);
 
