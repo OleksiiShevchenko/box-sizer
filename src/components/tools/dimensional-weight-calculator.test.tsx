@@ -1,5 +1,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { existsSync } from "fs";
+import path from "path";
 import posthog from "posthog-js";
 import { DimensionalWeightCalculator } from "./dimensional-weight-calculator";
 
@@ -20,6 +22,14 @@ describe("DimensionalWeightCalculator", () => {
   beforeEach(() => {
     mockedPosthog.capture.mockReset();
     setNavigatorLanguage("en-US");
+  });
+
+  it("has committed public logo assets for every carrier", () => {
+    for (const filename of ["ups.png", "fedex.png", "usps.png", "dhl.png"]) {
+      expect(
+        existsSync(path.join(process.cwd(), "public", "carrier-logos", filename))
+      ).toBe(true);
+    }
   });
 
   it("defaults to locale units, calculates carrier billable weights, and tracks analytics", async () => {
