@@ -7,6 +7,7 @@ import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/auth-error-codes";
 import Link from "next/link";
 
 export function LoginForm() {
@@ -31,9 +32,15 @@ export function LoginForm() {
     setLoading(false);
 
     if (result?.error) {
-      setError(result.error === "CredentialsSignin"
-        ? "Invalid email or password."
-        : result.error);
+      if (result.code === EMAIL_NOT_VERIFIED_CODE) {
+        setError("Please verify your email before signing in.");
+      } else {
+        setError(
+          result.error === "CredentialsSignin"
+            ? "Invalid email or password."
+            : result.error,
+        );
+      }
     } else {
       posthog.identify(email, { email });
       posthog.capture("login_submitted", { email, method: "email" });
