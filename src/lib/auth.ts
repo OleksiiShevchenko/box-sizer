@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { getPlanForTier } from "@/lib/subscription-plans";
+import { onCreateUser, onSignIn } from "@/lib/auth-events";
 import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -79,5 +80,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     },
+  },
+  events: {
+    createUser: onCreateUser,
+    signIn: onSignIn,
   },
 });

@@ -48,7 +48,9 @@ export function SignupForm() {
         type="button"
         variant="secondary"
         className="w-full mb-4"
-        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+        onClick={() =>
+          signIn("google", { callbackUrl: "/signup/google/success" })
+        }
       >
         <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
           <path

@@ -1,5 +1,6 @@
 import { SessionProvider } from "next-auth/react";
 import { Nav } from "@/components/layout/nav";
+import { PostHogSessionBridge } from "@/components/auth/posthog-session-bridge";
 
 export default function DashboardLayout({
   children,
@@ -8,6 +9,7 @@ export default function DashboardLayout({
 }) {
   return (
     <SessionProvider>
+      <PostHogSessionBridge />
       <div className="min-h-screen bg-slate-100">
         <Nav />
         <main className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-8 lg:px-20">
