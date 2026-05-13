@@ -27,6 +27,7 @@ model User {
   emailNotifications EmailNotification[]
   apiApps            ApiApp[]
   apiTokens          ApiToken[]
+  signupConversions SignupConversion[]
 }
 
 model Account {
@@ -199,4 +200,16 @@ model EmailNotification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
+}
+
+model SignupConversion {
+  id         String   @id @default(cuid())
+  userId     String
+  conversion String
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversion])
+  @@index([conversion, createdAt])
 }

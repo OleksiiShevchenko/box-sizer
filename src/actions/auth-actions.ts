@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/resend";
 import { getStarterUsagePeriod } from "@/services/subscription";
 import { detectUnitSystemFromLocale } from "@/lib/unit-system";
+import { trackUserRegistered } from "@/lib/auth-tracking";
 import { z } from "zod/v4";
 
 const signUpSchema = z.object({
@@ -48,7 +49,7 @@ export async function signUp(formData: FormData) {
   const createdAt = new Date();
   const starterPeriod = getStarterUsagePeriod(createdAt, createdAt);
 
-  await prisma.user.create({
+  const createdUser = await prisma.user.create({
     data: {
       name,
       email,
@@ -64,6 +65,7 @@ export async function signUp(formData: FormData) {
         },
       },
     },
+    select: { id: true, email: true },
   });
 
   // Generate verification token
@@ -92,6 +94,20 @@ export async function signUp(formData: FormData) {
     ]);
 
     return { error: VERIFICATION_EMAIL_ERROR };
+  }
+
+  try {
+    await trackUserRegistered({
+      user: { id: createdUser.id, email: createdUser.email },
+      method: "email",
+      provider: "email",
+      tier: "starter",
+      captureSignupCompleted: false,
+    });
+  } catch (err) {
+    // Analytics must never block signup — the user account is already
+    // committed and the verification email has been sent.
+    console.error("[auth] trackUserRegistered failed for email signup", err);
   }
 
   return { success: true };

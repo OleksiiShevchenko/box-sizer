@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
+import { GoogleAdsSignupConversion } from "@/components/marketing/google-ads-signup-conversion";
 import { isProductionDeployment } from "@/lib/vercel-env";
 import Link from "next/link";
-import Script from "next/script";
 
 export default function VerifyEmailPage() {
   const shouldTrackConversion = isProductionDeployment();
@@ -9,15 +9,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       {shouldTrackConversion ? (
-        <Script id="gtag-conversion" strategy="afterInteractive">
-          {`
-            gtag('event', 'conversion', {
-              'send_to': 'AW-18082628701/WkZACIiLpJocEN2IvK5D',
-              'value': 1.0,
-              'currency': 'EUR'
-            });
-          `}
-        </Script>
+        <GoogleAdsSignupConversion />
       ) : null}
       <Card className="w-full max-w-md mx-auto text-center">
         <div className="text-4xl mb-4">📧</div>
