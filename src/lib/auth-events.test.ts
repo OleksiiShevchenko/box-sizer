@@ -10,6 +10,7 @@ jest.mock("@/lib/prisma", () => ({
 jest.mock("@/lib/resend", () => ({
   sendVerificationEmail: jest.fn(),
   sendPasswordResetEmail: jest.fn(),
+  sendSignupAdminNotification: jest.fn(),
 }));
 
 jest.mock("@/services/subscription", () => ({
@@ -25,6 +26,7 @@ jest.mock("@/lib/auth-tracking", () => ({
 }));
 
 import { prisma } from "@/lib/prisma";
+import { sendSignupAdminNotification, sendVerificationEmail } from "@/lib/resend";
 import { trackUserLogin, trackUserRegistered } from "@/lib/auth-tracking";
 import { onCreateUser, onSignIn } from "./auth-events";
 
@@ -34,6 +36,8 @@ const mockPrisma = prisma as unknown as {
     create: jest.Mock;
   };
 };
+const mockSendSignupAdminNotification = sendSignupAdminNotification as jest.Mock;
+const mockSendVerificationEmail = sendVerificationEmail as jest.Mock;
 const mockTrackUserRegistered = trackUserRegistered as jest.Mock;
 const mockTrackUserLogin = trackUserLogin as jest.Mock;
 
@@ -42,6 +46,7 @@ describe("onCreateUser (Google OAuth new user)", () => {
     jest.clearAllMocks();
     mockPrisma.subscription.findUnique.mockResolvedValue(null);
     mockPrisma.subscription.create.mockResolvedValue({ userId: "user-1" });
+    mockSendSignupAdminNotification.mockResolvedValue(undefined);
     mockTrackUserRegistered.mockResolvedValue(undefined);
   });
 
@@ -64,6 +69,8 @@ describe("onCreateUser (Google OAuth new user)", () => {
       provider: "google",
       tier: "starter",
     });
+    expect(mockSendSignupAdminNotification).toHaveBeenCalledWith("alice@example.com");
+    expect(mockSendVerificationEmail).not.toHaveBeenCalled();
   });
 
   it("does not duplicate the starter subscription if one already exists", async () => {
@@ -74,13 +81,30 @@ describe("onCreateUser (Google OAuth new user)", () => {
     });
 
     expect(mockPrisma.subscription.create).not.toHaveBeenCalled();
+    expect(mockSendSignupAdminNotification).toHaveBeenCalledWith("alice@example.com");
     expect(mockTrackUserRegistered).toHaveBeenCalledTimes(1);
   });
 
   it("does nothing if user is missing id or email", async () => {
     await onCreateUser({ user: { email: "no-id@example.com" } as never });
+    expect(mockSendSignupAdminNotification).not.toHaveBeenCalled();
     expect(mockTrackUserRegistered).not.toHaveBeenCalled();
     expect(mockPrisma.subscription.create).not.toHaveBeenCalled();
+  });
+
+  it("does not send verification email or abort signup when the admin notification fails", async () => {
+    mockSendSignupAdminNotification.mockRejectedValue(new Error("Resend unreachable"));
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(
+      onCreateUser({ user: { id: "user-9", email: "x@example.com" } }),
+    ).resolves.toBeUndefined();
+
+    expect(mockSendSignupAdminNotification).toHaveBeenCalledWith("x@example.com");
+    expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+    expect(mockTrackUserRegistered).toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 
   it("does not throw when analytics tracking fails", async () => {

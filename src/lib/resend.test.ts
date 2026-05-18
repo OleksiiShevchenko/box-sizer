@@ -78,6 +78,25 @@ describe("resend mailers", () => {
     );
   });
 
+  it("sends the signup admin notification without a confirmation link", async () => {
+    process.env.CONFIG_EMAIL = "ops@packwell.io";
+    mockSendEmail.mockResolvedValue({ data: { id: "email_123" }, error: null });
+    const { sendSignupAdminNotification } = await import("./resend");
+
+    await sendSignupAdminNotification("user@example.com");
+
+    expect(mockSendEmail).toHaveBeenCalledTimes(1);
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: "noreply@packwell.io",
+        to: "ops@packwell.io",
+        subject: "New Box Sizer signup",
+        html: expect.stringContaining("user@example.com"),
+      })
+    );
+    expect(mockSendEmail.mock.calls[0][0].html).not.toContain("/confirm?");
+  });
+
   it("renders the purchase email with Packwell branding, dashboard CTA, and footer links", async () => {
     process.env.NEXTAUTH_URL = "dashboard.packwell.io";
     mockSendEmail.mockResolvedValue({ data: { id: "email_123" }, error: null });
