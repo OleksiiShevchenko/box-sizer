@@ -2,6 +2,7 @@ import type { Account, User } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { getStarterUsagePeriod } from "@/services/subscription";
 import { trackUserLogin, trackUserRegistered } from "@/lib/auth-tracking";
+import { sendSignupAdminNotification } from "@/lib/resend";
 
 export async function onCreateUser({ user }: { user: User }): Promise<void> {
   if (!user.id || !user.email) return;
@@ -22,6 +23,12 @@ export async function onCreateUser({ user }: { user: User }): Promise<void> {
         currentPeriodEnd: starterPeriod.end,
       },
     });
+  }
+
+  try {
+    await sendSignupAdminNotification(user.email);
+  } catch (err) {
+    console.error("[auth] sendSignupAdminNotification failed for Google OAuth signup", err);
   }
 
   try {

@@ -66,6 +66,10 @@ export async function sendVerificationEmail(email: string, token: string) {
     }),
   });
 
+  await sendSignupAdminNotification(email);
+}
+
+export async function sendSignupAdminNotification(email: string) {
   const configEmail = process.env.CONFIG_EMAIL;
   if (configEmail) {
     try {
