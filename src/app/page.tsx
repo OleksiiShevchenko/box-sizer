@@ -4,141 +4,14 @@ import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
 import { HeroPackingVisualization } from "@/components/marketing/hero-packing-visualization";
 import { MarketingPricingSection } from "@/components/pricing/marketing-pricing-section";
-import { UseCaseSelector, type MarketingUseCase } from "@/components/marketing/use-case-selector";
+import { TypicalShippingScenarioSection } from "@/components/marketing/typical-shipping-scenario-section";
+import { HowPackwellWorksSection } from "@/components/marketing/how-packwell-works-section";
+import { UseCasesSection } from "@/components/marketing/use-cases-section";
+import { RecommendedBoxCard } from "@/components/marketing/recommended-box-card";
 import { InstantScrollLink } from "@/components/layout/instant-scroll-link";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-
-const shippingMismatchItems = [
-  {
-    name: "Backpack",
-    weight: "1 lb.",
-    dimensions: "13 x 8 x 14 in",
-    image: "/marketing/backpack.png",
-  },
-  {
-    name: "Mug",
-    weight: "2.33 lbs.",
-    dimensions: "5.4 x 5.4 x 6.1 in",
-    image: "/marketing/mug.png",
-  },
-  {
-    name: "Notebook",
-    weight: "0.63 lbs.",
-    dimensions: "5 x 8 x 0.5 in",
-    image: "/marketing/notebook.png",
-  },
-];
-
-const useCases: MarketingUseCase[] = [
-  {
-    icon: "shopping_cart",
-    title: "Ecommerce brands with owned inventory",
-    helper: "Mixed carts · bulky products · checkout quotes",
-    desc: "For stores that ship mixed-product orders from their own warehouse or 3PL. Calculate the package size before checkout so bulky or multi-item orders do not destroy shipping margin.",
-    image: {
-      src: "/marketing/use-cases/ecommerce.png",
-      alt: "Ecommerce use case packaging workflow",
-      width: 1376,
-      height: 768,
-    },
-  },
-  {
-    icon: "package_2",
-    title: "Promo warehouse programs",
-    helper: "Stored merch · company stores · event shipments",
-    desc: "For distributors storing customer merchandise and shipping different combinations to employees, events, offices, or customers. Select the right box and quote shipping before the warehouse packs the order.",
-    image: {
-      src: "/marketing/use-cases/promo.png",
-      alt: "Promo warehouse programs use case",
-      width: 1024,
-      height: 1024,
-    },
-  },
-  {
-    icon: "card_giftcard",
-    title: "Corporate gifting platforms",
-    helper: "Giveaways · direct mail · recipient shipments",
-    desc: "For gifting workflows where stored products are sent to many recipients in different combinations. Estimate package dimensions, charge shipping accurately, and give fulfillment teams packing instructions.",
-    image: {
-      src: "/marketing/use-cases/gifting.png",
-      alt: "Corporate gifting platforms use case",
-      width: 1024,
-      height: 1024,
-    },
-  },
-  {
-    icon: "redeem",
-    title: "Custom kit planning",
-    helper: "Welcome kits · custom boxes · presentation layout",
-    desc: "For teams building gift boxes, welcome kits, or event kits with customer-defined contents. Calculate the box size before ordering custom packaging and generate a packing layout that matches the desired presentation.",
-    image: {
-      src: "/marketing/use-cases/kitting-v1.png",
-      alt: "Custom kit planning use case",
-      width: 1024,
-      height: 1024,
-    },
-  },
-];
-
-const howPackwellSteps = [
-  {
-    step: "Step 1",
-    title: "Define your packaging options",
-    description:
-      "Add the boxes you use for shipping, or let Packwell calculate the ideal box size automatically.",
-    image: "/marketing/how-packwell/box-catalog.png",
-    imageAlt: "Packwell box catalog UI showing available shipping boxes",
-    imageWidth: 1396,
-    imageHeight: 914,
-    icon: "inventory_2",
-  },
-  {
-    step: "Step 2",
-    title: "Provide shipment details",
-    description:
-      "Send the items to be shipped, including dimensions, weight, and quantity. Optionally define packing rules like stacking or orientation.",
-    image: "/marketing/how-packwell/shipment-details-products.png",
-    imageAlt: "Packwell shipment details UI with item dimensions and weights",
-    imageWidth: 965,
-    imageHeight: 714,
-    icon: "straighten",
-  },
-  {
-    step: "Step 3",
-    title: "Packwell calculates the best box",
-    description:
-      "Packwell uses a 3D Bin Packing Algorithm to select the best box for shipping the items and minimize dimensional weight and wasted space.",
-    image: "/marketing/how-packwell/best-box-3d.png",
-    imageAlt: "Packwell 3D packing visualization with the recommended box",
-    imageWidth: 1386,
-    imageHeight: 1420,
-    icon: "view_in_ar",
-  },
-  {
-    step: "Step 4",
-    title: "Calculate real shipping cost",
-    description:
-      "Use actual weight and dimensional weight to get accurate shipping rates from your carrier. No more undercharging or surprise costs.",
-    image: "/marketing/how-packwell/carrier-logos.png",
-    imageAlt: "USPS, UPS, FedEx, and DHL carrier logos",
-    imageWidth: 1152,
-    imageHeight: 922,
-    icon: "local_shipping",
-  },
-  {
-    step: "Step 5",
-    title: "Pack exactly as planned",
-    description:
-      "Follow the packing plan visualization to ensure orders are packed consistently and match what was quoted.",
-    image: "/marketing/how-packwell/packing-instructions.png",
-    imageAlt: "Packing instruction visualization with 3D, front, side, and top views",
-    imageWidth: 1024,
-    imageHeight: 1024,
-    icon: "warehouse",
-  },
-];
 
 export default async function Home() {
   const session = await auth();
@@ -337,129 +210,7 @@ export default async function Home() {
         </section>
 
         {/* Checkout vs Carrier Pricing */}
-        <section className="px-6 py-24 md:py-32 bg-surface-container-lowest">
-          <div className="max-w-7xl mx-auto">
-            <div className="mx-auto max-w-3xl text-center" data-reveal="up">
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-on-background leading-tight">
-                A Typical Shipping Scenario
-              </h2>
-              <p className="mt-5 text-lg leading-relaxed text-on-surface-variant">
-                Why shipping quotes don&apos;t match what you&apos;re actually charged
-              </p>
-            </div>
-
-            <div className="mt-14 rounded-3xl border border-outline-variant/50 bg-surface shadow-[0_24px_60px_-44px_rgba(15,23,42,0.55)] overflow-hidden" data-reveal="up">
-              <div className="border-b border-outline-variant/50 bg-surface-container-low px-5 py-5 sm:px-7 lg:px-9">
-                <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
-                      Example order
-                    </p>
-                    <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-on-background sm:text-3xl">
-                      Backpack + Mug + Notebook
-                    </h3>
-                  </div>
-                  <p className="text-sm font-semibold text-on-surface-variant sm:text-base">
-                    Denver <span aria-hidden="true">-&gt;</span> New York
-                  </p>
-                </div>
-              </div>
-
-              <div className="divide-y divide-outline-variant/40">
-                {shippingMismatchItems.map((item) => (
-                  <div
-                    key={item.name}
-                    className="grid gap-4 px-5 py-5 sm:px-7 md:grid-cols-[minmax(0,1.3fr)_minmax(140px,0.7fr)_minmax(190px,0.9fr)] md:items-center lg:px-9"
-                  >
-                    <div className="flex min-w-0 items-center gap-4">
-                      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-surface-container">
-                        <Image
-                          src={item.image}
-                          alt=""
-                          fill
-                          sizes="80px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <p className="text-xl font-bold tracking-tight text-on-background sm:text-2xl">
-                        {item.name}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-[minmax(4.5rem,0.65fr)_minmax(0,1fr)] gap-4 md:contents">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
-                          Weight
-                        </p>
-                        <p className="mt-1 text-lg font-bold text-on-background">{item.weight}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
-                          Dimensions
-                        </p>
-                        <p className="mt-1 text-lg font-bold text-on-background">{item.dimensions}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" data-reveal="up">
-              <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-low p-6 sm:p-8">
-                <div className="mb-10 flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.16em] text-on-surface-variant">
-                      Checkout quote
-                    </p>
-                    <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-on-background">
-                      Based on real weight of products
-                    </h3>
-                  </div>
-                  <span className="material-symbols-outlined text-[28px] text-on-surface-variant" aria-hidden="true">
-                    warning
-                  </span>
-                </div>
-                <div className="flex items-end justify-between gap-4">
-                  <p className="text-lg font-semibold text-on-surface-variant">UPS Ground</p>
-                  <p className="text-4xl font-extrabold tracking-tight text-on-background">$23.63</p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-outline-variant/60 bg-surface-container-low p-6 sm:p-8">
-                <div className="mb-10 flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.16em] text-on-surface-variant">
-                      Carrier invoice
-                    </p>
-                    <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-on-background">
-                      Based on real and volumetric weight
-                    </h3>
-                  </div>
-                  <span className="material-symbols-outlined text-[28px] text-on-surface-variant" aria-hidden="true">
-                    receipt_long
-                  </span>
-                </div>
-                <div className="flex items-end justify-between gap-4">
-                  <p className="text-lg font-semibold text-on-surface-variant">UPS Ground</p>
-                  <p className="text-4xl font-extrabold tracking-tight text-on-background">$53.28</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(280px,0.75fr)_minmax(0,1fr)] lg:items-center" data-reveal="up">
-              <div className="rounded-2xl border border-error/20 bg-error-container/25 p-6 text-error sm:p-8">
-                <p className="text-xl font-extrabold tracking-tight">Loss on one order: $29.65</p>
-                <p className="mt-3 text-lg font-bold">Loss on 100 orders: ~$3,000</p>
-                <p className="mt-2 text-lg font-bold">Loss on 3,000 orders: ~$89,000</p>
-              </div>
-              <p className="text-lg leading-relaxed text-on-surface-variant">
-                Packwell automatically selects the right box from available packaging
-                options based on product dimensions, so your checkout shipping price matches
-                what the carrier will charge.
-              </p>
-            </div>
-          </div>
-        </section>
+        <TypicalShippingScenarioSection />
 
         {/* Features Section */}
         <section
@@ -656,100 +407,10 @@ export default async function Home() {
         </section>
 
         {/* How It Works Section */}
-        <section
-          id="how-it-works"
-          className="px-6 pt-24 pb-8 md:pt-32 md:pb-8 bg-surface-container-lowest"
-          data-testid="how-packwell-section"
-        >
-          <div className="max-w-7xl mx-auto">
-            <div className="mx-auto max-w-3xl text-center" data-reveal="up">
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-on-background leading-tight">
-                How Packwell works
-              </h2>
-              <p className="mt-5 text-lg leading-relaxed text-on-surface-variant">
-                Use the Packwell UI or REST API to integrate precise box selection
-                and packing instructions into your existing business process.
-              </p>
-            </div>
-
-            <div className="mt-16 space-y-20 lg:mt-20 lg:space-y-24">
-              {howPackwellSteps.map((step, index) => {
-                const imageFirst = index % 2 === 1;
-
-                return (
-                  <div
-                    key={step.step}
-                    className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16"
-                    data-reveal="up"
-                  >
-                    <div className={imageFirst ? "lg:order-2" : undefined}>
-                      <div className="flex items-center gap-3">
-                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-fixed text-primary shadow-[0_12px_24px_-18px_rgba(37,99,235,0.9)]">
-                          <span
-                            className="material-symbols-outlined text-[22px]"
-                            aria-hidden="true"
-                          >
-                            {step.icon}
-                          </span>
-                        </span>
-                        <p className="text-sm font-bold uppercase tracking-[0.16em] text-primary">
-                          {step.step}
-                        </p>
-                      </div>
-                      <h3 className="mt-5 text-3xl font-extrabold tracking-tight text-on-background sm:text-4xl">
-                        {step.title}
-                      </h3>
-                      <p className="mt-5 max-w-xl text-lg leading-relaxed text-on-surface-variant">
-                        {step.description}
-                      </p>
-                    </div>
-
-                    <div className={imageFirst ? "lg:order-1" : undefined}>
-                      <div className="overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest shadow-[0_24px_60px_-44px_rgba(15,23,42,0.55)]">
-                        <div className="relative flex min-h-[280px] items-center justify-center bg-surface-container-low p-3 sm:min-h-[360px] sm:p-5">
-                          <Image
-                            src={step.image}
-                            alt={step.imageAlt}
-                            width={step.imageWidth}
-                            height={step.imageHeight}
-                            sizes="(min-width: 1024px) 560px, calc(100vw - 48px)"
-                            className="max-h-[520px] w-full rounded-xl object-contain"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-14 border-t border-outline-variant/50 pt-8 text-center">
-              <p className="text-base font-medium leading-relaxed text-on-surface-variant">
-                Run a sample order through Packwell{" "}
-                <Link
-                  href="/demo"
-                  className="inline-flex items-center font-bold text-primary underline-offset-4 transition-colors hover:text-primary-container hover:underline"
-                >
-                  in the interactive demo
-                </Link>
-                .
-              </p>
-            </div>
-          </div>
-        </section>
+        <HowPackwellWorksSection />
 
         {/* Use Cases Section */}
-        <section id="use-cases" className="py-24 md:py-32 bg-surface-container-low px-6">
-          <div className="max-w-7xl mx-auto">
-            <h2
-              className="text-4xl md:text-5xl font-bold tracking-tight text-center mb-6"
-              data-reveal="up"
-            >
-              Where smarter box selection matters
-            </h2>
-            <UseCaseSelector useCases={useCases} />
-          </div>
-        </section>
+        <UseCasesSection />
 
         <MarketingPricingSection />
 
@@ -781,35 +442,7 @@ export default async function Home() {
                 </div>
               </div>
               {/* Recommended Box Card */}
-              <div
-                className="relative z-10 mt-2 flex w-full max-w-[292px] shrink-0 flex-col gap-3 self-center rounded-[16px] bg-white p-6 rotate-0 shadow-[0_4px_12px_rgba(0,0,0,0.06),0_18px_34px_-18px_rgba(0,0,0,0.08)] md:mt-0 md:self-auto md:rotate-[4deg]"
-                data-reveal="right"
-                data-testid="cta-recommended-box-card"
-              >
-                <span className="text-[13px] font-bold text-[#64748B] leading-[1.33]">Recommended Box</span>
-                <p className="text-[23px] font-extrabold text-[#0F172A] leading-[1.2]">Medium (14&times;10&times;8)</p>
-                <div className="h-px bg-[#E2E8F0]"></div>
-                <div className="flex flex-col gap-2.5">
-                  <div className="flex justify-between">
-                    <span className="text-[13px] text-[#64748B]">Dim Weight</span>
-                    <span className="text-[13px] font-semibold text-[#0F172A]">4.2 lb</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[13px] text-[#64748B]">Shipping</span>
-                    <span className="text-[13px] font-semibold text-[#0F172A]">$10.20</span>
-                  </div>
-                </div>
-                <div className="h-px bg-[#E2E8F0]"></div>
-                <div className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[14px] text-[#94A3B8]">arrow_forward</span>
-                  <span className="text-[12px] text-[#94A3B8]">vs Large Box ($14.50)</span>
-                </div>
-                <div className="bg-[#ECFDF5] rounded-full px-3 py-2 flex items-center gap-1.5 self-start">
-                  <span className="material-symbols-outlined text-[15px] text-[#16A34A]">paid</span>
-                  <span className="text-[14px] font-bold text-[#16A34A]">Save $4.22 per shipment</span>
-                </div>
-                <p className="text-[12px] font-bold text-[#94A3B8]">Calculated instantly</p>
-              </div>
+              <RecommendedBoxCard className="mt-2 self-center md:mt-0 md:self-auto" />
               {/* Abstract Glow */}
               <div className="absolute top-28 right-60 w-96 h-96 bg-[#2563EB] opacity-20 blur-[88px] rounded-full"></div>
             </div>
