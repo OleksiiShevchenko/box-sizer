@@ -46,12 +46,22 @@ export function getMeasurementUnits(unitSystem: UnitSystem): ApiMeasurementUnits
       };
 }
 
+// Values are stored in metric and converted to the account's unit on output. Unit conversion
+// (e.g. cm / 2.54) can introduce IEEE-754 noise — a stored 13 in (33.02 cm) reads back as
+// 13.000000000000002. Round serialized API values to 6 dp: enough to strip conversion noise
+// while preserving any legitimate fractional precision.
+const API_MEASUREMENT_PRECISION = 1e6;
+
+function roundApiMeasurement(value: number): number {
+  return Math.round(value * API_MEASUREMENT_PRECISION) / API_MEASUREMENT_PRECISION;
+}
+
 export function convertDimensionFromApi(value: number, unitSystem: UnitSystem): number {
   return unitSystem === "in" ? inchesToCm(value) : value;
 }
 
 export function convertDimensionToApi(value: number, unitSystem: UnitSystem): number {
-  return unitSystem === "in" ? cmToInches(value) : value;
+  return roundApiMeasurement(unitSystem === "in" ? cmToInches(value) : value);
 }
 
 export function convertWeightFromApi(value: number, unitSystem: UnitSystem): number {
@@ -59,14 +69,14 @@ export function convertWeightFromApi(value: number, unitSystem: UnitSystem): num
 }
 
 export function convertWeightToApi(value: number, unitSystem: UnitSystem): number {
-  return unitSystem === "in" ? gramsToOz(value) : value;
+  return roundApiMeasurement(unitSystem === "in" ? gramsToOz(value) : value);
 }
 
 export function convertDimensionalWeightToApi(
   value: number,
   unitSystem: UnitSystem
 ): number {
-  return unitSystem === "in" ? kgToLbs(value) : value;
+  return roundApiMeasurement(unitSystem === "in" ? kgToLbs(value) : value);
 }
 
 export function convertBoxInputToStorage<T extends {
