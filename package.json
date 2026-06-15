@@ -14,6 +14,7 @@
     "db:push": "if [ -f ./.env.local ]; then set -a && . ./.env.local && set +a; fi && prisma db push",
     "db:studio": "if [ -f ./.env.local ]; then set -a && . ./.env.local && set +a; fi && prisma studio",
     "seed:e2e": "tsx scripts/seed-packwell-e2e.ts",
+    "set:tier": "tsx scripts/set-subscription-tier.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

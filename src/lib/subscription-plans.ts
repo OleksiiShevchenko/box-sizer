@@ -1,4 +1,7 @@
-export const SUBSCRIPTION_TIERS = ["starter", "growth", "pro"] as const;
+export const SUBSCRIPTION_TIERS = ["starter", "growth", "pro", "enterprise"] as const;
+// Tiers shown on the pricing grid and purchasable through self-serve Stripe checkout.
+// Enterprise is intentionally excluded: it has no public price and is assigned manually.
+export const VISIBLE_TIERS = ["starter", "growth", "pro"] as const;
 export const BILLING_INTERVALS = ["monthly", "annual"] as const;
 
 export type SubscriptionTier = (typeof SUBSCRIPTION_TIERS)[number];
@@ -69,10 +72,26 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
     badgeText: "Most popular",
     isHighlighted: true,
   },
+  enterprise: {
+    tier: "enterprise",
+    name: "Enterprise",
+    description: "For organizations needing unlimited volume and custom terms.",
+    monthlyPriceCents: 0,
+    annualPriceCents: 0,
+    calculationLimit: Infinity,
+    hasApiAccess: true,
+    featureBullets: [
+      "unlimited packing plans",
+      "REST API access",
+      "3D visualization",
+      "priority support",
+    ],
+    marketingCtaLabel: "Contact sales",
+  },
 };
 
 const PRICE_ENV_KEYS: Record<
-  Exclude<SubscriptionTier, "starter">,
+  Exclude<SubscriptionTier, "starter" | "enterprise">,
   Record<BillingInterval, string>
 > = {
   growth: {
@@ -94,7 +113,7 @@ export function isBillingInterval(value: string): value is BillingInterval {
 }
 
 export function getVisiblePlans(): SubscriptionPlan[] {
-  return SUBSCRIPTION_TIERS.map((tier) => SUBSCRIPTION_PLANS[tier]);
+  return VISIBLE_TIERS.map((tier) => SUBSCRIPTION_PLANS[tier]);
 }
 
 export function getPlanForTier(tier: string | null | undefined): SubscriptionPlan {
@@ -113,7 +132,7 @@ export function getPriceIdForSelection(
   tier: SubscriptionTier,
   interval: BillingInterval
 ): string | null {
-  if (tier === "starter") {
+  if (tier === "starter" || tier === "enterprise") {
     return null;
   }
 

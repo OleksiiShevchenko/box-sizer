@@ -501,6 +501,67 @@ describe("subscription service", () => {
     expect(prismaMock.calculationUsage.create).not.toHaveBeenCalled();
   });
 
+  it("never blocks enterprise calculations regardless of usage", async () => {
+    const createdAt = new Date("2026-01-01T00:00:00.000Z");
+    prismaMock.user.findUniqueOrThrow.mockResolvedValue({ createdAt } as never);
+    prismaMock.subscription.findUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "user-1",
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+      tier: "enterprise",
+      billingInterval: null,
+      status: "active",
+      currentPeriodStart: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      createdAt,
+      updatedAt: createdAt,
+    } as never);
+    // Far above any paid-tier cap; enterprise should still allow the calculation.
+    prismaMock.calculationUsage.count.mockResolvedValue(1_000_000);
+    prismaMock.calculationUsage.create.mockResolvedValue({
+      id: "usage-1",
+      userId: "user-1",
+      createdAt: new Date("2026-04-01T12:00:00.000Z"),
+    } as never);
+
+    await expect(
+      performMeteredCalculation("user-1", async () => ({ ok: true }), new Date("2026-04-01T12:00:00.000Z"))
+    ).resolves.toEqual({ ok: true });
+    expect(prismaMock.calculationUsage.create).toHaveBeenCalledWith({
+      data: { userId: "user-1" },
+    });
+  });
+
+  it("reports a null usage limit for enterprise subscriptions", async () => {
+    const createdAt = new Date("2026-01-01T00:00:00.000Z");
+    prismaMock.user.findUniqueOrThrow.mockResolvedValue({ createdAt } as never);
+    prismaMock.subscription.findUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "user-1",
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+      tier: "enterprise",
+      billingInterval: null,
+      status: "active",
+      currentPeriodStart: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      createdAt,
+      updatedAt: createdAt,
+    } as never);
+    prismaMock.calculationUsage.count.mockResolvedValue(4321);
+
+    await expect(getSubscriptionInfoForUser("user-1")).resolves.toMatchObject({
+      tier: "enterprise",
+      usageCount: 4321,
+      usageLimit: null,
+    });
+  });
+
   it("formats starter periods in UTC and clamps month boundaries", () => {
     const anchor = new Date("2026-01-31T18:45:00.000Z");
     const current = new Date("2026-02-28T18:44:59.000Z");
