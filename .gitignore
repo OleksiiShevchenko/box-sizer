@@ -58,3 +58,6 @@ next-env.d.ts
 # Playwright MCP artifacts
 .playwright-mcp/
 playwright-mcp-*.tgz
+
+# Local analysis scratch (contains production data exports — never commit)
+/data/
