@@ -213,3 +213,19 @@ model SignupConversion {
   @@unique([userId, conversion])
   @@index([conversion, createdAt])
 }
+
+model AuditLead {
+  id                  String   @id @default(cuid())
+  email               String
+  monthlyShipments    Int
+  segment             String
+  intlShare           String
+  effectivePremiumPct Float
+  monthlyLeakUsd      Int
+  annualLeakUsd       Int
+  lowExposure         Boolean
+  createdAt           DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([email])
+}

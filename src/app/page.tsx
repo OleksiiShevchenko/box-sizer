@@ -110,6 +110,15 @@ export default async function Home() {
                   Start Free
                 </Link>
               </div>
+              <Link
+                href="/shipping-savings-audit"
+                className="inline-flex items-center gap-1.5 text-base font-semibold text-primary hover:underline"
+              >
+                See how much dimensional weight is costing you
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  arrow_forward
+                </span>
+              </Link>
             </div>
             <div
               className="relative flex justify-center lg:col-span-5 lg:self-start lg:justify-end"
@@ -490,6 +499,29 @@ export default async function Home() {
                   >
                     Pricing
                   </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-bold text-sm mb-4 uppercase tracking-widest text-slate-400">
+                Tools
+              </h5>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="/tools/dimensional-weight-calculator"
+                    className="text-slate-500 hover:text-slate-900 transition-all duration-300 text-sm"
+                  >
+                    Dimensional Weight Calculator
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/shipping-savings-audit"
+                    className="text-slate-500 hover:text-slate-900 transition-all duration-300 text-sm"
+                  >
+                    Shipping Savings Audit
+                  </Link>
                 </li>
               </ul>
             </div>

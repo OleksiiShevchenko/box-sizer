@@ -85,6 +85,36 @@ export async function sendSignupAdminNotification(email: string) {
   }
 }
 
+export async function sendAuditLeadAdminNotification(args: {
+  email: string;
+  monthlyShipments: number;
+  segment: string;
+  intlShare: string;
+  monthlyLeakUsd: number;
+  annualLeakUsd: number;
+}) {
+  const configEmail = process.env.CONFIG_EMAIL;
+  if (!configEmail) return;
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || TRANSACTIONAL_FROM_EMAIL,
+      to: configEmail,
+      subject: `New shipping-savings audit lead: ${args.email}`,
+      html: `<p>New audit lead — follow up with a detailed audit.</p>
+<ul>
+  <li>Email: <strong>${args.email}</strong></li>
+  <li>Monthly shipments: ${args.monthlyShipments}</li>
+  <li>Product segment: ${args.segment}</li>
+  <li>International share: ${args.intlShare}</li>
+  <li>Estimated monthly leak: $${args.monthlyLeakUsd.toLocaleString()}</li>
+  <li>Estimated annual leak: $${args.annualLeakUsd.toLocaleString()}</li>
+</ul>`,
+    });
+  } catch {
+    // Best-effort; must not block the lead submission.
+  }
+}
+
 export async function sendPasswordResetEmail(email: string, token: string) {
   const appUrl = getConfiguredAppUrl();
   const resetUrl = `${appUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;

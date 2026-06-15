@@ -1,68 +1,61 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { MarketingHeader, MarketingFooter } from "@/components/marketing/marketing-shell";
 import { DemoBookingButton } from "@/components/marketing/demo-booking-button";
-import { TypicalShippingScenarioSection } from "@/components/marketing/typical-shipping-scenario-section";
 import { HowPackwellWorksSection } from "@/components/marketing/how-packwell-works-section";
 import { UseCasesSection } from "@/components/marketing/use-cases-section";
 import { RecommendedBoxCard } from "@/components/marketing/recommended-box-card";
-import { DimensionalWeightCalculator } from "@/components/tools/dimensional-weight-calculator";
 import { DimensionalWeightDemoLink } from "@/components/tools/dimensional-weight-demo-link";
+import { ShippingSavingsAudit } from "@/components/tools/shipping-savings-audit";
 
 export const metadata: Metadata = {
-  title: "Dimensional Weight Calculator | Packwell",
+  title: "Shipping Savings Audit | Packwell",
   description:
-    "Calculate dimensional weight and estimated billable weight for UPS, FedEx, USPS, and DHL. See how package size affects shipping weight and box selection.",
+    "Find out how much dimensional weight is costing you. Answer 3 questions for an instant estimate of the shipping margin you're losing by quoting on physical weight instead of billable weight.",
 };
 
 const seoSections = [
   {
-    title: "What is dimensional weight?",
-    body: "Dimensional weight is a billing weight based on how much space a package occupies. Carriers compare dimensional weight with the actual scale weight and often charge against the higher number. For bulky ecommerce shipments, the box can matter as much as the product weight.",
+    title: "The hidden shipping leak",
+    body: "Carriers bill on billable weight — the greater of physical and dimensional weight. If your checkout quotes shipping on product weight or a flat rate, the carrier invoice can come back higher and you eat the gap on every order.",
   },
   {
-    title: "Why carriers use dimensional weight",
-    body: "Delivery trucks, planes, and sorting facilities run out of space before they run out of weight capacity. Dimensional weight gives carriers a way to price large, lightweight parcels that consume valuable network capacity.",
+    title: "Where it hurts most",
+    body: "Light, bulky, or mixed shipments — apparel, promo, gift boxes — and anything moving internationally or by air. In our analysis of 10,000+ shipments, international orders billed ~70% higher once dimensional weight was applied.",
   },
   {
-    title: "Why ecommerce stores undercharge for shipping",
-    body: "Many checkout estimates use product weight, a default package, or rough averages. If the warehouse ships in a larger box, the carrier invoice can be based on a higher dimensional weight than the checkout estimate expected.",
+    title: "How to stop it",
+    body: "Know the box before checkout. Packwell calculates the right box for each order's actual products, so you can charge accurate shipping and stop under-collecting — especially on mixed and international shipments.",
   },
 ];
 
-export default function DimensionalWeightCalculatorPage() {
+export default function ShippingSavingsAuditPage() {
   return (
     <ScrollReveal>
       <div className="overflow-x-clip bg-surface font-sans text-on-surface antialiased">
         <MarketingHeader />
 
         <main>
-          {/* 1. Calculator */}
+          {/* 1. Audit */}
           <section
-            id="calculator"
+            id="audit"
             className="bg-surface-container-low px-6 pb-20 pt-32 md:pb-28 md:pt-40"
           >
             <div className="mx-auto max-w-7xl">
               <div className="mb-10 max-w-3xl">
-                <h1 className="text-4xl font-extrabold leading-tight text-on-background md:text-5xl">
-                  Dimensional Weight Calculator
+                <p className="text-xs font-bold uppercase tracking-[0.28em] text-primary">
+                  Shipping savings audit
+                </p>
+                <h1 className="mt-4 text-4xl font-extrabold leading-tight text-on-background md:text-5xl">
+                  How much are you losing to dimensional weight?
                 </h1>
                 <p className="mt-4 text-lg leading-8 text-on-surface-variant">
-                  Compare estimated dimensional weight across UPS, FedEx, USPS,
-                  and DHL without connecting carrier accounts.
+                  If you quote shipping on physical weight or a flat rate, you&apos;re likely
+                  under-collecting — carriers bill on the higher dimensional weight. Answer three
+                  questions for a directional estimate.
                 </p>
-                <Link
-                  href="/shipping-savings-audit"
-                  className="mt-4 inline-flex items-center gap-1.5 text-base font-semibold text-primary hover:underline"
-                >
-                  Want to know how much it&apos;s costing you? Run the Shipping Savings Audit
-                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                    arrow_forward
-                  </span>
-                </Link>
               </div>
-              <DimensionalWeightCalculator />
+              <ShippingSavingsAudit />
             </div>
           </section>
 
@@ -71,11 +64,10 @@ export default function DimensionalWeightCalculatorPage() {
             <div className="mx-auto max-w-5xl">
               <div className="mb-12 max-w-3xl">
                 <h2 className="text-4xl font-extrabold leading-tight text-on-background md:text-5xl">
-                  Understanding dimensional weight
+                  Why dimensional weight quietly drains margin
                 </h2>
                 <p className="mt-4 text-lg leading-8 text-on-surface-variant">
-                  Learn how package dimensions affect billable shipping weight
-                  and carrier charges.
+                  The carrier charges correctly. The leak is in what you quoted at checkout.
                 </p>
               </div>
 
@@ -97,16 +89,13 @@ export default function DimensionalWeightCalculatorPage() {
             </div>
           </section>
 
-          {/* 3. Typical Shipping Scenario */}
-          <TypicalShippingScenarioSection />
-
-          {/* 4. How Packwell works */}
+          {/* 3. How Packwell works */}
           <HowPackwellWorksSection />
 
-          {/* 5. Use Cases */}
+          {/* 4. Use Cases */}
           <UseCasesSection />
 
-          {/* 6. CTA */}
+          {/* 5. CTA */}
           <section className="bg-surface-container-lowest px-6 py-20 md:py-28">
             <div className="mx-auto max-w-[1232px]">
               <div
@@ -116,7 +105,6 @@ export default function DimensionalWeightCalculatorPage() {
                     "radial-gradient(900px circle at 78% 12%, rgba(59,130,246,0.28), transparent 55%), radial-gradient(700px circle at 22% 90%, rgba(37,99,235,0.18), transparent 60%)",
                 }}
               >
-                {/* Vertical grid lines */}
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 opacity-[0.07]"
@@ -130,25 +118,22 @@ export default function DimensionalWeightCalculatorPage() {
                 <div className="relative grid gap-12 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.28em] text-primary-fixed-dim">
-                      Get started
+                      Get the full picture
                     </p>
                     <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[56px]">
-                      Stop guessing which{" "}
-                      <span className="text-primary-fixed">box</span> to use.
+                      Stop under-charging for{" "}
+                      <span className="text-primary-fixed">shipping</span>.
                     </h2>
                     <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
-                      Packwell reduces dimensional weight charges by selecting
-                      the right packaging before checkout and fulfillment
-                      &mdash; for ecommerce brands, 3PLs, and gifting platforms.
+                      Packwell calculates the right box for each order&apos;s actual products, so you
+                      charge accurate shipping before checkout and fulfillment &mdash; for ecommerce
+                      brands, 3PLs, and gifting platforms.
                     </p>
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
                       <DimensionalWeightDemoLink className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-6 text-base font-bold text-slate-950 transition-colors hover:bg-slate-100">
                         See Box Optimization Demo
-                        <span
-                          className="material-symbols-outlined text-[20px]"
-                          aria-hidden="true"
-                        >
+                        <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                           arrow_forward
                         </span>
                       </DimensionalWeightDemoLink>
