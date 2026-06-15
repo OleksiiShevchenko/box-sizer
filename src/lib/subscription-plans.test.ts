@@ -15,8 +15,19 @@ describe("subscription plans", () => {
   });
 
   it("defines all supported tiers", () => {
-    expect(Object.keys(SUBSCRIPTION_PLANS)).toEqual(["starter", "growth", "pro"]);
+    expect(Object.keys(SUBSCRIPTION_PLANS)).toEqual(["starter", "growth", "pro", "enterprise"]);
+  });
+
+  it("keeps enterprise out of the self-serve pricing grid", () => {
     expect(getVisiblePlans().map((plan) => plan.tier)).toEqual(["starter", "growth", "pro"]);
+  });
+
+  it("gives enterprise unlimited calculations and no self-serve price", () => {
+    expect(SUBSCRIPTION_PLANS.enterprise.calculationLimit).toBe(Infinity);
+    expect(Number.isFinite(SUBSCRIPTION_PLANS.enterprise.calculationLimit)).toBe(false);
+    expect(SUBSCRIPTION_PLANS.enterprise.hasApiAccess).toBe(true);
+    expect(getPriceIdForSelection("enterprise", "monthly")).toBeNull();
+    expect(getPlanForTier("enterprise").tier).toBe("enterprise");
   });
 
   it("keeps starter free and annual prices at 10x monthly", () => {

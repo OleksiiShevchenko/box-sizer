@@ -51,7 +51,7 @@ function normalizeStatus(value: string): SubscriptionStatus {
 }
 
 function normalizeSubscriptionTier(value: string | null | undefined): SubscriptionTier | null {
-  if (value === "starter" || value === "growth" || value === "pro") {
+  if (value === "starter" || value === "growth" || value === "pro" || value === "enterprise") {
     return value;
   }
 
@@ -93,12 +93,18 @@ async function upsertSubscriptionFromStripe(subscription: StripeSubscriptionWith
     where: {
       OR: [{ stripeCustomerId }, { stripeSubscriptionId: subscription.id }],
     },
-    select: { userId: true },
+    select: { userId: true, tier: true },
   });
 
   const metadataUserId = subscription.metadata.userId;
 
   if (existing?.userId) {
+    // Enterprise is a manually-assigned, unlimited plan with no Stripe price.
+    // Never let a billing event downgrade it.
+    if (getPlanForTier(existing.tier).tier === "enterprise") {
+      return;
+    }
+
     await prisma.subscription.update({
       where: { userId: existing.userId },
       data,
@@ -107,6 +113,15 @@ async function upsertSubscriptionFromStripe(subscription: StripeSubscriptionWith
   }
 
   if (!metadataUserId) {
+    return;
+  }
+
+  const existingForMetadataUser = await prisma.subscription.findUnique({
+    where: { userId: metadataUserId },
+    select: { tier: true },
+  });
+
+  if (existingForMetadataUser && getPlanForTier(existingForMetadataUser.tier).tier === "enterprise") {
     return;
   }
 
@@ -131,6 +146,7 @@ async function resetSubscriptionToStarter(subscription: StripeSubscriptionWithPe
     },
     select: {
       userId: true,
+      tier: true,
       user: {
         select: {
           createdAt: true,
@@ -140,23 +156,26 @@ async function resetSubscriptionToStarter(subscription: StripeSubscriptionWithPe
   });
 
   await Promise.all(
-    subscriptions.map(({ userId, user }) => {
-      const period = getStarterUsagePeriod(user.createdAt);
+    subscriptions
+      // Never downgrade a manually-assigned enterprise plan back to starter.
+      .filter(({ tier }) => getPlanForTier(tier).tier !== "enterprise")
+      .map(({ userId, user }) => {
+        const period = getStarterUsagePeriod(user.createdAt);
 
-      return prisma.subscription.update({
-        where: { userId },
-        data: {
-          stripeSubscriptionId: null,
-          stripePriceId: null,
-          tier: "starter",
-          billingInterval: null,
-          status: "active",
-          currentPeriodStart: period.start,
-          currentPeriodEnd: period.end,
-          cancelAtPeriodEnd: false,
-        },
-      });
-    })
+        return prisma.subscription.update({
+          where: { userId },
+          data: {
+            stripeSubscriptionId: null,
+            stripePriceId: null,
+            tier: "starter",
+            billingInterval: null,
+            status: "active",
+            currentPeriodStart: period.start,
+            currentPeriodEnd: period.end,
+            cancelAtPeriodEnd: false,
+          },
+        });
+      })
   );
 }
 

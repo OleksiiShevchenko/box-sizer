@@ -12,6 +12,7 @@ jest.mock("@/lib/prisma", () => ({
     subscription: {
       findFirst: jest.fn(),
       findUnique: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
       upsert: jest.fn(),
       updateMany: jest.fn(),
@@ -50,6 +51,8 @@ jest.mock("@/services/email-notifications", () => ({
 
 const subscriptionFindFirst = prisma.subscription.findFirst as unknown as jest.Mock;
 const subscriptionFindUnique = prisma.subscription.findUnique as unknown as jest.Mock;
+const subscriptionFindMany = prisma.subscription.findMany as unknown as jest.Mock;
+const subscriptionUpdate = prisma.subscription.update as unknown as jest.Mock;
 const subscriptionUpsert = prisma.subscription.upsert as unknown as jest.Mock;
 const subscriptionUpdateMany = prisma.subscription.updateMany as unknown as jest.Mock;
 const userFindUnique = prisma.user.findUnique as unknown as jest.Mock;
@@ -98,6 +101,76 @@ describe("Stripe webhook route", () => {
       expect.objectContaining({
         where: { userId: "user-1" },
       })
+    );
+  });
+
+  it("does not downgrade an enterprise subscription on a subscription.updated event", async () => {
+    constructEvent.mockReturnValue({
+      type: "customer.subscription.updated",
+      data: {
+        object: {
+          id: "sub_123",
+          customer: "cus_123",
+          items: { data: [{ price: { id: "price_growth_monthly" } }] },
+          status: "active",
+          current_period_start: 1710000000,
+          current_period_end: 1712600000,
+          cancel_at_period_end: false,
+          metadata: { userId: "user-1" },
+        },
+      },
+    } as never);
+    subscriptionFindFirst.mockResolvedValue({ userId: "user-1", tier: "enterprise" });
+
+    const response = await POST(
+      new Request("http://localhost/api/webhooks/stripe", {
+        method: "POST",
+        headers: { "stripe-signature": "sig_test" },
+        body: "{}",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(subscriptionUpdate).not.toHaveBeenCalled();
+    expect(subscriptionUpsert).not.toHaveBeenCalled();
+  });
+
+  it("does not reset an enterprise subscription to starter on subscription.deleted", async () => {
+    constructEvent.mockReturnValue({
+      type: "customer.subscription.deleted",
+      data: {
+        object: {
+          id: "sub_123",
+          customer: "cus_123",
+        },
+      },
+    } as never);
+    subscriptionFindMany.mockResolvedValue([
+      {
+        userId: "user-1",
+        tier: "enterprise",
+        user: { createdAt: new Date("2026-01-01T00:00:00.000Z") },
+      },
+      {
+        userId: "user-2",
+        tier: "growth",
+        user: { createdAt: new Date("2026-01-01T00:00:00.000Z") },
+      },
+    ]);
+
+    const response = await POST(
+      new Request("http://localhost/api/webhooks/stripe", {
+        method: "POST",
+        headers: { "stripe-signature": "sig_test" },
+        body: "{}",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    // Only the non-enterprise subscription is reset to starter.
+    expect(subscriptionUpdate).toHaveBeenCalledTimes(1);
+    expect(subscriptionUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: "user-2" } })
     );
   });
 
