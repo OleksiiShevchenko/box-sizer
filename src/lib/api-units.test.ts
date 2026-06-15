@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   convertBoxInputToStorage,
+  convertDimensionToApi,
   convertDimensionalWeightToApi,
   convertPackingPlanItemInputToStorage,
   getMeasurementSystem,
@@ -8,6 +9,7 @@ import {
   getUnitSystemFromMeasurementSystem,
   normalizeUnitSystem,
 } from "@/lib/api-units";
+import { inchesToCm } from "@/types";
 
 describe("api unit helpers", () => {
   it("normalizes unknown unit systems to metric", () => {
@@ -85,5 +87,16 @@ describe("api unit helpers", () => {
   it("converts dimensional weight to pounds for imperial responses", () => {
     expect(convertDimensionalWeightToApi(5, "cm")).toBe(5);
     expect(convertDimensionalWeightToApi(5, "in")).toBeCloseTo(11.0231);
+  });
+
+  it("strips floating-point conversion noise from imperial dimension output", () => {
+    // A 13 in box is stored as 33.02 cm; cm/2.54 reads back as 13.000000000000002.
+    // The API must return a clean 13, not the IEEE-754 residue.
+    const storedCm = inchesToCm(13);
+    expect(convertDimensionToApi(storedCm, "in")).toBe(13);
+    // legitimate fractional precision is preserved
+    expect(convertDimensionToApi(inchesToCm(12.5), "in")).toBe(12.5);
+    // metric output is unchanged
+    expect(convertDimensionToApi(33.02, "cm")).toBe(33.02);
   });
 });
